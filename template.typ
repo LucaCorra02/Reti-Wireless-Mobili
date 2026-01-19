@@ -1,6 +1,6 @@
 // Academic Notes Template
 // A template for university course notes with rich formatting features
-// Author: Luca Favini (Favo02)
+// Author: Luca Corradini & Andrea Galliano
 
 #import "@preview/gentle-clues:1.2.0"
 #import "@preview/equate:0.3.2"
