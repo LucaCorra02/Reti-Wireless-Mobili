@@ -189,7 +189,7 @@ Dove:
     content((0.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[0.5]
     content((1.0 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.0]
     content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.5]
-    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))
+    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))[$s$]
 
     content((0, 1 * y-scale + 0.3), anchor: "south")[$s(t)$]
     content((1.5 * x-scale + 0.3, -1 * y-scale), anchor: "west")[$t$]
@@ -197,7 +197,7 @@ Dove:
     line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
   })
   #v(0.5em)
-  #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
+  #text(weight: "bold")[(a) $A=1, f=1, phi=0$]
 ]
 ]
 
