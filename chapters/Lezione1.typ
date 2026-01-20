@@ -132,6 +132,84 @@ Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo co
   })
 ]
 
-Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche semplificare il tutto.
+#nota[
+Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche modo semplificare il tutto.
+]
 
 Ciò che fanno *trasmettitore* e *ricevitore* è passare da una forma d'onda all'altra.
+
+== Rappresentazione dei segnali
+Ogni segnale è rappresentabile come una funzione del tempo `s(t)`, dove `t` è il tempo e `s` l'ampiezza del segnale in quel preciso istante:
+
+$ s(t) = A dot sin(2 pi f t + Phi) $
+
+Dove:
+- $A ->$ è l'ampiezza del segnale (massimo valore raggiungibile sull'asse `X`, misurato in Volt);
+- $f ->$ è la frequenza del segnale (numero di cicli al secondo, misurata in Hz);
+- $Phi ->$ è la fase del segnale (spostamento orizzontale della sinusoide);
+- $T ->$ è il periodo del segnale (il tempo impiegato per un ciclo, corrispondente a $1/f$);
+- $lambda ->$ Lunghezza d'onda (distanza tra due picchi consecutivi della sinusoide: $lambda = c/f$ oppure $lambda = c T$, dove $c$ è la velocità della luce $c = 3 \cdot 10^8 m\/s$).
+
+#esempio[
+  #align(center)[
+  #cetz.canvas({
+    import cetz.draw: *
+
+    let x-scale = 6
+    let y-scale = 2.5
+    
+    let points = ()
+    let steps = 100
+    for i in range(0, steps + 1) {
+      let t = i / steps * 1.5
+      let val = calc.sin(2 * calc.pi * t)
+      points.push((t * x-scale, val * y-scale))
+    }
+
+    set-style(stroke: (thickness: 0.5pt, paint: gray))
+    for i in (0, 0.5, 1.0, 1.5) {
+        line((i * x-scale, -1 * y-scale), (i * x-scale, 1 * y-scale))
+    }
+    for i in (-1, -0.5, 0, 0.5, 1) {
+        line((0, i * y-scale), (1.5 * x-scale, i * y-scale))
+    }
+
+    set-style(stroke: (thickness: 1.5pt, paint: black))
+    line((0, -1 * y-scale), (0, 1 * y-scale))
+    line((0, -1 * y-scale), (1.5 * x-scale, -1 * y-scale))
+    line((0, 0), (1.5 * x-scale, 0))
+
+    content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
+    content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
+    content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
+    content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
+    content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
+
+    content((0, -1 * y-scale - 0.3), anchor: "north")[0.0]
+    content((0.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[0.5]
+    content((1.0 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.0]
+    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.5]
+    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))
+
+    content((0, 1 * y-scale + 0.3), anchor: "south")[$s(t)$]
+    content((1.5 * x-scale + 0.3, -1 * y-scale), anchor: "west")[$t$]
+
+    line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
+  })
+  #v(0.5em)
+  #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
+]
+]
+
+La variazione dei primi 3 parametri di cui sopra (ampizza, frequenza e fase) permette di rappresentare diversi tipi di segnali.
+
+=== Trasformata di Fourier e utilità
+Un'onda elettromagnetica può anche essere osservata considerando un dominio diverso dal tempo: quello delle frequenze. In questo modo, ogni segnale può essere scomposto da una serie di segnali periodici (sinusoidi come seno e coseno) con ampiezza, frequenza e fase diverse. Questa scomposizione è possibile grazie alla Trasformata di Fourier:
+
+$ s(t) = 1/2 c + sum_(n=1)^oo a_n sin(2 pi n f t) + sum_(n=1)^oo b_n cos(2 pi f_n t) $
+
+Dove:
+- $c ->$ è la costante che rappresenta il valore medio del segnale;
+- $a_n, b_n ->$ sono i coefficienti che rappresentano l'ampiezza delle componenti (ovvero le armoniche);
+- $f_n ->$ frequenze multiple della frequenza fondamentale.
+
