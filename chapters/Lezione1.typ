@@ -406,3 +406,190 @@ Questo schema riassume i passaggi fondamentali che avvengono durante la trasmiss
   - Applica la *FFT* per ottenere le frequenze presenti nel segnale;
   - Mappa le frequenze trovate nei bit originari.
 
+== Spettro, Bandwidth e Data Rate
+Tra i concetti fondamentali per comprendere le prestazioni di un sistema di comunicazione vi sono lo *spettro*, la *larghezza di banda* (o _Bandwidth_) e la *velocità di trasmissione dati* (o _Data Rate_):
+- *Spettro* $->$ Rappresenta l'insieme (o il range) di tutte le frequenze elettromagnetiche possibili, suddivise in bande (es. banda AM, banda FM, banda Wi-Fi, ecc.);
+- *Bandwidth* $->$ Indica una misura fisica, espressa in `Hz`, che rappresenta la "larghezza del tubo" o lo spazio/ampiezza dello *spettro* delle frequenze che occupa il segnale;
+- *Data Rate* $->$ Indica la quantità di dati che possono essere trasmessi in un certo intervallo di tempo, espressa in `bps` (bit per secondo). Rappresenta la velocità effettiva con cui le informazioni vengono trasferite attraverso il canale di comunicazione.
+
+#nota[
+  È importante non confondere *Spettro* e *Bandwidth*: lo *spettro* è l'insieme di tutte le frequenze possibili, mentre la *Bandwidth* è una misura specifica della larghezza di banda occupata da un segnale all'interno di quello spettro.
+
+  #esempio[
+    Ho un segnale composto da 3 frequenze: 100 `Hz`, 200 `Hz` e 300 `Hz`. Lo *spettro* di questo segnale comprende tutte e 3 le frequenze, mentre la *Bandwidth* è calcolata come la differenza tra la frequenza massima e minima, ovvero 300 `Hz` - 100 `Hz` = 200 `Hz`.
+  ]
+]
+
+=== Relazione tra Bandwidth e Data Rate
+La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la seguente: per ottenere un *DR* più alto, è necessario disporre di una *BW* maggiore. Questo perché una maggiore larghezza di banda consente di trasmettere più informazioni in un dato intervallo di tempo.
+
+#esempio[
+  Supponiamo di avere un'onda quadrata:
+  
+  #align(center)[
+    #cetz.canvas({
+      import cetz.draw: *
+
+      let A = 1.5
+      let w = 2.0
+
+      line((0, -A - 1.5), (0, A + 1.0), mark: (end: ">", fill: black))
+      line((-0.5, 0), (5 * w + 1, 0))
+      content((5 * w + 1, 0), anchor: "north-east")[Time]
+      content((0, A + 1.0), anchor: "south", align(center)[Amplitude])
+
+      line((-0.1, A), (0.1, A))
+      content((-0.2, A), anchor: "east")[A]
+      line((-0.1, -A), (0.1, -A))
+      content((-0.2, -A), anchor: "east")[$-A$]
+
+      line(
+        (0, A), (w, A), (w, -A),
+        (2*w, -A), (2*w, A), (3*w, A),
+        (3*w, -A), (4*w, -A), (4*w, A),
+        (5*w, A), (5*w, 0),
+        stroke: (paint: rgb("E00000"), thickness: 2pt)
+      )
+
+      content((0.5 * w, A + 0.5))[1]
+      content((1.5 * w, A + 0.5))[0]
+      content((2.5 * w, A + 0.5))[1]
+      content((3.5 * w, A + 0.5))[0]
+      content((4.5 * w, A + 0.5))[1]
+
+      line((0, -A - 0.2), (0, -A - 1.2))
+      line((2*w, -A - 0.2), (2*w, -A - 1.2))
+      line((0, -A - 0.8), (2*w, -A - 0.8), mark: (start: ">", end: ">", fill: black))
+      content((w, -A - 0.8), anchor: "north", padding: 0.2)[period = $T = 1/f$]
+    })
+  ]
+
+  Per ogni periodo, vengono trasmessi 2 bit (1 e 0): questo corrisponde al *Data Rate*. Per inviare questa onda quadra perfetta, sono necessarie infinite frequenze (tutte le armoniche dispari della frequenza fondamentale), il che implica una *Bandwidth* infinita:
+  $ s(t) = A dot 4/pi dot sum_(k=1)^oo sin(2 k f t)/k $
+
+  Come è facile intuire, non si ha mai a disposizione una banda infinita, ma è comunque possibile ridurre lo *spettro* per ottenere una buona approssimazione. 
+
+  #align(center)[
+    #cetz.canvas({
+      import cetz.draw: *
+
+      let x-scale = 3.5
+      let y-scale = 1.8
+      
+      let points = ()
+      let steps = 200
+      for i in range(0, steps + 1) {
+        let t = i / steps * 2.0
+        let angle = 2 * calc.pi * t
+        let val = (4 / calc.pi) * (calc.sin(angle) + (1/3) * calc.sin(3 * angle) + (1/5) * calc.sin(5 * angle))
+        points.push((t * x-scale, val * y-scale))
+      }
+
+      set-style(stroke: (thickness: 0.5pt, paint: gray))
+      for i in (0.5, 1.0, 1.5, 2.0) {
+          line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
+      }
+      for i in (-1, -0.5, 0.5, 1) {
+          line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
+      }
+
+      set-style(stroke: (thickness: 1pt, paint: black))
+      line((0, -1.2 * y-scale), (0, 1.2 * y-scale))
+      line((0, 0), (2.0 * x-scale, 0))
+
+      content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
+      content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
+      content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
+      content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
+      content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
+
+      content((0, -1.2 * y-scale - 0.2), anchor: "north")[0.0]
+      content((0.5 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$0.5T$]
+      content((1.0 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$1.0T$]
+      content((1.5 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$1.5T$]
+      content((2.0 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$2.0T$]
+
+      content((1.0 * x-scale, 1.4 * y-scale), text(size: 1.2em)[$f, 3f, 5f arrow.r B = 4f$])
+
+      line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
+    })
+  ]
+
+  In questo esempio è possibile notare come l'onda quadra venga approssimata utilizzando solo le prime 3 armoniche (frequenze: $f$, $3f$ e $5f$), riducendo così la *Bandwidth* a $4f$. L'onda risultante è comunque abbastanza vicina a quella ideale, permettendo di trasmettere i 2 bit per periodo con una *BW* finita.
+
+  Ciò non vieta di allargare ulteriormente la *Bandwidth* per ottenere un'onda ancora più precisa:
+
+  #align(center)[
+    #cetz.canvas({
+      import cetz.draw: *
+
+      let x-scale = 3.5
+      let y-scale = 1.8
+      
+      let points = ()
+      let steps = 300
+      for i in range(0, steps + 1) {
+        let t = i / steps * 2.0
+        let angle = 2 * calc.pi * t
+        let val = (4 / calc.pi) * (calc.sin(angle) + (1/3) * calc.sin(3 * angle) + (1/5) * calc.sin(5 * angle) + (1/7) * calc.sin(7 * angle))
+        points.push((t * x-scale, val * y-scale))
+      }
+
+      set-style(stroke: (thickness: 0.5pt, paint: gray))
+      for i in (0.5, 1.0, 1.5, 2.0) {
+          line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
+      }
+      for i in (-1, -0.5, 0.5, 1) {
+          line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
+      }
+
+      set-style(stroke: (thickness: 1pt, paint: black))
+      line((0, -1.2 * y-scale), (0, 1.2 * y-scale))
+      line((0, 0), (2.0 * x-scale, 0))
+
+      content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
+      content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
+      content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
+      content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
+      content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
+
+      content((0, -1.2 * y-scale - 0.2), anchor: "north")[0.0]
+      content((0.5 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$0.5T$]
+      content((1.0 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$1.0T$]
+      content((1.5 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$1.5T$]
+      content((2.0 * x-scale, -1.2 * y-scale - 0.2), anchor: "north")[$2.0T$]
+
+      content((1.0 * x-scale, 1.4 * y-scale), text(size: 1.2em)[$f, 3f, 5f, 7f arrow.r B = 6f$])
+
+      line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
+    })
+  ]
+
+  In questo caso, aggiungendo la quarta armonica ($7f$), la *Bandwidth* sale a $6f$ e l'onda quadra risulta ancora più precisa, migliorando la qualità della trasmissione dei dati.
+
+  #align(center)[
+    #set text(size: 9pt)
+    #table(
+      columns: (auto, 1fr, 1fr),
+      inset: 6pt,
+      align: (col, row) => (if col == 0 { left } else { center } + horizon),
+      stroke: 0.5pt + luma(200),
+      fill: (_, row) => if row == 0 { luma(240) } else { white },
+      
+      [*Frequenza fondamentale ($f$)*], [*1 MHz*], [*2 MHz*],
+      
+      [Spettro], [1 MHz -- 5 MHz], [2 MHz -- 10 MHz],
+      
+      [Periodo ($T$)], [1 $mu$s], [0.5 $mu$s],
+      
+      [Durata di 1 bit], [0.5 $mu$s], [0.25 $mu$s],
+      
+      [Bandwidth ($B$)], [4 MHz ($5f - f$)], [8 MHz ($2 dot (5f - f)$)],
+      
+      [Data rate (bps)], [2 Mbps (2 bit ogni $mu$s)], [4 Mbps (4 bit ogni $mu$s)]
+    )
+  ]
+
+  È possibile evincere che, raddoppiando della *Bandwidth*, anche il *Data Rate* fa lo stesso.
+]
+
