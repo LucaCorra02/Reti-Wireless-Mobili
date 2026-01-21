@@ -32,7 +32,7 @@
 // YOUR CONTENT STARTS HERE
 // ============================================================================
 
-#part("Introduction")
+#part("Introduzione")
 #include "chapters/Lezione1.typ"
 
 #include "chapters/Lezione2.typ"
