@@ -299,9 +299,9 @@ Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale
     #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
   ]
 
-  In verde sono rappresentati i campioni presi con frequenza di campionamento alta (16 campioni in totale), mentre in blu quelli con frequenza bassa (3 campioni in totale). Come si può notare, con un numero maggiore di campioni è possibile ricostruire perfettamente il segnale originale, mentre con pochi campioni si perde completamente l'andamento del segnale.
+  In verde sono rappresentati i campioni presi con frequenza di campionamento alta (16 campioni in totale, compresi quelli a 0.0 e 1.4 secondi in blu), mentre in blu quelli con frequenza bassa (3 campioni in totale). Come si può notare, con un numero maggiore di campioni è possibile ricostruire perfettamente il segnale originale, mentre con pochi campioni si perde completamente l'andamento del segnale.
 
-  Dal *Teorema di Nyquist-Shannon*, essendo la frequenza massima del segnale pari a 1 `Hz`, la frequenza di campionamento minima dev'essere di almeno 2 `Hz` (ovvero 2 campioni al secondo). Nel primo caso, con 16 campioni in 1.5 secondi, la frequenza di campionamento è di circa 10.67 `Hz` (molto maggiore del minimo richiesto), mentre nel secondo caso, con 3 campioni in 1.5 secondi, la frequenza di campionamento è di 2 `Hz` (esattamente il minimo richiesto).
+  Dal *Teorema di Nyquist-Shannon*, essendo la frequenza massima del segnale pari a 1 `Hz`, sappiamo che la frequenza di campionamento minima dev'essere di almeno 2 `Hz` (ovvero 2 campioni al secondo). Nel caso dei puntini verdi, con 16 campioni in 1.5 secondi, la frequenza di campionamento è di circa 10.67 `Hz` (molto maggiore del minimo richiesto), mentre nel caso dei puntini blu, con 3 campioni in 1.5 secondi, la frequenza di campionamento è di 2 `Hz` (esattamente il minimo richiesto, ma come si può notare non ideale per una ricostruzione del segnale più coerente).
 ]
 
 === Passaggi di dominio
