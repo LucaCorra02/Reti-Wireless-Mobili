@@ -213,9 +213,9 @@ Dove:
 La variazione dei primi 3 parametri di cui sopra (ampizza, frequenza e fase) permette di rappresentare diversi tipi di segnali.
 
 === Trasformata di Fourier e utilità
-Un'onda elettromagnetica può anche essere osservata considerando un dominio diverso dal tempo: quello delle frequenze. In questo modo, ogni segnale può essere scomposto da una serie di segnali periodici (sinusoidi come seno e coseno) con ampiezza, frequenza e fase diverse. Questa scomposizione è possibile grazie alla Trasformata di Fourier:
+Un'onda elettromagnetica può anche essere osservata considerando un dominio diverso dal tempo: quello delle frequenze. In questo modo, ogni segnale può essere scomposto da una serie di segnali periodici (sinusoidi e/o cosinusoidi) con ampiezza, frequenza e fase diverse. Questa scomposizione è possibile grazie alla Trasformata di Fourier:
 
-$ s(t) = 1/2 c + sum_(n=1)^oo a_n sin(2 pi n f t) + sum_(n=1)^oo b_n cos(2 pi f_n t) $
+$ s(t) = 1/2 c + sum_(n=1)^oo a_n sin(2 pi n f t) + sum_(n=1)^oo b_n cos(2 pi n f t) $
 
 Dove:
 - $c ->$ è la costante che rappresenta il valore medio del segnale;
@@ -223,7 +223,7 @@ Dove:
 - $f_n ->$ frequenze multiple della frequenza fondamentale.
 
 #nota[
-  L'idea alla base della _Trasformata di Fourier_ è che ogni segnale, anche complesso, può essere scomposto nella somma di segnali sinusoidali più semplici, passando da un dominio all'altro.
+  L'idea alla base della _Trasformata di Fourier_ è che ogni segnale, anche complesso, può essere scomposto nella somma di onde sinusoidali e cosinusoidali più semplici, passando da un dominio all'altro.
 ]
 
 Un ricevitore deve dunque "tradurre" i segnali che gli arrivano per capire com'è composta l'onda, a partire dall'osservazione di quest'ultima nel tempo. In particolare bisogna determinare le *ampiezze* di ogni componente e la *frequenza* con la quale è opportuno campionare il segnale.
@@ -233,7 +233,7 @@ Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
 - *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze;
 
 #esempio[
-  Un'antenna che riceve un segnale, dapprima converte da digitale ad analogico e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
+  Un'antenna che riceve un segnale, dapprima converte da analogico a digitale e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
 ]
 
 - *Inverse Fast Fourier Transform (IFFT)*: Permette di passare dal dominio delle frequenze a quello del tempo.
