@@ -228,12 +228,55 @@ Dove:
 
 Un ricevitore deve dunque "tradurre" i segnali che gli arrivano per capire com'è composta l'onda, a partire dall'osservazione di quest'ultima nel tempo. In particolare bisogna determinare le *ampiezze* di ogni componente e la *frequenza* con la quale è opportuno campionare il segnale.
 
+=== Campionamento e Teorema di Nyquist-Shannon
+Nel momento in cui un segnale *analogico* arriva ad un ricevitore, quest'ultimo deve necessariamente convertirlo in *digitale*. Per fare ciò, il segnale viene *campionato* ad intervalli regolari di tempo, misurandone l'ampiezza in quei precisi istanti. In questo modo, il segnale continuo viene trasformato in una serie di numeri discreti che rappresentano l'andamento del segnale nel tempo.
+
+Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale è necessario campionare un segnale (per poterlo ricostruire senza perdita di informazione): dev'essere almeno il *doppio* della massima frequenza presente nel segnale in ingresso.
+
 === Passaggi di dominio
 Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
-- *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze;
+- *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze. A partire dalla forma d'onda nel tempo, vengono restituite le componenti $a_n$ e $b_n$ (ampiezze delle sinusoidi e cosinoidi che compongono il segnale);
 
 #esempio[
-  Un'antenna che riceve un segnale, dapprima converte da analogico a digitale e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
+  Un'antenna che riceve un segnale, dapprima converte da analogico a digitale (grazie al _campionamento_) e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
+  
+  Informalmente, possiamo affermare che il ricevitore si chieda quali sinusoidi e cosinusoidi, sommate assieme, potrebbero passare esattamente per i punti campionati. Viene quindi restituita l'ampiezza di ogni frequenza trovata ("Ho trovato tanto segnale a 50 `Hz`, poco a 100 `Hz` e niente a 200 `Hz`").
+
+  Al termine della procedura, il ricevitore sa esattamente quali frequenze sono state trasmesse e con quale ampiezza, potendo così ricostruire i bit originari: se vede un picco sulla frequenza che il trasmettitore usa per il bit `1`, allora sa che quel bit è stato trasmesso come `1`, altrimenti come `0`.
 ]
 
-- *Inverse Fast Fourier Transform (IFFT)*: Permette di passare dal dominio delle frequenze a quello del tempo.
+#nota[
+  Come detto a lezione, il rumore si presenta spesso come un "tappeto basso" su tutte le frequenze, mentre il segnale utile è tipicamente un picco alto e stretto. Nel dominio delle frequenze, il segnale utile dovrebbe quindi essere facilmente isolabile (al contrario, nel dominio del tempo, il rumore deforma l'onda rendendola praticamente illeggibile).
+]
+
+- *Inverse Fast Fourier Transform (IFFT)*: Permette di passare dal dominio delle frequenze a quello del tempo. Partendo dalle componenti $a_n$ e $b_n$, viene restituita la forma d'onda nel tempo.
+
+#nota[
+  Sostanzialmente è una trasformazione che ha lo scopo opposto di quella trattata poc'anzi: nel momento in cui c'è bisogno di trasmettere e non di ricevere, i dati nell'aria devono viaggiare sotto forma *analogica*, per cui diventa essenziale passare dal dominio delle frequenze a quello del tempo. Senza *IFFT*, il trasmettitore non sarebbe dunque in grado di convertire i bit in un'onda elettromagnetica trasmissibile.
+]
+
+Queste trasformazioni sono veri e propri algoritmi implementati direttamente negli hardware dei dispositivi di trasmissione e ricezione (es. antenne Wi-Fi), dovendo essere eseguiti in tempi brevissimi per permettere comunicazioni fluide e senza ritardi percepibili dagli utenti.
+
+Per facilitare la "traduzione" di una forma d'onda, a partire dalla sua trasformata, è possibile utilizzare delle *lookup table*: delle tabelle precompilate che associano ad ogni possibile combinazione di ampiezza e frequenza un particolare bit o sequenza di bit. In questo modo, il ricevitore non deve calcolare ogni volta la trasformata inversa, ma può semplicemente cercare nella tabella il bit corrispondente alla combinazione trovata.
+
+#esempio[
+  #align(center)[
+    #table(
+      columns: (auto, auto),
+      inset: 10pt,
+      align: (col, row) => (if col == 1 { center } else { left } + horizon),
+      stroke: 0.5pt + luma(200),
+      fill: (_, row) => if row == 0 { luma(240) } else { white },
+      table.header(
+        [*Impronta (Valore della Trasformata/FFT)*], [*Significato (Bit)*],
+      ),
+      [Picco di energia a *100 Hz*], [*00*],
+      [Picco di energia a *200 Hz*], [*01*],
+      [Picco di energia a *300 Hz*], [*10*],
+      [Picco di energia a *400 Hz*], [*11*],
+    )
+  ]
+
+  Questa tabella contiene un esempio semplificato di ciò che realmente succede e che ricerca un ricevitore: ad ogni picco di energia rilevato in una certa frequenza, viene associata una particolare sequenza di bit e scorre righe e colonne per identificare il bit corrispondente.
+]
+
