@@ -95,12 +95,12 @@ Possiamo dividere le tipologie di segnali in 2 categorie:
   })
 ]
 
-Dall'esempio riportato in figura, è possibile notare l'ampiezza del segnale (asse `Y`) e come varia nel tempo (asse `X`).
+Dal grafico, è possibile notare l'ampiezza del segnale (asse `Y`) e come varia nel tempo (asse `X`).
 Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo continuo nel tempo: esiste in ogni singolo istante e non ci sono "buchi" se la misuriamo tra 1 e 2 secondi.
 
-- *Digitale*: Mantenimento costante, all'interno di un range temporale, del livello di segnale. Il cambio di livello avviene in modo istantaneo (discontinuo).
-
 #pagebreak()
+
+- *Digitale*: Mantenimento costante, all'interno di un range temporale, del livello di segnale. Il cambio di livello avviene in modo istantaneo (discontinuo).
 
 #align(center)[
   #cetz.canvas(length: 0.7cm, {
@@ -138,19 +138,24 @@ Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo co
 Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche modo semplificare il tutto.
 ]
 
-Ciò che fanno *trasmettitore* e *ricevitore* è passare da una forma d'onda all'altra.
+Ciò che fanno *trasmettitore* e *ricevitore* è passare da una forma d'onda all'altra. Questa conversione è indispensabile per 2 motivi pratici fondamentali:
+- I nostri dispositivi (PC, smartphone) elaborano e memorizzano le informazioni in *digitale* (bit);
+- Il mezzo fisico di trasporto (l'aria per il wireless, o i cavi) permette la propagazione solo di segnali *analogici* (onde elettromagnetiche continue).
+Alla luce di ciò, è facile intuire che, per comunicare correttamente, questa traduzione continua dev'essere svolta continuamente e con un margine d'errore alquanto ridotto.
 
 == Rappresentazione dei segnali
-Ogni segnale è rappresentabile come una funzione del tempo `s(t)`, dove `t` è il tempo e `s` l'ampiezza del segnale in quel preciso istante:
+Ogni segnale è rappresentabile come una funzione del tempo $s(t)$, dove $t$ è il tempo e $s$ l'ampiezza del segnale in quel preciso istante:
 
 $ s(t) = A dot sin(2 pi f t + Phi) $
 
 Dove:
-- $A ->$ è l'ampiezza del segnale (massimo valore raggiungibile sull'asse `X`, misurato in Volt);
-- $f ->$ è la frequenza del segnale (numero di cicli al secondo, misurata in Hz);
+- $A ->$ è l'ampiezza del segnale (massimo valore raggiungibile sull'asse `X`, misurato in `Volt`);
+- $f ->$ è la frequenza del segnale (numero di cicli al secondo, misurata in `Hz`);
 - $Phi ->$ è la fase del segnale (spostamento orizzontale della sinusoide);
 - $T ->$ è il periodo del segnale (il tempo impiegato per un ciclo, corrispondente a $1/f$);
-- $lambda ->$ Lunghezza d'onda (distanza tra due picchi consecutivi della sinusoide: $lambda = c/f$ oppure $lambda = c T$, dove $c$ è la velocità della luce $c = 3 \cdot 10^8 m\/s$).
+- $lambda ->$ Lunghezza d'onda (distanza tra due picchi consecutivi della sinusoide: $lambda = c/f$ oppure $lambda = c T$, dove $c$ è la velocità della luce $c = 3 dot 10^8 m\/s$).
+
+#pagebreak()
 
 #esempio[
   Grafico $sin(t)$:
@@ -201,7 +206,7 @@ Dove:
     line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
   })
   #v(0.5em)
-  #text(weight: "bold")[(a) $A=1, f=1, phi=0$]
+  #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
 ]
 ]
 
