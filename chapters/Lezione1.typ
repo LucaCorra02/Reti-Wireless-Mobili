@@ -66,7 +66,7 @@ Possiamo dividere le tipologie di segnali in 2 categorie:
 - *Analogico*: Variazione continua e senza interruzioni/discontinuità nel tempo.
 
 #align(center)[
-  #cetz.canvas({
+  #cetz.canvas(length: 0.7cm, {
     import cetz.draw: *
 
     let x-max = 14
@@ -100,8 +100,10 @@ Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo co
 
 - *Digitale*: Mantenimento costante, all'interno di un range temporale, del livello di segnale. Il cambio di livello avviene in modo istantaneo (discontinuo).
 
+#pagebreak()
+
 #align(center)[
-  #cetz.canvas({
+  #cetz.canvas(length: 0.7cm, {
     import cetz.draw: *
 
     let x-max = 15
@@ -154,7 +156,7 @@ Dove:
   Grafico $sin(t)$:
 
   #align(center)[
-  #cetz.canvas({
+  #cetz.canvas(length: 0.8cm, {
     import cetz.draw: *
 
     let x-scale = 6
