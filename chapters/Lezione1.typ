@@ -151,6 +151,8 @@ Dove:
 - $lambda ->$ Lunghezza d'onda (distanza tra due picchi consecutivi della sinusoide: $lambda = c/f$ oppure $lambda = c T$, dove $c$ è la velocità della luce $c = 3 \cdot 10^8 m\/s$).
 
 #esempio[
+  Grafico $sin(t)$:
+
   #align(center)[
   #cetz.canvas({
     import cetz.draw: *
@@ -213,3 +215,18 @@ Dove:
 - $a_n, b_n ->$ sono i coefficienti che rappresentano l'ampiezza delle componenti (ovvero le armoniche);
 - $f_n ->$ frequenze multiple della frequenza fondamentale.
 
+#nota[
+  L'idea alla base della _Trasformata di Fourier_ è che ogni segnale, anche complesso, può essere scomposto nella somma di segnali sinusoidali più semplici, passando da un dominio all'altro.
+]
+
+Un ricevitore deve dunque "tradurre" i segnali che gli arrivano per capire com'è composta l'onda, a partire dall'osservazione di quest'ultima nel tempo. In particolare bisogna determinare le *ampiezze* di ogni componente e la *frequenza* con la quale è opportuno campionare il segnale.
+
+=== Passaggi di dominio
+Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
+- *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze;
+
+#esempio[
+  Un'antenna che riceve un segnale, dapprima converte da digitale ad analogico e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
+]
+
+- *Inverse Fast Fourier Transform (IFFT)*: Permette di passare dal dominio delle frequenze a quello del tempo.
