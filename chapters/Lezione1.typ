@@ -351,3 +351,58 @@ Per facilitare la "traduzione" di una forma d'onda, a partire dalla sua trasform
   Questa tabella contiene un esempio semplificato di ciò che realmente succede e che ricerca un ricevitore: ad ogni picco di energia rilevato in una certa frequenza, viene associata una particolare sequenza di bit e scorre righe e colonne per identificare il bit corrispondente.
 ]
 
+=== Schema riassuntivo
+#align(center)[
+  #cetz.canvas(length: 0.9cm, {
+    import cetz.draw: *
+
+    let arrow-style = (mark: (end: ">", fill: black), stroke: 0.5pt)
+    let label-style = (size: 0.7em)
+
+    content((0, 0), anchor: "west", name: "tx-start")[*Trasm*: Bit]
+    content((3.5, 0), anchor: "west", name: "tx-freq")[Frequenze]
+    content((6.5, 0), anchor: "west", name: "tx-time")[Tempo (Digitale)]
+    content((10.5, 0), anchor: "west", name: "tx-ana")[Analogico]
+    content((13.5, 0), anchor: "west", name: "tx-aria")[*\[ARIA\]*]
+
+    line("tx-start.east", "tx-freq.west", ..arrow-style, name: "l1")
+    content("l1.mid", anchor: "south", padding: 0.1, text(..label-style)[Mappatura])
+
+    line("tx-freq.east", "tx-time.west", ..arrow-style, name: "l2")
+    content("l2.mid", anchor: "south", padding: 0.1, text(..label-style, weight: "bold")[IFFT])
+
+    line("tx-time.east", "tx-ana.west", ..arrow-style)
+    line("tx-ana.east", "tx-aria.west", ..arrow-style)
+
+    line((0.2, -0.4), (0.2, -1.6), ..arrow-style)
+
+    content((0, -2), anchor: "west", name: "rx-start")[*Ric*: *\[ARIA\]*]
+    content((3.5, -2), anchor: "west", name: "rx-ana")[Analogico]
+    content((9.0, -2), anchor: "west", name: "rx-time")[Tempo (Digitale)]
+    content((13.0, -2), anchor: "west", name: "rx-freq")[Frequenze]
+    content((15.5, -2), anchor: "west", name: "rx-end")[Bit]
+
+    line("rx-start.east", "rx-ana.west", ..arrow-style)
+
+    line("rx-ana.east", "rx-time.west", ..arrow-style, name: "l3")
+    content("l3.mid", anchor: "south", padding: 0.1, text(..label-style, weight: "bold")[Campionamento (N.-S.)])
+
+    line("rx-time.east", "rx-freq.west", ..arrow-style, name: "l4")
+    content("l4.mid", anchor: "south", padding: 0.1, text(..label-style, weight: "bold")[FFT])
+
+    line("rx-freq.east", "rx-end.west", ..arrow-style)
+  })
+]
+
+Questo schema riassume i passaggi fondamentali che avvengono durante la trasmissione e la ricezione di un segnale:
+- *TRASMETTITORE*:
+  - Mappa i bit da inviare in frequenze specifiche;
+  - Utilizza l'*IFFT* per convertire le frequenze in un segnale digitale nel dominio del tempo;
+  - Converte il segnale *digitale* in *analogico* per poterlo trasmettere attraverso l'aria.
+
+- *RICEVITORE*:
+  - Cattura il segnale *analogico* dall'aria;
+  - Campiona il segnale *analogico*, secondo il *Teorema di Nyquist-Shannon*, per ottenerne uno *digitale* nel dominio del *tempo*;
+  - Applica la *FFT* per ottenere le frequenze presenti nel segnale;
+  - Mappa le frequenze trovate nei bit originari.
+
