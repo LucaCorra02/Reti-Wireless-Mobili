@@ -233,6 +233,77 @@ Nel momento in cui un segnale *analogico* arriva ad un ricevitore, quest'ultimo 
 
 Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale è necessario campionare un segnale (per poterlo ricostruire senza perdita di informazione): dev'essere almeno il *doppio* della massima frequenza presente nel segnale in ingresso.
 
+#esempio[
+  #align(center)[
+    #cetz.canvas(length: 0.8cm, {
+      import cetz.draw: *
+
+      let x-scale = 6
+      let y-scale = 2.5
+      
+      let points = ()
+      let steps = 100
+      for i in range(0, steps + 1) {
+        let t = i / steps * 1.5
+        let val = calc.sin(2 * calc.pi * t)
+        points.push((t * x-scale, val * y-scale))
+      }
+
+      set-style(stroke: (thickness: 0.5pt, paint: gray))
+      for i in (0, 0.5, 1.0, 1.5) {
+          line((i * x-scale, -1 * y-scale), (i * x-scale, 1 * y-scale))
+      }
+      for i in (-1, -0.5, 0, 0.5, 1) {
+          line((0, i * y-scale), (1.5 * x-scale, i * y-scale))
+      }
+
+      set-style(stroke: (thickness: 1.5pt, paint: black))
+      line((0, -1 * y-scale), (0, 1 * y-scale))
+      line((0, -1 * y-scale), (1.5 * x-scale, -1 * y-scale))
+      line((0, 0), (1.5 * x-scale, 0))
+
+      content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
+      content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
+      content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
+      content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
+      content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
+
+      content((0, -1 * y-scale - 0.3), anchor: "north")[0.0]
+      content((0.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[0.5]
+      content((1.0 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.0]
+      content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.5]
+      content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))[$s$]
+
+      content((0, 1 * y-scale + 0.3), anchor: "south")[$s(t)$]
+      content((1.5 * x-scale + 0.3, -1 * y-scale), anchor: "west")[$t$]
+
+      line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
+
+      for i in range(0, 16) {
+        let t = i * 0.1
+        if t <= 1.5 {
+          let val = calc.sin(2 * calc.pi * t)
+          circle((t * x-scale, val * y-scale), radius: 2pt, fill: green, stroke: none)
+        }
+      }
+
+      for i in range(0, 3) {
+        let t = i * 0.7
+        if t <= 1.5 {
+          let val = calc.sin(2 * calc.pi * t)
+          circle((t * x-scale, val * y-scale), radius: 3pt, fill: blue, stroke: none)
+        }
+      }
+    })
+    #v(0.5em)
+    #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
+  ]
+
+  In verde sono rappresentati i campioni presi con frequenza di campionamento alta (16 campioni in totale), mentre in blu quelli con frequenza bassa (3 campioni in totale). Come si può notare, con un numero maggiore di campioni è possibile ricostruire perfettamente il segnale originale, mentre con pochi campioni si perde completamente l'andamento del segnale.
+
+  Dal *Teorema di Nyquist-Shannon*, essendo la frequenza massima del segnale pari a 1 `Hz`, la frequenza di campionamento minima dev'essere di almeno 2 `Hz` (ovvero 2 campioni al secondo). Nel primo caso, con 16 campioni in 1.5 secondi, la frequenza di campionamento è di circa 10.67 `Hz` (molto maggiore del minimo richiesto), mentre nel secondo caso, con 3 campioni in 1.5 secondi, la frequenza di campionamento è di 2 `Hz` (esattamente il minimo richiesto).
+]
+
 === Passaggi di dominio
 Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
 - *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze. A partire dalla forma d'onda nel tempo, vengono restituite le componenti $a_n$ e $b_n$ (ampiezze delle sinusoidi e cosinoidi che compongono il segnale);
