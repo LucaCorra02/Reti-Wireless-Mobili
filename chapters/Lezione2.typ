@@ -399,23 +399,40 @@ Se il segnale è pulito, possiamo andare a "riempire" un simbolo con più bit. S
   In questo caso sarebbe stato meglio andare ad utilizzare la $2$-ASK ($0%$ o $100%$), anche se il segnale arriva sporco al $60%$, il ricevitore riesce a risalire al messaggio originale. 
 ]
 
-=== Trasmissione radio
+== Trasmissione radio
 
-Propagazione delle onde radio:
-- Se siamo sotto i $2"MHZ"$ non è necessario che trasmettitore e ricevitore si vedano (terra sferica). 
+Ci sono diversi tipi di onde radio, in base alla frequenza utilizzata: 
 
-- Se siamo dai $2-30 "MHZ"$ il segnale rimbalza sulla iomosfera (non si possono vedere).
+- *Ground Wave propagation*: se siamo sotto i $2"MHz"$ non è necessario che trasmettitore e ricevitore si vedano (in linea d'aria).
 
-- Sopra i $30"Mhz"$ (comunicazione delle telecomunicazioni) la trasmissione avvien line of site (le due parti devono vedersi in linea retta).
+- *Sky wave propagation*: se siamo nel range $2-30 "MHz"$ il segnale rimbalza sulla iomosfera. Trasmettitore e ricevitore possono non essere in linea d'aria.
 
-L'antenna a destra è direzionale, un solo lobo in una direzione. L'idea è di concentrare l'energia in una certa direzione (line of site) er la trasmissione e per la ricezione
+- *Line-Of-sight* (LOS) propagation: sopra i $30"MHz"$ (frequenza delle telecomunicazioni) il trasmettitore e il ricevitore devono vedersi, devono trovarsi sulla stessa retta in linea d'aria.
 
-Dobbiamo tenere in considerazione i seguenti problemi con il segnale radio: 
-- *Path lost*: prblema che c'è su cavo ma limitato (non possiamo deviare troppo dal cavo).
-Modello free-space lost. Anche se fossimo in spazio aperto (no interferenze) c'è una perdità del segnale anche solo per distanza. 
-- *Rumore*: distorce il segnale, il canale wireless non ha isolamento (a differenza del cavo)
-- *Multipath*: la strada più breve da sorgente e destinazione è line of site. Tuttavia la propagazione spinge l'energia verso altre parti (rifrazione). Dalla sorgente le onde escono con un diverso angolo. Oltre ai segnali provenienti dalla via più breve ci sono altri segmenti che raggiungono il ricevitore (percorrono spazi più lunghi ma alla stessa velocità), causando così un iterferenza. 
-- Effetto dopler: shift di frequenza del segnale in base al movimento della sorgente o della destinazione o di entrambi (più la velocità è alta più questo shift è alto).
+Anche le antenne si dividono in due tipi: 
+- *Omnidirezionale*: il segnale viene propagato con la stessa potenza in tutte le direzioni.
+
+- *Direzionale*: si vuole propagare il segale in una certa direzione, l'energia viene concentrata in un unico punto (line of site) sia per la trasmissione che per la ricezione.
+
+  #nota()[
+    L'antenna direzionale non è perfetta. Il segnale potrebbe essere propagato (con una potenza minore) anche in altre  direzioni rispetto alla _los_.
+  ]
+
+=== Trasmissione LOS
+
+Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr("problemi")$*: 
+
+- *Path lost*: attenuazione del segnale in base alla distanza e all'ambiente in cui il segnale si propaga (problema presente anche su cavo ma in maniera limitata).
+
+- *Rumore*: diturbo che distorce il segnale, il canale wireless non ha isolamento (a differenza del cavo).
+
+- *Multipath*: la strada più breve dalla  sorgente alla destinazione è il line of site. Tuttavia, la propagazione spinge l'energia verso altre parti (*rifrazione*). Dalla sorgente le onde escono con un diverso angolo.\ 
+  Oltre ai segnali provenienti dalla via più breve, il ricevitore viene raggiunto da altri segmenti (percorrono spazi più lunghi con alla stessa velocità), causando così un *interferenza*. 
+
+- *Effetto dopler*: shift di frequenza del segnale in base al movimento della sorgente, della destinazione o presenza di ostacoli. 
+  #nota()[
+    Lo shift aumenta in maniera proporzionale alla velocità di spostamento della sorgenete o destinazione.
+  ]
 
 === Path Lost
 
