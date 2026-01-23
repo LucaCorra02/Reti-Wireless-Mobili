@@ -206,18 +206,198 @@ Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un second
   Queste due misure corrispondono quando il livello fisico è in grado di produrre solamente $2$ segnali, _alto_ e _basso_. 
 ]
 
-Se il segnale è pulito, possiamo andare a riempire il simbolo con più bit. Se c'è rumore, dobbiamo svuotarlo per essere sicuri che arrivi a destinazione. 
+Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un onda* per identificare i diversi simboli (cambia l'altezza dell'onda). Questa tecnica prende il nome di *Amplitude shift key* (coppia chiave, parametri): 
+- *chiave*: è la sequenza di bit che vogliamo rappresentare 
+- *parametri*: è l'onda elettromagnetica che dobbiamo emettere per un certo intervallo di tempo
 
+#figure(
+  {
+    set text(size: 9pt)
+    
+    grid(
+      columns: (1fr, 1.5fr),
+      column-gutter: 20pt,
+      [
+        // Tabella simboli e voltaggi
+        #table(
+          columns: 2,
+          stroke: 0.5pt + black,
+          fill: (col, row) => if row == 0 { luma(220) } else if col == 1 { rgb("#e0f2fe") },
+          align: center,
+          [*Bit*], [*Simbolo*],
+          [00], [-3 V],
+          [01], [-1 V],
+          [10], [1 V],
+          [11], [3 V],
+        )
+        
+        #v(-30pt)
+        
+        // Segnale digitale
+        #box(width: 100%, height: 100pt, {
+          // Linea base
+          place(dx: 0pt, dy: 50pt, line(length: 180pt, stroke: 0.5pt))
+          
+          // Linee di riferimento per i livelli
+          place(dx: 0pt, dy: 20pt, line(length: 180pt, stroke: (paint: gray.lighten(60%), dash: "dotted", thickness: 0.3pt)))
+          place(dx: 0pt, dy: 35pt, line(length: 180pt, stroke: (paint: gray.lighten(60%), dash: "dotted", thickness: 0.3pt)))
+          place(dx: 0pt, dy: 65pt, line(length: 180pt, stroke: (paint: gray.lighten(60%), dash: "dotted", thickness: 0.3pt)))
+          
+          // Simbolo 1: 00 -> -3V (alto)
+          place(dx: 0pt, dy: 50pt, line(end: (0pt, -30pt), stroke: 2pt + red))
+          place(dx: 0pt, dy: 20pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Simbolo 2: 01 -> -1V (alto medio)
+          place(dx: 30pt, dy: 20pt, line(end: (0pt, 45pt), stroke: 2pt + red))
+          place(dx: 30pt, dy: 65pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Simbolo 3: 10 -> 1V (basso)
+          place(dx: 60pt, dy: 65pt, line(end: (0pt, -30pt), stroke: 2pt + red))
+          place(dx: 60pt, dy: 35pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Simbolo 4: 11 -> 3V (molto basso)
+          place(dx: 90pt, dy: 35pt, line(end: (0pt, 45pt), stroke: 2pt + red))
+          place(dx: 90pt, dy: 80pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Simbolo 5: 01 -> -1V (alto medio)
+          place(dx: 120pt, dy: 80pt, line(end: (0pt, -15pt), stroke: 2pt + red))
+          place(dx: 120pt, dy: 65pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Simbolo 6: 00 -> -3V (alto)
+          place(dx: 150pt, dy: 65pt, line(end: (0pt, -45pt), stroke: 2pt + red))
+          place(dx: 150pt, dy: 20pt, line(length: 30pt, stroke: 2pt + red))
+          
+          // Etichette bit
+          place(dx: 8pt, dy: 90pt, text(size: 7pt)[00])
+          place(dx: 38pt, dy: 90pt, text(size: 7pt)[01])
+          place(dx: 68pt, dy: 90pt, text(size: 7pt)[10])
+          place(dx: 98pt, dy: 90pt, text(size: 7pt)[11])
+          place(dx: 128pt, dy: 90pt, text(size: 7pt)[01])
+          place(dx: 158pt, dy: 90pt, text(size: 7pt)[00])
+          
+          // Etichette voltaggio
+          place(dx: -15pt, dy: 17pt, text(size: 6pt)[-3V])
+          place(dx: -15pt, dy: 32pt, text(size: 6pt)[1V])
+          place(dx: -15pt, dy: 47pt, text(size: 6pt)[0V])
+          place(dx: -15pt, dy: 62pt, text(size: 6pt)[-1V])
+          place(dx: -15pt, dy: 77pt, text(size: 6pt)[3V])
+        })
+      ],
+      [
+        // Grafico della forma d'onda modulata
+        #align(center)[*Modulazione M-ASK*]
+        
+        #box(width: 100%, height: 120pt, {
+          // Asse Y (Voltaggio)
+          place(dx: 15pt, dy: 10pt, line(length: 100pt, angle: 90deg, stroke: 0.5pt))
+          place(dx: 10pt, dy: 8pt, text(size: 7pt)[V])
+          
+          // Asse X (Tempo)
+          place(dx: 15pt, dy: 110pt, line(length: 250pt, stroke: 0.5pt))
+          
+          // Linea centrale (0V)
+          place(dx: 15pt, dy: 60pt, line(length: 250pt, stroke: (paint: gray, dash: "dotted", thickness: 0.3pt)))
+          
+          // Simbolo 1: 00 -> -3V (ampiezza alta)
+          for i in range(0, 8) {
+            let x1 = 15pt + i * 5pt
+            let x2 = 15pt + (i + 1) * 5pt
+            let y1 = (60 + 35 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 + 35 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Divisore e etichetta simbolo 1
+          place(dx: 55pt, dy: 20pt, line(length: 90pt, angle: 90deg, stroke: (paint: red, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 28pt, dy: 115pt, text(size: 6pt)[00])
+          
+          // Simbolo 2: 01 -> -1V (ampiezza media-bassa)
+          for i in range(0, 8) {
+            let x1 = 55pt + i * 5pt
+            let x2 = 55pt + (i + 1) * 5pt
+            let y1 = (60 + 15 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 + 15 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Divisore e etichetta simbolo 2
+          place(dx: 95pt, dy: 20pt, line(length: 90pt, angle: 90deg, stroke: (paint: red, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 68pt, dy: 115pt, text(size: 6pt)[01])
+          
+          // Simbolo 3: 10 -> 1V (ampiezza media-alta)
+          for i in range(0, 8) {
+            let x1 = 95pt + i * 5pt
+            let x2 = 95pt + (i + 1) * 5pt
+            let y1 = (60 - 15 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 - 15 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Divisore e etichetta simbolo 3
+          place(dx: 135pt, dy: 20pt, line(length: 90pt, angle: 90deg, stroke: (paint: red, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 108pt, dy: 115pt, text(size: 6pt)[10])
+          
+          // Simbolo 4: 11 -> 3V (ampiezza massima)
+          for i in range(0, 8) {
+            let x1 = 135pt + i * 5pt
+            let x2 = 135pt + (i + 1) * 5pt
+            let y1 = (60 - 35 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 - 35 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Divisore e etichetta simbolo 4
+          place(dx: 175pt, dy: 20pt, line(length: 90pt, angle: 90deg, stroke: (paint: red, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 148pt, dy: 115pt, text(size: 6pt)[11])
+          
+          // Simbolo 5: 01 -> -1V (ampiezza media-bassa)
+          for i in range(0, 8) {
+            let x1 = 175pt + i * 5pt
+            let x2 = 175pt + (i + 1) * 5pt
+            let y1 = (60 + 15 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 + 15 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Divisore e etichetta simbolo 5
+          place(dx: 215pt, dy: 20pt, line(length: 90pt, angle: 90deg, stroke: (paint: red, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 188pt, dy: 115pt, text(size: 6pt)[01])
+          
+          // Simbolo 6: 00 -> -3V (ampiezza alta)
+          for i in range(0, 8) {
+            let x1 = 215pt + i * 5pt
+            let x2 = 215pt + (i + 1) * 5pt
+            let y1 = (60 + 35 * calc.sin(i * 45deg)) * 1pt
+            let y2 = (60 + 35 * calc.sin((i + 1) * 45deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + blue))
+          }
+          
+          // Etichetta simbolo 6
+          place(dx: 228pt, dy: 115pt, text(size: 6pt)[00])
+        })
+      ]
+    )
+  },
+  caption: [Modulazione M-ASK: sequenza 00 01 10 11 01 00]
+)
 
+#informalmente()[
+  Quando il canale è disturbato, il trasmettitore smette di usare modulazioni complesse (tanti bit per simbolo) e passa a modulazioni semplici (meno bit per simbolo) per evitare errori, riducendo però la velocità di trasmissione.
+]
 
-Quando il cellulare non prendo ad esempio dovremo avere la possibilità di codificare meno bit sui simboli, in mdoo da trasferire meno dati. 
+Se il segnale è pulito, possiamo andare a "riempire" un simbolo con più bit. Se c'è rumore, dobbiamo svuotarlo per essere sicuri che arrivi a destinazione. Seguendo questa idea una data *bandwidth* può supportare *diversi data rate* a seconda dell'abilità del ricevente di distinguere $0$ e $1$ in presenza di rumore. 
 
-Una data bandwitch può supportare diversi data rate a seconda dell'abilità del ricevente di distinguere $0$ e $1$ in presenza di rumore
+#esempio()[
+  Supponendo di usare una $4$-ASK (4 bit per simbolo), vogliamo andare a creare $4$ livelli di ampiezza dove ogni livello corrisponde ad una coppia di bit: 
+  - Ampiezza $100% -> 11$ 
+  - Ampiezza $75% -> 10$
+  - Ampiezza $50% -> 01$
+  - Ampiezza $25% -> 00$
 
-//aggiungere tabella e riguardare
-Un simbolo può codificare più bit alla stessa frequenza. 
+  Se c'è molto "rumore" (interferenze elettromagnetiche), un segnale che è partito al $50%$ potrebbe arrivare sporcato e sembrare al $60%$, producendo un errrore nel ricevitore. 
 
-Usiamo l'ampiezza di un onda come parametro per identificare i diversi simboli andandola a modulare. Amplitude shift key (coppia chiave, parametri). La chiave è la sequenza di bit che vogliamo rappresentare e i parametri è l'onda elettromagnetica che dobbiamo emettere per un certo intervallo di tempo. 
+  In questo caso sarebbe stato meglio andare ad utilizzare la $2$-ASK ($0%$ o $100%$), anche se il segnale arriva sporco al $60%$, il ricevitore riesce a risalire al messaggio originale. 
+]
 
 === Trasmissione radio
 
