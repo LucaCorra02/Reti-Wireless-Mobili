@@ -618,12 +618,18 @@ Dove $M$ è il numero di livelli di voltaggio e $log_2(M)$ indica quanti bit cor
   ]
 ]
 
-=== Gli effetti del rumore 
+== Il rumore 
+Come già detto precedentemente, il *rumore* (chiamato spesso anche _noise_), è un segnale non voluto che si combina al segnale trasmesso, distorcendolo. Questo può portare a errori nella ricezione dei dati, poiché il ricevitore potrebbe interpretare erroneamente i bit trasmessi.
+
+Possiamo inoltre categorizzare il *rumore*:
+- *_Thernmal Noise_* $->$ Rumore di fondo *inevitabile e non eliminabile*. Deriva dall'agitazione termica delle particelle nei materiali conduttori e si manifesta come un segnale casuale che si somma al segnale utile (informalmente, è il fruscio che si può sentire, ad esempio, nelle radio non sintonizzate);
+- *_Intermodulation Noise_* $->$ Rumore *non naturale*. È tipicamente causato da un malfunzionamento del sistema di trasmissione. Si verifica quando 2 frequenze viaggiano nello stesso mezzo (ad esempio, un cavo condiviso) e passano attraverso un componente non lineare (es. un amplificatore difettoso), generando nuove frequenze che interferiscono con il segnale originale;
+- *_Crosstalk_* $->$ Rumore causato da *interferenze tra canali* di comunicazione vicini. Si verifica quando, ad esempio, 2 cavi in rame corrono paralleli lungo un tratto.
+- *Impulse Noise* $->$ Rumore *improvviso e di breve durata*. È causato da eventi esterni come fulmini, interruzioni di corrente o interferenze elettromagnetiche. Può causare errori significativi nella trasmissione dei dati, specialmente in sistemi digitali. È particolarmente importante come tipo di rumore, poiché ha la capacità di cancellare o invertire un intero gruppo di bit, rendendo tutto il pacchetto illeggibile.
+
+=== Grandezze fondamentali
 
 
 
-=== Shannon Capacity formula
+== Multiplexing
 
-
-
-=== Multiplexing
