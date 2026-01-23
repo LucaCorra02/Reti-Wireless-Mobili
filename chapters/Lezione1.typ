@@ -628,7 +628,25 @@ Possiamo inoltre categorizzare il *rumore*:
 - *Impulse Noise* $->$ Rumore *improvviso e di breve durata*. È causato da eventi esterni come fulmini, interruzioni di corrente o interferenze elettromagnetiche. Può causare errori significativi nella trasmissione dei dati, specialmente in sistemi digitali. È particolarmente importante come tipo di rumore, poiché ha la capacità di cancellare o invertire un intero gruppo di bit, rendendo tutto il pacchetto illeggibile.
 
 === Grandezze fondamentali
+Appurato il concetto di *rumore* e le varie tipologie che possono potenzialmente intaccare una comunicazione, è importante definire ulteriori grandezze fondamentali che verranno trattate durante il corso:
 
+==== Decibel (dB):
+È la "_misura del cambiamento_". È il rapporto fra 2 potenze, espresso in scala logaritmica:
+$ d B = 10 dot log_10(P_f/P_i) $
+
+Dove $P_f$ è la potenza finale e $P_i$ è la potenza iniziale.
+
+Ci interessa sapere la misura di differenza relativa a quanto il segnale sia diventato più grande (guadagno) o più piccolo (attenuazione) rispetto a prima.
+
+#nota[
+  Per il *Decibel* tendendzialmente si interpreta il risultato utilizzando la regola del ±3:
+  - -3 $->$ La potenza si è dimezzata;
+  - +3 $->$ La potenza è raddoppiata.
+]
+
+==== Decible-Milliwatt (dBm):
+Si tratta di una *misura assoluta*: ci dice esattamente quanta potenza abbiamo in mano e, per farlo, fissa come riferimento 1 `mW` (milliwatt):
+$ d B m = 10 dot log_10(P/(1 m W)) $
 
 
 == Multiplexing
