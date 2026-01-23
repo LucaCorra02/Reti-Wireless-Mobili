@@ -2,6 +2,7 @@
 
 = Lezione 2
 
+// TODO SPOTARE DI SEZIONE
 //Può capitare all'esame
 #esempio()[
   Dati: 
@@ -418,7 +419,7 @@ Anche le antenne si dividono in due tipi:
     L'antenna direzionale non è perfetta. Il segnale potrebbe essere propagato (con una potenza minore) anche in altre  direzioni rispetto alla _los_.
   ]
 
-=== Trasmissione LOS
+== Trasmissione LOS
 
 Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr("problemi")$*: 
 
@@ -436,30 +437,189 @@ Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr
 
 === Path Lost
 
-Mi dice quanto ho perso in potenza del segnale tra il segnale che ho trasmesso (numeratore) e quello che ho ricevuto
-//Aggiungere formula
+#informalmente()[
+  Quantifica la *perdità di potenza* del segnale trasmesso rispetto a quello ricevuto.
 
-La potenza di trasmissione è in generale maggiore di quella di ricezione. 
+  Si misura in *decibel $"dB"$*
+]
 
-La parte:
-$ 
-  ((4pi f)/c)^2 d^n 
+Viene calcolata come: 
 $
-richiama molto la superficie della sfera. L'antenna ha una capacità di ricezione limitata. Mano mano che l'onda si allontana dalla sorgente (riguardare). Sfera piccola se siamo vicini, sfera grande se siamo lontani. 
-//Aggiugnere disegno sfera e riguardare concetto
+  L = P_t / P_r = ((4pi)/(lambda))^2 d^n underbrace(=, mr(lambda = c/f)) ((4pi f)/(c))^2 d^n 
+$
+Dove: 
+- $d$: distanza tra le antenne
+- $f$: frequenza del segnale
+- $c$: velocità della luce $3 dot 10^8 m/s$
+- *$n$*: esponente della path loos (valore base = 2), man mano che aumentano gli ostacoli sale (*dipende dall'ambiente*) 
 
-Il costo è direttamente proporzionale al quadrato delal distanza (esponente minimo), perdiamo tantissimo. Tuttavia possiamo cambiare la frequenza. 
+#nota()[
+  La potenza di trasmissione ($P_t$) è in generale maggiore di quella di ricezione ($P_r$). 
+]
+
+La perdità di potenza segue la *legge dell'inverso del quadrato*. Essa afferma che *l'intensità* di una grandezza fisica *diminuisce proporzionalmente al quadrato della distanza* dalla sua sorgente: _se la distanza raddoppia, l'intensità diventa un quarto_. L'energia si distribuisce su una superficie che cresce con il quadrato della distanza (come la superficie di una sfera $4 pi d^2$).
+
+Possiamo quindi scrivere: 
+$
+  L  infinity  f^2
+$
+Se aumentiamo la frequenza, la lunghezza d'onda $lambda$ diventa più piccola. Come abbiamo visto prima, un'antenna standard deve essere proporzionata alla lunghezza d'onda ($lambda / 2$):
+  - Frequenza Alta $->$ $lambda$ piccola $->$ Antenna ricevente fisicamente più piccola.
+  - Frequenza Bassa $->$ $lambda$ grande $->$ Antenna ricevente fisicamente più grande.
+
+Un'antenna più piccola cattura meno segnale. 
+
+#nota()[
+  A parità di distanza, maggiore è la frequenza, maggiore è il path loss.
+
+  Con _free space loss_ si intende la perdita ideale in caso di spazio completamente libero, quindi con $d^n = d^2$ .
+]
+
+
 #informalmente()[
   La formula ci dice : 
-  - più lontani siamo più la potenza del segnale ricevuta è minore
-  - dipende anche dalla frequenza $f$. più la frequenza è alta più perdiamo potenza a parità di distanza. 
+  - più il *ricevitore è lontano*, più la *potenza del segnale ricevuto è minore*
+  - *dipende anche dalla frequenza* $f$. A parità di potenza, più la frequenza è alta, minore è il raggio di copertura.
 
   #esempio()[
-    Se a parità di potenza mettiamo un acces point la copertura della banda $2.4"Ghz"$ è maggiore della $5"Ghz"$ 
+    A parità di potenza, la copertura di un acces point è maggiore con una frequenza pari a $2.4"Ghz"$ rispetto a $5"Ghz"$.
   ]
 ]
 
-Il grafico ci dice data la distanza la perdità del segnale in decibel. Attorno ai $3"Ghz"$ gira la rete cellulare
+#figure(
+  {
+    set text(size: 8pt)
+    
+    box(width: 70%, height: 250pt, {
+      // Griglia di sfondo
+      for i in range(0, 13) {
+        let y = 20pt + i * 16pt
+        place(dx: 30pt, dy: y, line(length: 240pt, stroke: (paint: blue.lighten(70%), thickness: 0.3pt)))
+      }
+      for i in range(0, 13) {
+        let x = 30pt + i * 20pt
+        place(dx: x, dy: 20pt, line(length: 192pt, angle: 90deg, stroke: (paint: blue.lighten(70%), thickness: 0.3pt)))
+      }
+      
+      // Asse X (Distance)
+      place(dx: 30pt, dy: 212pt, {
+        line(length: 240pt, stroke: 1pt + black)
+        place(dx: 100pt, dy: 18pt, text(size: 8pt)[Distance (km)])
+      })
+      
+      // Asse Y (Free Space Path Loss)
+      place(dx: 30pt, dy: 20pt, {
+        line(length: 192pt, angle: 90deg, stroke: 1pt + black)
+        place(dx: -110pt, dy: -100pt, text(size: 8pt)[Free space path loss (dB)])
+      })
+      
+      // Etichette asse X
+      place(dx: 25pt, dy: 220pt, text(size: 6pt)[1])
+      place(dx: 85pt, dy: 220pt, text(size: 6pt)[5])
+      place(dx: 125pt, dy: 220pt, text(size: 6pt)[10])
+      place(dx: 205pt, dy: 220pt, text(size: 6pt)[50])
+      place(dx: 265pt, dy: 220pt, text(size: 6pt)[100])
+      
+      // Etichette asse Y (da 60 a 180)
+      place(dx: 10pt, dy: 210pt, text(size: 6pt)[60])
+      place(dx: 10pt, dy: 194pt, text(size: 6pt)[70])
+      place(dx: 10pt, dy: 178pt, text(size: 6pt)[80])
+      place(dx: 10pt, dy: 162pt, text(size: 6pt)[90])
+      place(dx: 5pt, dy: 146pt, text(size: 6pt)[100])
+      place(dx: 5pt, dy: 130pt, text(size: 6pt)[110])
+      place(dx: 5pt, dy: 114pt, text(size: 6pt)[120])
+      place(dx: 5pt, dy: 98pt, text(size: 6pt)[130])
+      place(dx: 5pt, dy: 82pt, text(size: 6pt)[140])
+      place(dx: 5pt, dy: 66pt, text(size: 6pt)[150])
+      place(dx: 5pt, dy: 50pt, text(size: 6pt)[160])
+      place(dx: 5pt, dy: 34pt, text(size: 6pt)[170])
+      place(dx: 5pt, dy: 18pt, text(size: 6pt)[180])
+      
+      // Funzione per convertire coordinate logaritmiche
+      let log_x(d) = {
+        30pt + calc.log(d) / calc.log(100) * 240pt
+      }
+      
+      let linear_y(loss) = {
+        212pt - (loss - 60) * 1.6pt
+      }
+      
+      // Linea f = 300 MHz
+      for i in range(0, 50) {
+        let d1 = calc.pow(100, i / 50.0)
+        let d2 = calc.pow(100, (i + 1) / 50.0)
+        let loss1 = 62 + 20 * calc.log(d1)
+        let loss2 = 62 + 20 * calc.log(d2)
+        let x1 = log_x(d1)
+        let x2 = log_x(d2)
+        let y1 = linear_y(loss1)
+        let y2 = linear_y(loss2)
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + red))
+      }
+      place(dx: 140pt, dy: 160pt, text(size: 8pt, fill: red)[$f = 30 "MHz"$])
+      
+      // Linea f = 3 GHz
+      for i in range(0, 50) {
+        let d1 = calc.pow(100, i / 50.0)
+        let d2 = calc.pow(100, (i + 1) / 50.0)
+        let loss1 = 82 + 20 * calc.log(d1)
+        let loss2 = 82 + 20 * calc.log(d2)
+        let x1 = log_x(d1)
+        let x2 = log_x(d2)
+        let y1 = linear_y(loss1)
+        let y2 = linear_y(loss2)
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + red))
+      }
+      place(dx: 150pt, dy: 28pt, text(size: 8pt, fill: red)[$f = 300 "GHz"$])
+      
+      // Linea f = 30 GHz
+      for i in range(0, 50) {
+        let d1 = calc.pow(100, i / 50.0)
+        let d2 = calc.pow(100, (i + 1) / 50.0)
+        let loss1 = 102 + 20 * calc.log(d1)
+        let loss2 = 102 + 20 * calc.log(d2)
+        let x1 = log_x(d1)
+        let x2 = log_x(d2)
+        let y1 = linear_y(loss1)
+        let y2 = linear_y(loss2)
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + red))
+      }
+      place(dx: 145pt, dy: 125pt, text(size: 8pt, fill: red)[$f = 300 "MHz"$])
+      
+      // Linea f = 300 GHz
+      for i in range(0, 50) {
+        let d1 = calc.pow(100, i / 50.0)
+        let d2 = calc.pow(100, (i + 1) / 50.0)
+        let loss1 = 122 + 20 * calc.log(d1)
+        let loss2 = 122 + 20 * calc.log(d2)
+        let x1 = log_x(d1)
+        let x2 = log_x(d2)
+        let y1 = linear_y(loss1)
+        let y2 = linear_y(loss2)
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + red))
+      }
+      place(dx: 153pt, dy: 90pt, text(size: 8pt, fill: red)[$f = 3 "GHz"$])
+      
+      // Linea f = 3 THz
+      for i in range(0, 50) {
+        let d1 = calc.pow(100, i / 50.0)
+        let d2 = calc.pow(100, (i + 1) / 50.0)
+        let loss1 = 142 + 20 * calc.log(d1)
+        let loss2 = 142 + 20 * calc.log(d2)
+        let x1 = log_x(d1)
+        let x2 = log_x(d2)
+        let y1 = linear_y(loss1)
+        let y2 = linear_y(loss2)
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + red))
+      }
+      place(dx: 150pt, dy: 59pt, text(size: 8pt, fill: red)[$f = 30 "GHz"$])
+    })
+  },
+  caption: [
+    Path loss in funzione della distanza per diverse frequenze.\
+    Attorno ai $3"GHz"$ gira la rete cellulare.
+  ]
+)
 
 === Antenna Gain
 
