@@ -593,3 +593,37 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
   È possibile evincere che, raddoppiando della *Bandwidth*, anche il *Data Rate* fa lo stesso.
 ]
 
+=== Capacità del canale, Rumore e Tasso di errore
+Altre definizioni importanti per comprendere al meglio le prestazioni di un sistema di comunicazione:
+- *Capacità del canale* (o _Channel Capacity_) $->$ Rappresenta il massimo *Data Rate* al quale è possibile trasmettere dati attraverso un canale di comunicazione;
+- *Rumore* (o _Noise_) $->$ Indica qualsiasi interferenza o disturbo non voluto che può alterare il segnale durante la trasmissione, rendendo difficile la corretta ricezione dei dati;
+- *Tasso di errore* (o _Error Rate_) $->$ Rappresenta quante volte viene modificato il segnale in maniera non volontaria a livello di numero di bit.
+
+== Teorema di Nyquist sulla banda
+Ipotizzando di avere a disposizione un canale privo di rumore, la larghezza di banda (*Bandwidth*) $B$ limita il *Data Rate*. Il massimo di informazioni che è possibile trasmettere attraverso un canale senza errori è quindi dato dalla seguente formula:
+$ C = 2B $
+
+Questo vale per segnali binari a 2 livelli di voltaggio. Per segnali multilivello (con $M$ livelli di voltaggio), la formula diventa:
+$ C = 2B log_2(M) $
+Dove $M$ è il numero di livelli di voltaggio e $log_2(M)$ indica quanti bit corrispondono a ciascun livello.
+
+#nota[
+  Aumentre i livelli di voltaggio è essenziale per incrementare il *Data Rate* senza dover aumentare la *Bandwidth*, che spesso è limitata dalle caratteristiche fisiche del canale di comunicazione.
+  #esempio[
+    Supponiamo di avere una larghezza di banda di 1000 `Hz`:
+    - Avendo un numero di livello di voltaggio $M = 2$, la capacità del canale è \ 
+      $C = 2 dot 1000 dot log_2(2) = 2000$ `bps`;
+    - Avendo un numero di livello di voltaggio $M = 8$, la capacità del canale diventa \
+      $C = 2 dot 1000 dot log_2(8) = 6000$ `bps`.
+  ]
+]
+
+=== Gli effetti del rumore 
+
+
+
+=== Shannon Capacity formula
+
+
+
+=== Multiplexing
