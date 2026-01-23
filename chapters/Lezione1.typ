@@ -630,7 +630,7 @@ Possiamo inoltre categorizzare il *rumore*:
 === Grandezze fondamentali
 Appurato il concetto di *rumore* e le varie tipologie che possono potenzialmente intaccare una comunicazione, è importante definire ulteriori grandezze fondamentali che verranno trattate durante il corso:
 
-==== Decibel (dB):
+==== Decibel (dB)
 È la "_misura del cambiamento_". È il rapporto fra 2 potenze, espresso in scala logaritmica:
 $ d B = 10 dot log_10(P_f/P_i) $
 
@@ -644,7 +644,7 @@ Ci interessa sapere la misura di differenza relativa a quanto il segnale sia div
   - +3 $->$ La potenza è raddoppiata.
 ]
 
-==== Decibel-Milliwatt (dBm):
+==== Decibel-Milliwatt (dBm)
 Si tratta di una *misura assoluta*: ci dice esattamente quanta potenza abbiamo in mano e, per farlo, fissa come riferimento 1 `mW` (milliwatt):
 $ d B m = 10 dot log_10(P/(1 m W)) $
 Dove $P$ è la potenza misurata.
@@ -656,14 +656,14 @@ Dove $P$ è la potenza misurata.
   - -3 `dBm` $->$ Potenza dimezzata rispetto a 1 `mW`.
 ]
 
-==== Rapporto Segnale-Rumore (SNR):
+==== Rapporto Segnale-Rumore (SNR)
 Misura quanto il segnale utile è più forte rispetto al rumore di fondo. Si esprime in *Decibel*:
 $ S N R = 10 dot log_10(P_s/P_n) $
 Dove $P_s$ è la potenza del segnale e $P_n$ è la potenza del rumore.
 
 Tanto più è alto, maggiore sarà la distinzione del segnale rispetto al rumore (e viceversa).
 
-=== Shannon Capacity Formula:
+=== Shannon Capacity Formula
 $ C = B dot log_2(1 + S N R) $
 
 Questa formula fornisce il valore relativo al massimo numero di bit al secondo ($C$) che possono essere trasmessi attraverso un canale con larghezza di banda $B$ e rapporto segnale-rumore $S N R$. 
@@ -700,6 +700,11 @@ Nella maggior parte dei casi, la capacità del mezzo di trasmissione è superior
 ]
 
 === Time-Division Multiplexing
+Si tratta di una tecnica di *Multiplexing* usata tipicamente per i segnali digitali, come le reti telefoniche moderne o _Internet_. Consiste nel dividere il tempo in intervalli (o slot) e assegnare a ciascun segnale uno slot specifico in cui può trasmettere i propri dati. In questo modo, più segnali possono condividere lo stesso canale di comunicazione senza interferire tra loro, poiché trasmettono in momenti diversi.
 
+Anche se i turni sono alternati (*no interferenza fra canali*), nel *TDM* gli utenti hanno l'illusione di una trasmissione continua, poiché gli slot di tempo sono molto brevi. Richiede comunque una *sincronizzazione temporale* e, in generale, l'uso della banda è *inefficiente*.
 
 === Frequency-Division Multiplexing
+A differenza della tecnica descritta precedentemente, i segnali non viaggiano in maniera alternata, ma *simultaneamente* su frequenze diverse all'interno dello stesso canale di comunicazione (es. vecchie TV). Ogni segnale viene modulato su una portante a frequenza diversa, permettendo così a più segnali di coesistere senza interferire tra loro. Tutto questo è possibile grazie al fatto che la *Bandwidth* del canale su un mezzo di trasmissione *eccede quella richiesta* da un singolo segnale.
+
+Non è necessaria la sincronizzazione temporale e l'uso della banda è *efficiente*, ma richiede filtri per separare i segnali alle frequenze diverse e può essere *soggetto a interferenze*.
