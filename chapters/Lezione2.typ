@@ -34,64 +34,181 @@
   il nostro livello fisico deve almeno usare $2$ bit.
 ]
 
-== Trasmissione a cavo
+== Trasmissione wireless
 
-== Trasmissione in banda base
-La Trasmissione avviene in banda base. La banda base ha uno spettro che va da 0 all'ampiezza di banda massima $B$ del canale. 
+=== Trasmissione in banda base
+
+La trasmissione in *banda base* ha uno spettro che va da $0$ all'ampiezza di banda massima $B$ del canale. 
 
 #esempio()[
-  Lo spettro sonoro è in banda base. Da 0 a $22"Mhz"$.
+  Lo spettro sonoro è in banda base. Da 0 a $22"MHz"$.
 ]
 
-Questo va bene per la comunicazione via cavo. 
-Trasmettendo in ambito wireless ci sono dei problemi: 
-- Se tutte le trasmissioni radio (Militare, Tv) usassero lo stesso spettro. Problema puramente di sicurezza e di interferenza
-- Più le sequenze sono basse più l'antenna per ricevere il segnale deve essere grande. Deve essere almeno grande metà dell'onda. 
-#esempio()[
-  2100Mhz serve un antenna di 7cm (usata per cellulari)
-]
+Questo tipo di trasmissione va bene per la comunicazione via cavo, tuttavia presenta una serie di *$mr("criticità")$* in ambito wireless:
 
-- Ogni range ha diverse proprietà. 
+- problemi di *sicurezza*. Se tutte le trasmissioni via radio (Militare, Tv) usassero lo spettro radio $[0,B]$ *interferirebbero* tra di loro.
+
+- più la frequenza è bassa, più *l'antenna* per ricevere il segnale deve essere *grande*. Essa deve avere una dimensione che sia almeno metà della lunghezza d'onda $tilde lambda / 2$ (dipolo). 
+  #esempio()[
+    Per una frequenza a $1"MHz"$ servirebbe un'antenna di almeno $142"cm"$.
+  ]
+
+- ogni range di radio frequenze possiede *diverse proprietà* di propagazione e attenuazione.  
 
 #attenzione()[
-  Il mezzo di trasmissione in wireless è intrisicamente broadcast, tutti possono vedere le onde eletromagnitiche
+  Il mezzo di trasmissione wireless è intrisicamente broadcast, tutti possono vedere le onde eletromagnitiche
 ]
-// Aggiungere immagine
 
-== Trasmissione in base traslata
+=== Trasmissione in banda traslata
 
-Per evitare di avere trasmissione sovrapposte è usare la trasmissione in banda traslata (o passa banda). 
+Per *evitare* di avere *trasmissione sovrapposte* viene utilizzata la trasmissione in banda traslata (o passa banda). 
 
-
-Viene effettuata una fase intermedia. Viene scelta una frequenza portante e utilizziamo il seguente spettro: 
-$
-  [f_c - B/2, f_c+B/2]
-$
-Questa operazione sulla frequenza portante prende il nome di *modulazione*, possiamo cambiarne: 
-- frequenza
-- fase 
-- banda
-in ambito wireless vengono utilizzate tutte e 3. 
-
-#informalmente()[
-  Usiamo uno spettro centrato rispetto a una frequenza di carry
-]
+Viene introdotta una fase intermedia chiamata *modulazione*. Essa agisce sulla *frequenza portante* $f_c$, in comune tra trasmettitore e ricevitore. 
+L'operazione di modulazione permette di spostare un segnale originale (in banda base) a frequenze più elevate. Il risultato è un segnale "passa banda", centrato attorno alla frequenza portante, che occupa una porzione specifica dello spettro. 
 
 #nota()[
-  La modulazione non modifica L'ampiezza di manda rimane uguale e anche il teta medio. 
+  L'operazione di modulazione non intacca Bandwidth e data rate. 
 ]
+
+Lo spettro utilizzato diventa:
+#figure(
+  {
+    set text(size: 9pt)
+    
+    // Contenitore medio
+    box(width: 50%, height: 80pt, {
+      place(
+        dx: 0pt,
+        dy: 65pt,
+        line(length: 200pt, stroke: 0.7pt + black)
+      )
+      
+      // Freccia asse x
+      place(
+        dx: 196pt,
+        dy: 61pt,
+        polygon(
+          fill: black,
+          (0pt, 0pt),
+          (5pt, 4pt),
+          (0pt, 8pt)
+        )
+      )
+      
+      // Etichetta asse x
+      place(
+        dx: 206pt,
+        dy: 61pt,
+        text(size: 8pt)[Frequenze]
+      )
+      
+      // Asse y
+      place(
+        dx: 15pt,
+        dy: 0pt,
+        line(length: 68pt, angle: 90deg, stroke: 0.7pt + black)
+      )
+      
+      // Freccia asse y
+      place(
+        dx: 11pt,
+        dy: -3pt,
+        polygon(
+          fill: black,
+          (4pt, 0pt),
+          (0pt, 5pt),
+          (8pt, 5pt)
+        )
+      )
+      
+      // Rettangolo spettro - parte sinistra
+      place(
+        dx: 60pt,
+        dy: 28pt,
+        rect(width: 50pt, height: 37pt, fill: rgb("#0284c7"), stroke: none)
+      )
+      
+      // Rettangolo spettro - parte destra
+      place(
+        dx: 110pt,
+        dy: 28pt,
+        rect(width: 50pt, height: 37pt, fill: rgb("#0ea5e9"), stroke: none)
+      )
+      
+      // Linee verticali tratteggiate
+      place(
+        dx: 60pt,
+        dy: 65pt,
+        line(length: 10pt, angle: 90deg, stroke: (paint: black, thickness: 0.7pt, dash: "dashed"))
+      )
+      
+      place(
+        dx: 110pt,
+        dy: 65pt,
+        line(length: 10pt, angle: 90deg, stroke: (paint: black, thickness: 0.7pt, dash: "dashed"))
+      )
+      
+      place(
+        dx: 160pt,
+        dy: 65pt,
+        line(length: 10pt, angle: 90deg, stroke: (paint: black, thickness: 0.7pt, dash: "dashed"))
+      )
+      
+      // Etichette frequenze
+      place(
+        dx: 44pt,
+        dy: 78pt,
+        text(size: 8pt)[$f_c - B\/2$]
+      )
+      
+      place(
+        dx: 100pt,
+        dy: 78pt,
+        text(size: 8pt)[$f_c$]
+      )
+      
+      place(
+        dx: 145pt,
+        dy: 78pt,
+        text(size: 8pt)[$f_c + B\/2$]
+      )
+    })
+  },
+  caption: [Spettro di una trasmissione in banda traslata ]
+)
+
+$mg("Vantaggi")$ della modulazione:
+- *Dimensioni delle antenne*: Traslare un segnale a frequenze molto più alte, riduce drasticamente la dimensione dell'antenna. 
+- *Multiplexing*: Permette di inviari più segnali contemporaneamente su un unico canale, assegnando a ciascuno di essi una diversa frequenza portante
+-  *Efficienza*: Adatta segnali diversi (audio, video, dati) a canali di trasmissione idonei, riducendo interferenze e attenuazione. 
 
 == Encoding symbol
 
-Simbolo = è una forma d'onda, uno stato (livello di voltaggio) o una condizione significativa del canale che persiste per un certo intervallo di tempo. 
-
-Simbole rate = numero di simboli emessi dal livello fisico in un secondo, si misura in $"baud"$. Ad esempio quante volte è in gradi di cambiare il voltaggio il livello fisico in un secondo. 
+Un *simbolo* è una forma d'onda, uno stato (livello di voltaggio) o una condizione significativa del canale che *persiste* per un certo intervallo di *tempo*. 
 
 #attenzione()[
-  Non è semplicemente rumore
+  Un symbol *non* è semplicemente del rumore sul canale, ma è ben definito.
 ]
 
-Un simbolo può codificare più bit. In linea generale il symbol rate è diverso dal bit rate. Il bit rate è $>=$ del simbolo rate. Queste due misure sono uguali quando il livello fisico è in grado di produrre solo 2 segnali, alto e basso. 
+Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un secondo, si misura in _Bd_ (_Baud_). 
+
+#esempio()[
+  Il symbol rate può rappresentare quante volte il livello fisico è in grado di cambiare il voltaggio in un secondo. 
+]
+
+
+#attenzione()[
+ In generale un simbolo è un grado di *codificare più bit*, per questo motivo:
+ *$
+  "symbol rate" != "bit rate" \
+  "bit rate" >= "symbol rate"
+  $*
+  Queste due misure corrispondono quando il livello fisico è in grado di produrre solamente $2$ segnali, _alto_ e _basso_. 
+]
+
+Se il segnale è pulito, possiamo andare a riempire il simbolo con più bit. Se c'è rumore, dobbiamo svuotarlo per essere sicuri che arrivi a destinazione. 
+
+
 
 Quando il cellulare non prendo ad esempio dovremo avere la possibilità di codificare meno bit sui simboli, in mdoo da trasferire meno dati. 
 
