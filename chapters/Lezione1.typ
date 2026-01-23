@@ -644,10 +644,26 @@ Ci interessa sapere la misura di differenza relativa a quanto il segnale sia div
   - +3 $->$ La potenza è raddoppiata.
 ]
 
-==== Decible-Milliwatt (dBm):
+==== Decibel-Milliwatt (dBm):
 Si tratta di una *misura assoluta*: ci dice esattamente quanta potenza abbiamo in mano e, per farlo, fissa come riferimento 1 `mW` (milliwatt):
 $ d B m = 10 dot log_10(P/(1 m W)) $
+Dove $P$ è la potenza misurata.
+
+#nota[
+  Interpretazione del risultato:
+  - 0 `dBm` $->$ Esattamente 1 `mW`;
+  - 3 `dBm` $->$ Potenza raddoppiata rispetto a 1 `mW`;
+  - -3 `dBm` $->$ Potenza dimezzata rispetto a 1 `mW`.
+]
+
+==== Rapporto Segnale-Rumore (SNR):
+Misura quanto il segnale utile è più forte rispetto al rumore di fondo. Si esprime in *Decibel*:
+$ S N R = 10 dot log_10(P_s/P_n) $
+Dove $P_s$ è la potenza del segnale e $P_n$ è la potenza del rumore.
+
+Tanto più è alto, maggiore sarà la distinzione del segnale rispetto al rumore (e viceversa).
+
+=== Shannon Capacity Formula:
 
 
 == Multiplexing
-
