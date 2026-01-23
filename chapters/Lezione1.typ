@@ -664,6 +664,32 @@ Dove $P_s$ è la potenza del segnale e $P_n$ è la potenza del rumore.
 Tanto più è alto, maggiore sarà la distinzione del segnale rispetto al rumore (e viceversa).
 
 === Shannon Capacity Formula:
+$ C = B dot log_2(1 + S N R) $
 
+Questa formula fornisce il valore relativo al massimo numero di bit al secondo ($C$) che possono essere trasmessi attraverso un canale con larghezza di banda $B$ e rapporto segnale-rumore $S N R$. 
+
+È una grandezza teorica intuita da Shannon, che, a differenza di ciò che formalizzò Nyquist, ci dice che è possibile avere una *massima teorica* di trasmissione (senza errori), considerando anche il rumore e sapendo che la capacità dipende dalla *larghezza di banda* e dal *rapporto segnale-rumore* ($S N R$).
+
+Da questa formula è inoltre possibile intuire che, in una determinata condizione di rumore ($S N R$), è possibile aumentare il *Data Rate* in 2 modi distinti:
+- Aumentando la *Bandwidth* ($B$), rischiando di aumentare però di aumentare il rumore termico;
+- Migliorando il *SNR* (ad esempio, aumentando la potenza del segnale trasmesso), con il rischio di far aumentare *Intermodulation* e *Cross Talk Noise*.
+
+#esempio[
+  Supponiamo di avere uno spettro tra $3$ `MHz` e $4$ `MHz`. Abbiamo inoltre un rapporto segnale-rumore $S N R = 24$ `dB`.
+
+  A questo punto, è possibile calcolare la *Capacità* secondo Shannon:
+  - Calcoliamo la *Bandwidth*:
+    $ B = 4 M H z - 3 M H z = 1 M H z $
+  - Convertiamo il *SNR* da *Decibel* a rapporto di potenze:
+    $ S N R = 10 log_10(S N R) = 10 log_10(24) = 251 $
+    Significa che il segnale è circa 251 volte più potente del rumore.
+  - Applichiamo la *formula di Shannon*:
+    $ C = B dot log_2(1 + S N R) = 1 M H z dot log_2(1 + 251) = 1 M H z dot 8.0 = 8.0 M b p s $
+  - Ora è possibile applicare anche la *formula di Nyquist* per sapere quanti livelli di voltaggio sono necessari per raggiungere questa capacità ($M$ è l'incognita):
+    $ C = 2 B log_2(M)  => $
+    $ => 8.0 M b p s = 2 dot 1 M H z dot log_2(M) => $
+    $ => log_2(M) = 4.0 => $
+    $ => M = 2^4 = 16 $
+]
 
 == Multiplexing
