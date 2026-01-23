@@ -623,11 +623,113 @@ Un'antenna più piccola cattura meno segnale.
 
 === Antenna Gain
 
-// R
-Gain(guadagno) dell'antenna. 
+#informalmente()[
+  Il Gain misura quanto è più forte il segnale nella direzione "giusta" rispetto all'antenna isotropica (ideale), la quale sparge il segnale in modo equo in tutte le direzioni. 
+
+  Il Gain ci dice quanto l'antenna è _brava_ a concentrare il raggio:
+  - Alto Gain = Raggio laser (va lontanissimo, ma va puntato benissimo).
+  - Basso Gain = Lanterna (va poco lontano, ma copre ovunque).
+
+  Viene misurato in decibel (Db)
+]
+
+#figure(
+  {
+    set text(size: 8pt)
+    
+    grid(
+      columns: (2fr, 1fr),
+      column-gutter: 10pt,
+      [
+        #box(width: 100%, height: 180pt, {
+        
+           // Antenna direzionale (ellisse blu allungata - a destra)
+          place(dx: 100pt, dy: 60pt, {
+            ellipse(width: 130pt, height: 70pt, stroke: 2pt + blue, fill: rgb("#e3f2fd"))
+            place(dx: 40pt, dy: -80pt, text(size: 8pt, fill: blue)[Direzionale (ideale)])
+          })
+          
+          // Antenna isotropica (cerchio grigio - a sinistra)
+          place(dx: 60pt, dy: 55pt, {
+            circle(radius: 40pt, stroke: 1.5pt + gray, fill: none)
+            place(dx: -60pt, dy: -50pt, text(size: 8pt, fill: black)[Isotropica (ideale)])
+          })
+          
+          // Centro comune (origine)
+          place(dx: 95pt, dy: 90pt, {
+            circle(radius: 3pt, fill: black)
+            place(dx: -8pt, dy: 5pt, text(size: 8pt)[$0$ dBi])
+          })
+         
+           // Assi cartesiani
+          place(dx: 100pt, dy: 90pt, line(length: 180pt, stroke: (paint: gray, dash: "dashed", thickness: 0.5pt)))
+          place(dx: 100pt, dy: 10pt, line(length: 160pt, angle: 90deg, stroke: (paint: gray, dash: "dashed", thickness: 0.5pt)))
+          
+          // Punto A (sul cerchio isotropico)
+          place(dx: 110pt, dy: 70pt, {
+            circle(radius: 5pt, fill: red, stroke: 1pt + black)
+            place(dx: 0pt, dy: -20pt, text(size: 8pt, weight: "bold")[A])
+            place(dx: -22pt, dy: -8pt, text(size: 7pt)[$-3$dBi])
+          })
+          
+          // Punto B (sull'ellisse direzionale, alla massima estensione)
+          place(dx: 225pt, dy: 85pt, {
+            circle(radius: 5pt, fill: red, stroke: 1pt + black)
+            place(dx: -8pt, dy: -15pt, text(size: 8pt, weight: "bold")[B])
+            place(dx: 7pt, dy: 2pt, text(size: 7pt)[+6dBi])
+          })
+        })
+      ],
+      [
+        // Tabella gain
+        #align(center)[
+          #table(
+            columns: (1fr, 1fr, 1fr),
+            stroke: 1pt + black,
+            fill: (col, row) => if row == 0 { luma(220) },
+            align: center,
+            [], [*Isotropica*], [*Direzionale*],
+            [*A*], [-10dBm], [-13dBm],
+            [*B*], [-20 dBm], [-14dBm],
+          )
+        ]      
+      ]
+    )
+  },
+  caption: [
+    Confronto tra antenna isotropica e direzionale.\
+    Il cerchio grigio rappresenta l'antenna ideale che spara in tutte le direzioni.\
+    Il cerchio blu rappresenta l'antenna reale con Gain.\
+    Il gain è espresso in dBi rispetto all'antenna isotropica ideale (nell'immagine il punto $mr("A")$ ha un gain peggiore rispetto all'antenna isotropica).
+  ]
+)
+
+#attenzione()[
+  L'antenna *non* è un amplificatore. Non crea energia dal nulla e non aggiunge potenza elettrica.
+
+  Il Gain è puramente una questione di forma e direzione.
+]
+
+Possiamo ricalcolare il path loss considerando anche il gain:
+$
+  G_"tx" &= "Gain Trasmettitore"\
+  G_"rx" &= "Gain Ricevitore"\
+  P_t / P_r &= ((4pi f)/c)^2 d^n \
+            &= ((4 pi f)^2 / (G_"tx" G_"rx" c^2)) dot d^n
+$
+
+Più *alto* è il *Gain*, *minore* è la *perdita* di segnale. Possiamo riscrivere la formula anche in scala logaritmica: 
+$
+  L_"dB" = 10 log_10 P_t/P_r = 20(log_10 (4pi f)/c - log_10 G_"tx" - log_10G_("rx"))
+$
+il gain ovviamente viene sottratto in modo da diminure la loss. 
+
+#attenzione()[
+  Usare antenne direzionali (High Gain) è rischioso. Se non sono perfettamente allineate, c'è il rischio di finire nella _zona morta_ (fuori dal *beam*). In questo spicchio il segnale è peggiore, rispetto ad un antenna isotropica.
 
 
-Perdità di un caso isotropico. Alla perdità sottraiamo quello che guadagnamo con le antenne direzionali (antenna gain). Avendo le antenne direzionali perdiamo di meno, dipende da quanto sono direzionali le antenne di trasmissione e ricezione. 
+]
+
 
 === Multipath 
 
