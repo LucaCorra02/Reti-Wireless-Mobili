@@ -693,3 +693,13 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
 ]
 
 == Multiplexing
+Nella maggior parte dei casi, la capacità del mezzo di trasmissione è superiore alla capacità richiesta da una singola trasmissione, di conseguenza è possibile condividere il mezzo tra più trasmissioni contemporanee. Questa tecnica prende il nome di *Multiplexing*.
+
+#nota[
+  Il motivo per cui si usa è il risparmio: posare cavi costa molto e, al posto di stendere 100 cavi per 100 persone, ha più senso stenderne uno solo e "grosso", usando poi il *Multiplexing* per farci passare dentro tutti i 100 segnali assieme (senza che si distirbino fra loro).
+]
+
+=== Time-Division Multiplexing
+
+
+=== Frequency-Division Multiplexing
