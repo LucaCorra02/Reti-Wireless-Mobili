@@ -769,16 +769,249 @@ $
 
 La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un determinato intervallo di tempo. Tuttavia, se l'*intervallo è troppo breve*, potrebbe accadere che il ricevitore mentre sta già processando il simbolo successivo, riceva ancora dei segnali relativi al simbolo precedente dovuti al multipath, generando un'*interferenza distruttiva*. 
 
-
-
+#figure(
+  {
+    set text(size: 6pt)
+    
+    box(width: 70%, height: 140pt, {
+      // Primo grafico: Segnali trasmessi
+      place(dx: 8pt, dy: 8pt, text(size: 7pt, weight: "bold")[Transmitted pulse])
+      
+      // Asse tempo primo grafico
+      place(dx: 15pt, dy: 50pt, {
+        line(length: 280pt, stroke: 0.8pt + blue)
+        place(dx: 283pt, dy: -2pt, polygon(fill: blue, (0pt, 0pt), (5pt, 2pt), (0pt, 4pt)))
+        place(dx: 290pt, dy: -1pt, text(size: 5pt)[Time])
+      })
+      
+      // Primo impulso trasmesso
+      for i in range(0, 12) {
+        let x1 = 35pt + i * 1.5pt
+        let x2 = 35pt + (i + 1) * 1.5pt
+        let y1 = (50 - 25 * calc.exp(-calc.pow((i - 6) / 2, 2))) * 1pt
+        let y2 = (50 - 25 * calc.exp(-calc.pow((i + 1 - 6) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + rgb("#7f1d1d")))
+      }
+      
+      place(dx: 35pt, dy: 50pt, {
+        polygon(
+          fill: rgb("#991b1b").transparentize(30%),
+          stroke: none,
+          ..for i in range(0, 12) {
+            let x = i * 1.5pt
+            let y = -25 * calc.exp(-calc.pow((i - 6) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (16.5pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Secondo impulso trasmesso
+      for i in range(0, 12) {
+        let x1 = 160pt + i * 1.5pt
+        let x2 = 160pt + (i + 1) * 1.5pt
+        let y1 = (50 - 25 * calc.exp(-calc.pow((i - 6) / 2, 2))) * 1pt
+        let y2 = (50 - 25 * calc.exp(-calc.pow((i + 1 - 6) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.5pt + rgb("#7f1d1d")))
+      }
+      
+      place(dx: 160pt, dy: 50pt, {
+        polygon(
+          fill: rgb("#7f1d1d").transparentize(20%),
+          stroke: none,
+          ..for i in range(0, 12) {
+            let x = i * 1.5pt
+            let y = -25 * calc.exp(-calc.pow((i - 6) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (16.5pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Secondo grafico: Segnali ricevuti
+      place(dx: 8pt, dy: 75pt, text(size: 6pt)[Received LOS])
+      
+      // Asse tempo secondo grafico
+      place(dx: 15pt, dy: 125pt, {
+        line(length: 280pt, stroke: 0.8pt + blue)
+        place(dx: 283pt, dy: -2pt, polygon(fill: blue, (0pt, 0pt), (5pt, 2pt), (0pt, 4pt)))
+        place(dx: 290pt, dy: -1pt, text(size: 5pt)[Time])
+      })
+      
+      // LOS primo simbolo
+      for i in range(0, 12) {
+        let x1 = 38pt + i * 1.5pt
+        let x2 = 38pt + (i + 1) * 1.5pt
+        let y1 = (125 - 20 * calc.exp(-calc.pow((i - 6) / 2, 2))) * 1pt
+        let y2 = (125 - 20 * calc.exp(-calc.pow((i + 1 - 6) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + rgb("#991b1b")))
+      }
+      
+      place(dx: 38pt, dy: 125pt, {
+        polygon(
+          fill: rgb("#991b1b").transparentize(40%),
+          stroke: none,
+          ..for i in range(0, 12) {
+            let x = i * 1.5pt
+            let y = -20 * calc.exp(-calc.pow((i - 6) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (16.5pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Etichetta multipath
+      place(dx: 125pt, dy: 88pt, text(size: 5pt)[Received multipath])
+      
+      // Curva indicativa
+      place(dx: 125pt, dy: 100pt, {
+        path(
+          stroke: 1pt + blue,
+          (0pt, 0pt),
+          (8pt, -3pt),
+          (18pt, -6pt),
+          (30pt, -3pt),
+          (40pt, 0pt)
+        )
+      })
+      
+      // Multipath 1
+      for i in range(0, 10) {
+        let x1 = 140pt + i * 1.3pt
+        let x2 = 140pt + (i + 1) * 1.3pt
+        let y1 = (125 - 12 * calc.exp(-calc.pow((i - 5) / 2, 2))) * 1pt
+        let y2 = (125 - 12 * calc.exp(-calc.pow((i + 1 - 5) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1pt + blue))
+      }
+      
+      place(dx: 140pt, dy: 125pt, {
+        polygon(
+          fill: blue.transparentize(50%),
+          stroke: none,
+          ..for i in range(0, 10) {
+            let x = i * 1.3pt
+            let y = -12 * calc.exp(-calc.pow((i - 5) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (11.7pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Multipath 2
+      for i in range(0, 10) {
+        let x1 = 162pt + i * 1.3pt
+        let x2 = 162pt + (i + 1) * 1.3pt
+        let y1 = (125 - 15 * calc.exp(-calc.pow((i - 5) / 2, 2))) * 1pt
+        let y2 = (125 - 15 * calc.exp(-calc.pow((i + 1 - 5) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1pt + blue))
+      }
+      
+      place(dx: 161pt, dy: 125pt, {
+        polygon(
+          fill: blue.transparentize(50%),
+          stroke: none,
+          ..for i in range(0, 10) {
+            let x = i * 1.3pt
+            let y = -15 * calc.exp(-calc.pow((i - 5) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (12.7pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // LOS secondo simbolo
+      for i in range(0, 12) {
+        let x1 = 168pt + i * 1.5pt
+        let x2 = 168pt + (i + 1) * 1.5pt
+        let y1 = (125 - 20 * calc.exp(-calc.pow((i - 6) / 2, 2))) * 1pt
+        let y2 = (125 - 20 * calc.exp(-calc.pow((i + 1 - 6) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + rgb("#7f1d1d")))
+      }
+      
+      place(dx: 168pt, dy: 125pt, {
+        polygon(
+          fill: rgb("#7f1d1d").transparentize(30%),
+          stroke: none,
+          ..for i in range(0, 12) {
+            let x = i * 1.5pt
+            let y = -20 * calc.exp(-calc.pow((i - 6) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (16.5pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Multipath secondo simbolo
+      for i in range(0, 10) {
+        let x1 = 200pt + i * 1.3pt
+        let x2 = 200pt + (i + 1) * 1.3pt
+        let y1 = (125 - 14 * calc.exp(-calc.pow((i - 5) / 2, 2))) * 1pt
+        let y2 = (125 - 14 * calc.exp(-calc.pow((i + 1 - 5) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1pt + blue))
+      }
+      
+      place(dx: 200pt, dy: 125pt, {
+        polygon(
+          fill: blue.transparentize(50%),
+          stroke: none,
+          ..for i in range(0, 10) {
+            let x = i * 1.3pt
+            let y = -14 * calc.exp(-calc.pow((i - 5) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (11.7pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      for i in range(0, 10) {
+        let x1 = 230pt + i * 1.3pt
+        let x2 = 230pt + (i + 1) * 1.3pt
+        let y1 = (125 - 12 * calc.exp(-calc.pow((i - 5) / 2, 2))) * 1pt
+        let y2 = (125 - 12 * calc.exp(-calc.pow((i + 1 - 5) / 2, 2))) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1pt + blue))
+      }
+      
+      place(dx: 230pt, dy: 125pt, {
+        polygon(
+          fill: blue.transparentize(50%),
+          stroke: none,
+          ..for i in range(0, 10) {
+            let x = i * 1.3pt
+            let y = -12 * calc.exp(-calc.pow((i - 5) / 2, 2)) * 1pt
+            ((x, y),)
+          },
+          (11.7pt, 0pt),
+          (0pt, 0pt)
+        )
+      })
+      
+      // Zona ISI
+      place(dx: 162pt, dy: 105pt, {
+        rect(
+          width: 25pt,
+          height: 20pt,
+          stroke: (paint: orange, thickness: 1pt, dash: "dashed"),
+          fill: orange.transparentize(85%)
+        )
+      })
+    })
+  },
+  caption: [
+    Interferenza inter-simbolo (ISI) causata dal multipath.\ 
+    L'interferenza avviene nel quadrato $mo("arancione")$
+  ]
+)
 
 #nota[
   Maggiore è la distanza tra $T_X$ e $R_X$, più alta è la probabilità che si verifichi questo fenomeno. Trasmettendo meno simboli si ha un data rate minore, ma incrementandoli aumenta la probabilità di avere ISI.
 ]
-
-
-
-
 
 #esempio()[
   
