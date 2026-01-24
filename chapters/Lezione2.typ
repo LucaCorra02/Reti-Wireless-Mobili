@@ -1329,25 +1329,128 @@ Rispetto alla PSK, *non* richiede un preciso allineamento degli oscillatori tra 
 
 === Codifice per più bit
 
-Vedremo : 
-- MFSK: più frequenze che coficano più bite, il numero di bit codificati in un simbolo è $log_2(M) "bit"$.
-- QPSK: codifica 2 bit per ogni simbolo 
-- X-QAM: codifica x bit per ogni simbolo
+Esistono delle tecniche che permettono più di un bit per simbolo: 
+- *Multilevel Frequency-Shift Keying (MFSK)*: più frequenze ($M$) che codificano più bit, il numero di bit codificati in un simbolo è: $log_2(M) "bit"$.
 
-==== MFSK
+- *Quadrature Phase-Shift Keying (QPSK)*: codifica $2$ bit per ogni simbolo.
 
-==== QPSK
+- *Quadrature Amplitude Modulation (X-QAM)*: codifica $x$ bit per ogni simbolo.
 
-Diagramma della costellazione. GLi estremi sono i simboli che possiamo trasmettere. 
-Idea. $s(t) $ segnale che viene trasmesso. 
+=== QPSK
 
-Ogni punto della costellazione 
-Se volessi trasmettere la 10 prendo 1 per il valore I(t) e -1 per Q(t) sotituendo nella formula ottengo il segnale risultante 
+Viene utilizzata la fase per determinare i bit. L'idea è che ci sono *$4$ fasi diverse* (sfalsate di $90 degree$), permettendo di codificare *$2$ bit per simbolo* ($log_2 4$):
+$
+  s(t) = cases(
+    A cos(2 pi f_c t + pi/4) &-> 11,
+    A cos(2 pi f_c t + (3pi)/4) &-> 01,
+    A cos(2 pi f_c t - (3pi)/4) &-> 00,
+    A cos(2 pi f_c t - pi/4) &-> 10
+  )
+$
+Per ottenere il segnale $s(t)$ da trasmettere (codifica) viene utilizzata la seguente formula: 
+$
+  s(t) = 1/sqrt(2) I(t)cos(2 pi f_c t)- 1/sqrt(2) Q(t) sin(2 pi f_c t)
+$
+Dove: 
+- *$I(t)$* In-phase: rappresenta l'asse delle $x$ ed è l'ampiezza della componente coseno.  
+- *$Q(t)$* Quadrature: rappresenta l'asse delle $y$. è l'ampiezza della componente seno (angolo retto rispetto ad $I$).
 
-La ricezione va la cosa inversa, riceve un punt distorto nella costellazione e guardo il punto più vicino nel diagramma. 
+Per la codifica e la decodifica viene utilizzato un *diagramma della costellazione*: 
+
+#figure(
+  {
+    set text(size: 7pt)
+    
+    box(width: 40%, height: 140pt, {
+      // Asse Q(t) verticale
+      place(dx: 70pt, dy: 10pt, {
+        line(length: 120pt, angle: 90deg, stroke: 1.8pt + red)
+        // Freccia superiore
+        // Etichetta Q(t)
+        place(dx: 4pt, dy: -132pt, text(size: 9pt, weight: "bold")[$Q(t)$])
+      })
+      
+      // Asse I(t) orizzontale
+      place(dx: 10pt, dy: 70pt, {
+        line(length: 120pt, stroke: 1.8pt + red)
+        // Freccia sinistra
+        place(dx: -5pt, dy: -3pt, polygon(fill: red, (0pt, 3pt), (6pt, 0pt), (6pt, 6pt)))
+        // Freccia destra
+        place(dx: 125pt, dy: -3pt, polygon(fill: red, (6pt, 3pt), (0pt, 0pt), (0pt, 6pt)))
+        // Etichetta I(t)
+        place(dx: 125pt, dy: 8pt, text(size: 9pt, weight: "bold")[$I(t)$])
+      })
+      
+      // Centro (origine)
+      place(dx: 68pt, dy: 68pt, circle(radius: 2.5pt, fill: black))
+      
+      // Etichette assi
+      place(dx: 100pt, dy: 75pt, text(size: 8pt, weight: "bold")[1])
+      place(dx: 75pt, dy: 34pt, text(size: 8pt, weight: "bold")[1])
+      place(dx: 34pt, dy: 75pt, text(size: 8pt, weight: "bold")[-1])
+      place(dx: 75pt, dy: 100pt, text(size: 8pt, weight: "bold")[-1])
+      
+      // Linee tratteggiate che formano una griglia
+      // Verticale x = -1
+      place(dx: 30pt, dy: 10pt, line(length: 120pt, angle: 90deg, stroke: (paint: black, dash: "dashed", thickness: 0.6pt)))
+      
+      // Verticale x = +1
+      place(dx: 110pt, dy: 10pt, line(length: 120pt, angle: 90deg, stroke: (paint: black, dash: "dashed", thickness: 0.6pt)))
+      
+      // Orizzontale y = +1
+      place(dx: 10pt, dy: 30pt, line(length: 120pt, stroke: (paint: black, dash: "dashed", thickness: 0.6pt)))
+      
+      // Orizzontale y = -1
+      place(dx: 10pt, dy: 110pt, line(length: 120pt, stroke: (paint: black, dash: "dashed", thickness: 0.6pt)))
+      
+      // Cerchi rossi sulle intersezioni
+      // Punto 11 (x=1, y=1)
+      place(dx: 105pt, dy: 24pt, {
+        circle(radius: 6pt, fill: red, stroke: 1pt + black)
+        place(dx: 12pt, dy: -3pt, text(size: 8pt, weight: "bold")[11])
+      })
+      
+      // Punto 01 (x=-1, y=1)
+      place(dx: 24pt, dy: 24pt, {
+        circle(radius: 6pt, fill: red, stroke: 1pt + black)
+        place(dx: -11pt, dy: -3pt, text(size: 8pt, weight: "bold")[01])
+      })
+      
+      // Punto 10 (x=1, y=-1)
+      place(dx: 105pt, dy: 105pt, {
+        circle(radius: 6pt, fill: red, stroke: 1pt + black)
+        place(dx: 12pt, dy: -3pt, text(size: 8pt, weight: "bold")[10])
+      })
+      
+      // Punto 00 (x=-1, y=-1)
+      place(dx: 24pt, dy: 105pt, {
+        circle(radius: 6pt, fill: red, stroke: 1pt + black)
+        place(dx: -13pt, dy: -3pt, text(size: 8pt, weight: "bold")[00])
+      })
+    })
+  },
+  caption: [
+    Diagramma di costellazione QPSK
+  ]
+)
+
+Gli estremi (punti $mr("rossi")$) sono i simboli che possiamo trasmettere:
+
+- *Trasmissione*: se volessi trasmettere la sequenza $10$, ad esempio, vado a prendere $1$ per il valore $I(t)$ e $-1$ per $Q(t)$. Sotituendo tali valori nella formula ottengo il segnale risultante
+
+- *Ricezione*: al ricevente arriva un punto distorto della costellazione, esso andrà a calcolare il *punto più vicino* nello spazio. Vengono utilizzate delle *linee di decisione* (gli assi cartesiani per QPSK):
+  - Se il punto cade nel 1° quadrante ($x>0, y>0$) $-> 11$.
+  - Se il punto cade nel 2° quadrante ($x<0, y>0$) $-> 01$
+
+#attenzione()[
+  Trasmettitore e ricevitore *devono* condividere la stessa costellazione
+]
 
 #nota()[
-  trasmettitore e ricevitore devono condividere la stessa costellazione
+  Viene utilizzata la *Codifica di Gray*: tra un punto e il suo vicino cambia solo $1$ bit alla volta.\
+  Serve a *ridurre gli errori* in presenza di rumore. Permette al ricevitore di "sbagliare di poco" (confusione tra il punto $11$ e il vicino $01$), solo $1$ bit. 
+  
+  Se avessimo utilizzato l'ordine _standard_, un errore di posizione avrebbe potuto far sbagliare entrambi i bit contemporaneamente. 
 ]
 
 QAM (disegno in 16-QAM). Il punto rappresenta la stringa di bit da trasmettere, tuttavia prendiam due valori per ogni punto. Per ogni punto sappiamo la circonferenza (ampiezza da dare a ciascuna delle parti) e le coordinate $I$ e $Q$. 
