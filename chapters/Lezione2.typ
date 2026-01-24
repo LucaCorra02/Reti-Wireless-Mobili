@@ -726,47 +726,173 @@ il gain ovviamente viene sottratto in modo da diminure la loss.
 
 #attenzione()[
   Usare antenne direzionali (High Gain) è rischioso. Se non sono perfettamente allineate, c'è il rischio di finire nella _zona morta_ (fuori dal *beam*). In questo spicchio il segnale è peggiore, rispetto ad un antenna isotropica.
-
-
 ]
 
 
 === Multipath 
 
-L'immisione di raggi non è un singolo fascio. Abbiamo una serie di onde che colpiscono oggetti in direzioni diverse, abbiamo fenomeni di: 
-- riflessione
-- scattering, viene preso un oggetto con la stessa lunghezza d'onda del segnale, le onde vengono sparate in diverse direzioni
-- Diffrazione: cambia e devia il suo percorso e direzione, ad esempio quando incrocia un palazzo. 
+Anche se la trasmissione avviene in maniera direzionale, il segnale avrà una _fascia_ di direzioni in cui viene inviato (*multipath*), siccome il mezzo di propagazione è l'aria esso potrà interagire con l'ambiente. Si possono verificare fenomeni di: 
+- *Riflessione*: il segnale _rimbalza_ sull'oggetto colpito.
+ 
+- *Scattering*: il segnale colpisce un oggetto avente la stessa lunghezza d'onda $lambda$, le onde vengono sparate in diverse direzioni.
 
-Al ricevitore arrivano tutti questi segnali. I segnali si combinano in modo casuale, portando a: 
-- *fading*: oltre alla perdità di potenza dovuta alla distanza perdiamo anche per interferenze distruttive
-- *interferenza inter-simbolo*: trasemtto un simbolo come un impulso in un certo intervallo. Se l'intervallo è troppo breve, potrebbe accadere che riceverei mentre sto trasmettendo il simbolo successivo ancora dei segnali del simbolo precedente, generando un interferenza distruttiva
+- *Diffrazione*: se la lunghezza d'onda $lambda <<$ della dimensione dell'oggetto colpito e l'impatto avviene sui bordi, il segnale cambia e devia la sua direzione (_impatto con un palazzo_).
 
-*Fading*, potrei sia ottenere un segnalo amplificato che sia un segnale nullo (interferenze distruttive)
+Al ricevitore $R_x$ arriveranno tutti questi segnali. Inoltre, i segnali possono *combinarsi tra di loro* in modo casuale, portando a due fenomeni, *fading* e *interferenza inter-simbolo*.
+
+==== Fading
+  
+Oltre alla perdità di potenza del segnale dovuta alla distanza, possono causarsi delle interferenze durante il percorso che ne alterano ulteriormente l'intensità e la forma.
+
+Questo accade quando più segnali vengono ricevuti in tempi diversi. Le interferenze possono essere: 
+- *Costruttive*: le interferenze amplificano il segnale, suono _buone_.
+- *Distruttive*: il segnale ricevuto è stato modificato in modo imprevedibile.
+
 #nota()[
-  Non ho controllo su come combinare in modo costruttivo questi segnali, potrei ottenere uan cstruzione o distruzione di onde elettromagnetiche
+  *Non* si ha alcun controllo su come poter combinare in modo costruttivo le interferenze. 
 ] 
-Inoltre, potrei avere un tempo di cooerenza del segnale, ovvero un tempo in cui si possono considerare caratteristiche costanti del segnale:
+
+Bisogna anche tenere in conto le proprietà fisiche del mezzo e come il segnale si modifica durante la propagazione. Il *tempo di coerenza* permette di sapere ogni quanto campionare la condizione del canale, al fine di ottenere una misurazione stabile e costante. Durante questo intervallo di tempo le caratteristiche del segnale saranno _costanti_:
 $
-  T_c = 1 / f_d
-$ 
-Dipende dalla frequenza dopler. La frequenza di dopler $f_d$ dipende dalla velocità relativa tra trasmettitore e ricevitore e anche dalla frequenza della portante. 
+  T_c = 1 / f_D
+$
+Tale tempo *dipende dalla frequenza dopler ($f_D$)*: 
+$
+  f_D = underbrace(v/c, "velocità tra"\ T_x "e" R_x) underbrace(f_c,"frequenza portante")
+$
 
 #informalmente()[
-  più vado veloce e più alte sono le frequenze della portante devo rifare le stime del campionamento. 
+  Maggiore è la velocità a cui spostano $T_x$ e $R_x$ e maggiore è la frequenza $->$ Più il campionamento dovrà avvenire frequentemente. 
 ]
 
-Effetti del Multipath. Più i trasmettitore e ricevitori sono lontani più i percorsi sono diversi e con lunghezze diverse. 
+==== Interferenza inter-simbolo
 
-Inoltre non solo, ci sono atri che interferiscono con me ma anche io posso interferire con quello che trasmetterò dopo. Se la durata di trasmissione di un simbolo non è abbastanza potrei sia ricevere un segnale che corrisponde al simbolo successivo ma anche dei segnali del simbolo precedente. Questo fenomeno prende il nome di interferenza inter-simbolo. 
+La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un determinato intervallo di tempo. Tuttavia, se l'*intervallo è troppo breve*, potrebbe accadere che il ricevitore mentre sta già processando il simbolo successivo, riceva ancora dei segnali relativi al simbolo precedente dovuti al multipath, generando un'*interferenza distruttiva*. 
 
-Se abbiamo una distanza breve posso usare simboli che durando meno e posso trasmettere più simboli al secondo e di conseguenza più bit al secondo (al contrario se sono molto distante).
 
-Problematica meno presente su wifi ma molto presente su comunicazioni mobile. 
 
-==== MIMO (Multiple input multiple output)
 
-Il Multipath se usato in modo inteligenete può essere utilizzato in modo costruttivo. Ho un array di antenne che lavorano in modo molto direzionale. 
+#nota[
+  Maggiore è la distanza tra $T_X$ e $R_X$, più alta è la probabilità che si verifichi questo fenomeno. Trasmettendo meno simboli si ha un data rate minore, ma incrementandoli aumenta la probabilità di avere ISI.
+]
+
+
+
+
+
+#esempio()[
+  
+  #figure(
+  {
+    set text(size: 7pt)
+    
+    box(width: 85%, height: 180pt, {
+      // Titolo in alto a destra
+      place(dx: 450pt, dy: 5pt, {
+        align(right)[
+          #text(size: 8pt, weight: "bold")[
+            Multi-path fading\
+            Doppler\
+            Noise
+          ]
+        ]
+      })
+      
+      // Funzione helper per disegnare griglia e assi
+      let draw_grid(y_offset) = {
+        // Griglia
+        for i in range(0, 10) {
+          let x = i * 32pt
+          place(dx: 30pt + x, dy: y_offset, line(length: 26pt, angle: 90deg, stroke: (paint: gray.lighten(80%), thickness: 0.2pt)))
+        }
+        for i in range(0, 4) {
+          let y = i * 8.7pt
+          place(dx: 30pt, dy: y_offset + y, line(length: 320pt, stroke: (paint: gray.lighten(80%), thickness: 0.2pt)))
+        }
+        // Assi
+        place(dx: 30pt, dy: y_offset + 26pt, line(length: 320pt, stroke: 0.5pt + black))
+        place(dx: 30pt, dy: y_offset, line(length: 26pt, angle: 90deg, stroke: 0.5pt + black))
+      }
+      
+      // Primo grafico: onda sinusoidale pulita (nera)
+      draw_grid(10pt)
+      place(dx: 355pt, dy: 23pt, text(size: 6pt)[TX 400 mW])
+      for i in range(0, 64) {
+        let x1 = 30pt + i * 5pt
+        let x2 = 30pt + (i + 1) * 5pt
+        let y1 = (23 + 9 * calc.sin(i * 25deg)) * 1pt
+        let y2 = (23 + 9 * calc.sin((i + 1) * 25deg)) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.1pt + black))
+      }
+      
+      // Secondo grafico: segnale LoS con fading (blu)
+      draw_grid(44pt)
+      place(dx: 355pt, dy: 57pt, text(size: 5pt, fill: blue)[RX LoS])
+      for i in range(0, 128) {
+        let x1 = 30pt + i * 2.5pt
+        let x2 = 30pt + (i + 1) * 2.5pt
+        let amp = 6 + 3 * calc.sin(i * 4deg)
+        let y1 = (57 + amp * calc.sin(i * 36deg)) * 1pt
+        let y2 = (57 + amp * calc.sin((i + 1) * 36deg)) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 0.8pt + blue))
+      }
+      
+      // Terzo grafico: segnale NLOS (arancione) - parte sfalsata
+      draw_grid(78pt)
+      place(dx: 355pt, dy: 91pt, text(size: 5pt, fill: orange)[RX NLoS 1])
+      for i in range(18, 128) {
+        let x1 = 30pt + i * 2.5pt
+        let x2 = 30pt + (i + 1) * 2.5pt
+        let amp = 5.5 + 3.5 * calc.sin(i * 5deg)
+        let y1 = (91 + amp * calc.sin(i * 36deg)) * 1pt
+        let y2 = (91 + amp * calc.sin((i + 1) * 36deg)) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 0.8pt + orange))
+      }
+      
+      // Quarto grafico: segnale NLOS rumoroso (verde) - continua oltre la durata del nero
+      draw_grid(112pt)
+      place(dx: 355pt, dy: 125pt, text(size: 5pt, fill: green)[RX NLoS 2])
+      for i in range(35, 150) {  // Continua oltre (150 invece di 128)
+        let x1 = 30pt + i * 2pt
+        let x2 = 30pt + (i + 1) * 2pt
+        let noise = calc.rem(i * 23, 7) - 3.5
+        let y1 = (125 + noise) * 1pt
+        let y2 = (125 + calc.rem((i + 1) * 23, 7) - 3.5) * 1pt
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 0.7pt + green))
+      }
+      
+      // Quinto grafico: segnale ricevuto finale MOLTO scombinato (ROSSO)
+      draw_grid(146pt)
+      place(dx: 355pt, dy: 159pt, text(size: 5pt, fill: red)[RX ricevuto])
+      
+      for i in range(0, 128) {
+        let x1 = 30pt + i * 2.5pt
+        let x2 = 30pt + (i + 1) * 2.5pt
+        
+        // Segnale molto più caotico e distorto
+        let noise1 = calc.rem(i * 17, 5) - 2
+        let noise2 = calc.rem(i * 13, 4) - 1.5
+        let amp_combined = 4 + 3 * calc.sin(i * 9deg) + 2 * calc.sin(i * 3deg) + noise1
+        let y1 = (159 + amp_combined * calc.sin(i * 45deg + 20deg) + noise2) * 1pt
+        
+        let noise3 = calc.rem((i + 1) * 17, 5) - 2
+        let noise4 = calc.rem((i + 1) * 13, 4) - 1.5
+        let amp_combined2 = 4 + 3 * calc.sin((i + 1) * 9deg) + 2 * calc.sin((i + 1) * 3deg) + noise3
+        let y2 = (159 + amp_combined2 * calc.sin((i + 1) * 45deg + 20deg) + noise4) * 1pt
+        
+        place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 0.8pt + red))
+      }
+    })
+  },
+  caption: [
+    Effetti del multipath sulla ricezione del segnale.
+  ]
+  )
+  Descrizione: 
+  - Il primo *grafico* rappresenta l'onda sinusoidale prima che esca dall'antenna del trasmettitore. 
+  - I grafici $mb("blu")$, $mg("verde")$ e $mo("arancione")$ rappresentano cosa succede quando il segnale viene trasmesso nell'ambiente. In particolare, il segnale $mg("verde")$ ha fatto un giro più lungo, ed è arrivata in ritardo. Se il ritardo è troppo grande, l'onda $mg("verde")$ arriverà addosso al simbolo successivo, causando ISR. 
+  - il grafico $mr("rosso")$ è ciò che "sente" l'antenna ricevente ($R_x$). Il ricevitore non sente le singole linee separate ma la *somma* di tutte le onde sopra (Arancione + Verde + Blu + Rumore).
+]
 
 == Codifica e trasmissione dei dati
 
