@@ -1129,34 +1129,203 @@ La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un d
 
 == Codifica e trasmissione dei dati
 
-Codifica
-- Forward e Correction, encoder
-- Modulazione e codifica
-- power amplifier
-Decodifcia: 
-- forward error, correction, decoder
-- demodulation & decoding
+Uno schema di trasmissione radio presenta le seguenti fasi:
+- Lato trasmettitore: 
+  - Forward Error Correction FEC
+  - Modulation & coding
+  - Power amplifier
 
-Possiamo agire sempre su una sinusoide (combinando anche tra di loro le modulazioni) in:
-- Ampiezza (ASK):  
-- Frequenza (FSK): 
-- Fase (PSK):
+- Lato ricevitore:
+  - Demodulation & decoding
+  - Forward Error Correction
+  - Decoder
+
+=== Modulazione e Codifica
 
 #informalmente()[
-  Vogliamo avere diverse tipologie di segnale modificando le proprietà della sinusoide
+  Vogliamo avere diverse tipologie di segnale andando a modificare le proprietà della sinusoide. Le tecniche possono essere combinate tra di loro.
 ]
 
-//Aggiungere immagine
-#esempio()[
-  Esempi di modulazione: 
-  - ASK: se trasmetto un 1 trasmetto un certo segnale con una certa ampiezza. Prendo il bit (ogni simbolo codifica 1 solo bit) e se è 0 sono in idle, aktrimenti se è 1 ho un segnale
-  - FSK: le bande mostrano la durata di un simbolo e abbiamo due frequenze, a seconda che sia uno zero o un uno usiamo una frequenza o l'altra (per zero ho una frequenza minore con meno oscillazioni)
-  - PSK: ho una fase a 0, nel caso devo trasmettere uno zero uso uno sfasamento, le interruzioni di fase rappresentano il cambio del bit. 
+Esistono diverse tecniche per codificare dati digitali in segnali analogici. Queste tecniche agiscono su $3$ parametri della sinusoide: 
+- *Amplitude-Shift keying (ASK)*: modula l'intensità (_altezza dell'onda_) del segnale: 
+$
+  s(t) = cases(
+    A sin(2 pi f_c t) "se bit"=1,
+    0 = 1
+  )
+$
+
+- *Fase-Shift keying (FSK)*: modula la frequenza (_velocità di oscillazione dell'onda_):
+$
+  s(t) = cases(
+    A sin(2 pi f_1 t) "se bit"=1,
+    A sin(2 pi f_2 t) "se bit"=0
+  )\
+  f_1 "e" f_2 "sono vicine a" f_c 
+$
+- *Phase-Shift keyng (PSK)*: L'onda oscilla regolarmente ma viene modulata la fase (cambio di fase di 180° tra bit diversi):
+$
+  s(t) = cases(
+    A sin(2 pi f_c t) "se bit"=1,
+    A sin(2 pi f_c t + pi) "se bit"=0
+  )
+$
+
+#figure(
+  {
+    set text(size: 7pt)
+    
+    box(width: 85%, height: 220pt, {
+      
+      // === ASK (Amplitude Shift Keying) ===
+      place(dx: 5pt, dy: 5pt, text(size: 8pt, weight: "bold")[ASK - Amplitude Shift Keying])
+      
+      // Sequenza di bit per ASK
+      let bits_ask = (0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0)
+      for i in range(0, bits_ask.len()) {
+        let x = 20pt + i * 30pt
+        place(dx: x, dy: 20pt, rect(
+          width: 30pt, 
+          height: 15pt, 
+          fill: if bits_ask.at(i) == 1 { rgb("#bbdefb") } else { rgb("#e3f2fd") },
+          stroke: none
+        ))
+        place(dx: x + 12pt, dy: 24pt, text(size: 7pt, weight: "bold")[#bits_ask.at(i)])
+      }
+      
+      // Segnale ASK modulato
+      for i in range(0, bits_ask.len()) {
+        let x_start = 20pt + i * 30pt
+        if bits_ask.at(i) == 1 {
+          // Segnale con ampiezza alta (bit = 1)
+          for j in range(0, 6) {
+            let x1 = x_start + j * 5pt
+            let x2 = x_start + (j + 1) * 5pt
+            let y1 = (52 - 8 * calc.sin(j * 60deg)) * 1pt
+            let y2 = (52 - 8 * calc.sin((j + 1) * 60deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + blue))
+          }
+        } else {
+          // Segnale nullo o bassa ampiezza (bit = 0)
+          place(dx: x_start, dy: 52pt, line(length: 30pt, stroke: 1.2pt + blue))
+        }
+      }
+      
+      // Linea base ASK
+      place(dx: 20pt, dy: 52pt, line(length: 330pt, stroke: (paint: gray, dash: "dotted", thickness: 0.3pt)))
+      
+      // === FSK (Frequency Shift Keying) ===
+      place(dx: 5pt, dy: 75pt, text(size: 8pt, weight: "bold")[FSK - Frequency Shift Keying])
+      
+      // Sequenza di bit per FSK
+      let bits_fsk = (0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0)
+      for i in range(0, bits_fsk.len()) {
+        let x = 20pt + i * 30pt
+        place(dx: x, dy: 90pt, rect(
+          width: 30pt, 
+          height: 15pt, 
+          fill: if bits_fsk.at(i) == 1 { rgb("#ffcdd2") } else { rgb("#fce4ec") },
+          stroke: none
+        ))
+        place(dx: x + 12pt, dy: 94pt, text(size: 7pt, weight: "bold")[#bits_fsk.at(i)])
+      }
+      
+      // Segnale FSK modulato
+      for i in range(0, bits_fsk.len()) {
+        let x_start = 20pt + i * 30pt
+        if bits_fsk.at(i) == 1 {
+          // Frequenza alta (bit = 1) - più oscillazioni
+          for j in range(0, 10) {
+            let x1 = x_start + j * 3pt
+            let x2 = x_start + (j + 1) * 3pt
+            let y1 = (122 - 8 * calc.sin(j * 72deg)) * 1pt
+            let y2 = (122 - 8 * calc.sin((j + 1) * 72deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + red))
+          }
+        } else {
+          // Frequenza bassa (bit = 0) - meno oscillazioni
+          for j in range(0, 5) {
+            let x1 = x_start + j * 6pt
+            let x2 = x_start + (j + 1) * 6pt
+            let y1 = (122 - 8 * calc.sin(j * 72deg)) * 1pt
+            let y2 = (122 - 8 * calc.sin((j + 1) * 72deg)) * 1pt
+            place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + red))
+          }
+        }
+      }
+      
+      // Linea base FSK
+      place(dx: 20pt, dy: 122pt, line(length: 330pt, stroke: (paint: gray, dash: "dotted", thickness: 0.3pt)))
+      
+      // === BPSK (Binary Phase Shift Keying) ===
+      place(dx: 5pt, dy: 145pt, text(size: 8pt, weight: "bold")[BPSK - Binary Phase Shift Keying])
+      
+      // Sequenza di bit per BPSK
+      let bits_bpsk = (0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0)
+      for i in range(0, bits_bpsk.len()) {
+        let x = 20pt + i * 30pt
+        place(dx: x, dy: 160pt, rect(
+          width: 30pt, 
+          height: 15pt, 
+          fill: if bits_bpsk.at(i) == 1 { rgb("#c8e6c9") } else { rgb("#e8f5e9") },
+          stroke: none
+        ))
+        place(dx: x + 12pt, dy: 164pt, text(size: 7pt, weight: "bold")[#bits_bpsk.at(i)])
+      }
+      
+      // Segnale BPSK modulato
+      let phase = 0deg
+      for i in range(0, bits_bpsk.len()) {
+        let x_start = 20pt + i * 30pt
+        
+        // Cambio di fase quando il bit cambia
+        if i > 0 and bits_bpsk.at(i) != bits_bpsk.at(i - 1) {
+          phase = phase + 180deg
+        }
+        
+        // Disegna onda con fase corrente
+        for j in range(0, 6) {
+          let x1 = x_start + j * 5pt
+          let x2 = x_start + (j + 1) * 5pt
+          let y1 = (192 - 8 * calc.sin(j * 60deg + phase)) * 1pt
+          let y2 = (192 - 8 * calc.sin((j + 1) * 60deg + phase)) * 1pt
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 1.2pt + green.darken(20%)))
+        }
+      }
+      
+      // Linea base BPSK
+      place(dx: 20pt, dy: 192pt, line(length: 330pt, stroke: (paint: gray, dash: "dotted", thickness: 0.3pt)))
+      
+      // Etichette esplicative
+      place(dx: 360pt, dy: 40pt, text(size: 6pt, fill: blue)[Ampiezza varia])
+      place(dx: 360pt, dy: 110pt, text(size: 6pt, fill: red)[Frequenza varia])
+      place(dx: 360pt, dy: 180pt, text(size: 6pt, fill: green.darken(20%))[Fase varia])
+    })
+  },
+  caption: [
+    Schemi di modulazione digitale
+  ]
+)
+
+Esiste una versione migliorata della PSK che prende il nome di *Differential Phase Shift Keying (DPSK)*. La codifica è la decodifica non sono più fisse, ma dipendono dallo stato precedente:
+$
+  cases(
+    "La fase non cambia rispetto al simbolo precedente" &"Se bit" = 0,
+    "La fase cambia di" 180° "rispetto al simbolo precedente" &"Se bit"=1
+  )
+$
+
+#informalmente()[
+  Nei dispositivi elettronici è molto più semplice vedere una discontinuità nella fase piuttosto che misurare il tempo.
+ 
+  Se viene osservato un cambio nel voltaggio allora è stato trasmesso un $1$. Se c'è un proseguo allora è stato trasmesso uno $0$. 
 ]
 
-Nei dispositivi elettronici è molto più semplice vedere una discontinuità nella fase piuttosto che misurare il tempo (?).
+Rispetto alla PSK, *non* richiede un preciso allineamento degli oscillatori tra $T_X$ e $R_X$
 
-DPSK. Se cambia qualcosa io cambio il simbolo. Se osservo un camvbio nel voltaggio allora è stato trasmesso un uno, se c'è un proseguo allora è stato trasmesso uno zero. 
+#nota()[
+  Nella PSK classica, il ricevitore deve avere un _orologio_ perfettamente sincronizzato con quello del trasmettitore per capire la fase. Deve sapere esattamente dov'è situato lo zero gradi ($0 degree$). Se l'antenna si sposta leggermente o l'oscillatore del ricevitore ruota di poco, il ricevitore perde il riferimento, scambiando gli $1$ con gli $0$.
+]
 
 === Codifice per più bit
 
