@@ -1453,35 +1453,58 @@ Gli estremi (punti $mr("rossi")$) sono i simboli che possiamo trasmettere:
   Se avessimo utilizzato l'ordine _standard_, un errore di posizione avrebbe potuto far sbagliare entrambi i bit contemporaneamente. 
 ]
 
-QAM (disegno in 16-QAM). Il punto rappresenta la stringa di bit da trasmettere, tuttavia prendiam due valori per ogni punto. Per ogni punto sappiamo la circonferenza (ampiezza da dare a ciascuna delle parti) e le coordinate $I$ e $Q$. 
+=== X-QAM
 
-La limitazione è la potenza di trasmissione. 
+In questa tecnica si lavora su due parametri diversi, l'*ampiezza* e la *fase* (combinazione di ASK e PSK). Il risultato è una costellazione di punti molto più densa. 
 
-Non guardiamo solo la fase, ma guardiamo anche l'ampiezza.
+Il segnale $s(t)$ di trasmissione viene generato tramite la seguente formula: 
+$
+  s(t) = underbrace(I(t)cos(2 pi f_c t),"onda 1")-underbrace(Q(t) sin(2 pi f_c t),"onda 2")
+$
+Data una sequenza di bit da trasmettere viene calcolato: 
+- *Split*: la sequenza di bit viene spezzata in due gruppi, uno per il canale $I$ e l'altro per il canale $Q$
 
-Vengono implementati nel seguente modo: 
-- blocco di N-BIT che arriva diviso a metà, il primo blocco è in fase il secondo è in quadratura. Identifica i punti cardinali dei bit
-- in fase calcoliamo in coseno e la parte in quadratura viene mandata in shift. 
+- *Mappatura*: vengono presi il voltaggio relativo ai punti delle componenti $I$ e $Q$:
+  - il segno ($+ "o" -$) decide il quadrante  (fase)
+  - il valore del voltaggio decide quanto il punto è lontano dal centro (ampiezza).
 
-//aggiugnere segnale
-#esempio()[
-    Esempio di QPSK
-
-  Supponiamo di voler trasmetter i bit. QPSK ci permette di trasmetter 2 bit per ogni simbolo. Per ogni coppai di bit guardiamo il punto della costellazione a cui corrisponde ottenendo i parametri del segnale. 
-
-  Alle variazioni cambiano il bit che si sta trasmettendo, conoscendo anche la durata se riesce a risalire ai bit trasmessi 
-
-  Impieghiamo $8$ simboli per trasmettere la sequenza di bit. ovvero trasmettiamo $16$ bit al secondo. 
-]
+- *Modulazione*: Le componenti $I$ e $Q$ vengono sostiuite nella formula. Le due onde risultanti vengono sommate fisicamente. Il risultato $s(t)$ è un'onda unica che avrà una fase e un'ampiezza specifiche risultanti dalla somma vettoriale delle due componenti.
 
 #esempio()[
-  Esempio di 16 Quam. i bit vengono raggruppati a gruppi di $4$. 
-
-  Più lento ???? No forse la durata del simbolo è la stessa ma trasmettiamo più bit al secondo. 
-  Costellazione più denza. 
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 15pt,
+    [
+      *Esempio 16-QAM*
+      
+      La costellazione 16-QAM permette di codificare *4 bit per simbolo* $log_2(16)$.
+      
+      Supponiamo di voler trasmettere ``` 1101```:
+      - Divisione in due parti. Dove $I=$``` 11``` e $Q=$``` 01```.
+      - Viene effettuato il mapping usando la costellazione, $I = +3$ e $Q = -1$
+      - Vengono sostiuite le componenti nella formula, ottenendo così la modulazione
+      $
+        "onda1" = (+3) * cos(w t)\
+        "onda2" = (-1) * sin(w t)
+      $
+      - Le onde risultanti vengono sommate
+    ],
+    [
+      // TODO fare disegno 
+      #image("/assets/QAM-16.png", width: 100%)
+    ]
+  )
 ]
 
-==== Curve di BER
+#nota()[
+  La $X-"QAM"$ permette di trasmettere *più bit nell'unità di tempo* (durata del simbolo). Tuttavia, a differenza di QPSK è *molto più fragile*. In caso di interferenza, il ricevitore può sbagliare quadrato più facilmente, perdendo i dati. 
+  
+  Quando il segnale è molto distrubato conviene  "rallentare" tornando alla modalità QPSK. In questo modo c'è meno probabilità di sbagliare.
+]
+
+
+
+=== Curve di BER
 
 L'idea è che la curva dice qual'è l'energia del bit rispetto al rumore: 
 $
