@@ -1647,15 +1647,27 @@ A fronte di un canale molto rumoroso, il ricevitore fa fatica a determinare il q
 
 === Forward error correction 
 
-Il controllo degli errori è fatto dopo la ricezione nella comunicazione a cavo. C'è un codice che rappresenta se è stato trasmesso correttamente, se vogliamo un link affidabile richiedo la ritrasmissione con NACK o HACK. 
+Nelle comunicazioni via cavo il controllo degli errori viene fatto dopo la ricezione della comunicazione. In trasmissione viene aggiunto un codice che rappresenta se è il messaggio è stato trasmesso correttamente. Se vogliamo un link affidabile richiederemo la ritrasmissione con messaggi NACK o HACK. 
 
-In ambito wireless si sbaglia molto spesso (il mezzo è molto distrubato). Continuare a ripetere la trasmissione non è una buona scelta. 
+Questa soluzione è inaplicabile nelle comunicazioni via wireless, in quanto la
+probabilità di errore è elevata, continuare a ripetere la trasmissione non è una buona scelta.\
+Per questo motivo, viene aggiunta una *ridondanza ai dati inviati*. Ogni sequenza di bit diventa una *codeword*: 
+$
+  "CodeWord"= underbrace(k,"dati"\ "utili") + underbrace((n-k),"ridondanza")
+$
+Il *coding rate* è definito come $R = k/n$.
+#esempio()[
+   Rate $1/2$ significa che per ogni bit utile ne vengono spediti $2$ totali ($1$ utile + $1$ controllo). La dimensione del messaggio viene raddoppiata. 
+]
 
-L'errore viene prevenuto. A seconda del caso si può parlare di : 
-- Code redundancy
-- Code rate
+==== Adaptive Modulation and Coding (AMC) 
+A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema di modulazione e codifica opportuno. Deve scegliere: 
+  - la codifica da utilizzare (BPSK, QAM, ecc)
+  - Il coding rate (code redundacy), più il canale è rumoroso più bit di ridondanza vengono introdotti.
 
-$k$ è il numero di bit utili trasmetti sugli effettivi $n$ trasmessi. Il parametro è scelto in base alla rumorosità del canale (più rumoroso più bit di ridondanza)
+#esempio()[
+  - Canale pessimo: BPSK (robusto) con Rate $1/2$ (super protetto). La velocità di trasmissione è bassa, ma il messaggio arriva correttamente.
 
+  - Canale ottimo: 64-QAM (veloce) con Rate $5/6$ (poco protetto). Velocità di trasmissione elevata.
 
-==== X-QAM
+]
