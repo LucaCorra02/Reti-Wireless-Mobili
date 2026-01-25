@@ -1,8 +1,6 @@
 #import "../template.typ": *
 
-= Lezione 1
-
-== Introduzione
+= Introduzione
 
 == Principi della Trasmissione
 Quando si vogliono trasmettere informazioni binarie tramite mezzo analoigico, lo schema tipico che viene adottato è il seguente:
