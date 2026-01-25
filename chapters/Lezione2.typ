@@ -1506,24 +1506,144 @@ Data una sequenza di bit da trasmettere viene calcolato:
 
 === Curve di BER
 
-L'idea è che la curva dice qual'è l'energia del bit rispetto al rumore: 
+Le curve di *Bit Error Rate (BER)* rappresentano la *probabilità di errore su un bit* in funzione del rapporto tra la densità di energia del segnale per bit ed il livello di rumore:
 $
-  "BER" = "func"(E_b/N)
-$
+  "BER" = "func"(E_b/N_O)
+$  
+#nota()[
+  Dalle curve di BER è possibile osservare che a partià di SNR e condizione del canale, *più è complicata la costellazione* (più è densa) *maggiore* è la *bonta* che il *canale* di trasmissione deve avere, altrimenti ci saranno più errori sul singolo bit. 
+]
+A fronte di un canale molto rumoroso, il ricevitore fa fatica a determinare il quadrante della costellazione in cui ricade il segnale ricevuto. Più punti ci sono in un certo quadrante, maggiore è la propabilità di sbagliare un bit. 
 
-La linea viola è più densa di quella blue. A partià di $8$db (e condizione del canale) la linea blue ha molto meno probabilità di errore rispetto a quella rosa. Più è complicata la costellazione (più è densa) dobbiamoa avere un buon canale di trasmissione, altrimenti ho più errori sul singolo bit. 
+#figure(
+  {
+    set text(size: 8pt)
+    
+    box(width: 75%, height: 230pt, {
+      // Griglia di sfondo
+      for i in range(0, 11) {
+        let y = 20pt + i * 18pt
+        place(dx: 40pt, dy: y, line(length: 320pt, stroke: (paint: gray.lighten(70%), thickness: 0.3pt)))
+      }
+      for i in range(0, 17) {
+        let x = 40pt + i * 20pt
+        place(dx: x, dy: 20pt, line(length: 180pt, angle: 90deg, stroke: (paint: gray.lighten(70%), thickness: 0.3pt)))
+      }
+      
+      // Asse X (Eb/N0 in dB)
+      place(dx: 40pt, dy: 200pt, {
+        line(length: 320pt, stroke: 1pt + black)
+        place(dx: 140pt, dy: 20pt, text(size: 9pt)[$"SNR" = E_b\/N_0$ (dB)])
+      })
+      
+      // Asse Y (BER - scala logaritmica INVERTITA)
+      place(dx: 40pt, dy: 20pt, {
+        line(length: 180pt, angle: 90deg, stroke: 1pt + black)
+        place(dx: -120pt, dy: -80pt, text(size: 9pt)[Bit Error Rate (BER)])
+      })
+      
+      // Etichette asse X (0 a 32 dB)
+      for i in range(0, 9) {
+        let x = 40pt + i * 40pt
+        let label = i * 4
+        place(dx: x - 5pt, dy: 208pt, text(size: 7pt)[#label])
+      }
+      
+      // Etichette asse Y INVERTITE (10^0 in alto, 10^-5 in basso)
+      place(dx: 10pt, dy: 17pt, text(size: 7pt)[$10^0$])
+      place(dx: 5pt, dy: 53pt, text(size: 7pt)[$10^(-1)$])
+      place(dx: 5pt, dy: 89pt, text(size: 7pt)[$10^(-2)$])
+      place(dx: 5pt, dy: 125pt, text(size: 7pt)[$10^(-3)$])
+      place(dx: 5pt, dy: 161pt, text(size: 7pt)[$10^(-4)$])
+      place(dx: 5pt, dy: 197pt, text(size: 7pt)[$10^(-5)$])
+      
+      // Funzione helper CORRETTA: più è basso il BER, più è in basso il punto
+      let ber_to_y(ber) = {
+        20pt + (-calc.log(ber) / calc.log(10)) * 36pt
+      }
+      
+      // Funzione helper per Eb/N0 a coordinata X
+      let eb_to_x(eb) = {
+        40pt + eb * 10pt
+      }
+      
+      // Limiti del grafico
+      let max_x = 360pt  // Limite destro
+      let max_y = 200pt  // Limite inferiore
+      
+      // Curva QPSK (migliore performance - scende più rapidamente)
+      for i in range(0, 50) {
+        let eb1 = i * 0.64
+        let eb2 = (i + 1) * 0.64
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, eb1 / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, eb2 / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        // Disegna solo se entrambi i punti sono dentro i limiti
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + blue))
+        }
+      }
+      place(dx: 145pt, dy: 140pt, text(size: 8pt, fill: blue, weight: "bold")[QPSK])
+      
+      // Curva 16-QAM (performance intermedia)
+      for i in range(0, 50) {
+        let eb1 = i * 0.74
+        let eb2 = (i + 1) * 0.74
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, (eb1 - 4) / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, (eb2 - 4) / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        // Disegna solo se entrambi i punti sono dentro i limiti
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + orange))
+        }
+      }
+      place(dx: 170pt, dy: 110pt, text(size: 8pt, fill: orange, weight: "bold")[16-QAM])
+      
+      // Curva 64-QAM (peggiore performance - scende più lentamente)
+      for i in range(0, 50) {
+        let eb1 = i * 0.54
+        let eb2 = (i + 1) * 0.54
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, (eb1 - 8) / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, (eb2 - 8) / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        // Disegna solo se entrambi i punti sono dentro i limiti
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + red))
+        }
+      }
+      place(dx: 190pt, dy: 69pt, text(size: 8pt, fill: red, weight: "bold")[64-QAM])
+    })
+  },
+  caption: [
+    Curve BER per QPSK, 16-QAM e 64-QAM.
+  ]
+)
 
 #informalmente[
-  Man mano che mi muovo sulle $x$ aumento il rapporto segnale rumore, il segnale diventa sempre più forte rispetto al rumore. ù
+  Man mano che mi muovo sull'asse delle $x$ aumenta il rapporto $"segnale"/"rumore"$, il segnale diventa sempre più forte rispetto al rumore. Sull'asse delle $y$ ho la propabilità di errore di un bit. Parte da tutti i bit. 
 
-  Sull'asse delle $y$ ho la propabilità di errore di un bit. Parte da tutti i bit. 
+  Mano mano che il segnale migliora, la probabilità di errore diminuisce (errore sul bit meno probabile). 
 
-  La curva è in scala logaritmica. Mano mano che il segnale migliora, la probabilità di errore diminuisce (errore sul bit meno probabile). 
+   La curva è in scala logaritmica. 
 ]
-
-Motivazione (i punti rossi sono i centri delle costellazioni) quello che viene ricevuto è un punto nella nuvolo blue (varia in fase e altezza). Fin quando un punto ricade nel quadrato va bene (lo rimappiamo a quello più vicino). tutta via se cade fuori dal quadrato è difficile trovare un centroide. 
-
-Più punti mettiamo nel quadrato della costellazione, la probabilità di sbagliare punto (bit) (a fronte di un canale rumoroso) è più alta. 
 
 === Forward error correction 
 
