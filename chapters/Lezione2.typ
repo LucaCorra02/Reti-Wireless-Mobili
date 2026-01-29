@@ -721,13 +721,13 @@ Un'antenna più piccola cattura meno segnale.
 === Antenna Gain
 
 #informalmente()[
-  Il Gain misura quanto è più forte il segnale nella direzione "giusta" rispetto all'antenna isotropica (ideale), la quale sparge il segnale in modo equo in tutte le direzioni. 
+  Il Gain ("_guadagno_") misura quanto è più forte il segnale nella direzione "giusta" rispetto all'antenna isotropica (ideale), la quale sparge il segnale in modo equo in tutte le direzioni. 
 
   Il Gain ci dice quanto l'antenna è _brava_ a concentrare il raggio:
   - Alto Gain = Raggio laser (va lontanissimo, ma va puntato benissimo).
   - Basso Gain = Lanterna (va poco lontano, ma copre ovunque).
 
-  Viene misurato in decibel (Db)
+  Viene misurato in *decibel (Db)*.
 ]
 
 #figure(
@@ -795,9 +795,9 @@ Un'antenna più piccola cattura meno segnale.
   },
   caption: [
     Confronto tra antenna isotropica e direzionale.\
-    Il cerchio grigio rappresenta l'antenna ideale che spara in tutte le direzioni.\
-    Il cerchio blu rappresenta l'antenna reale con Gain.\
-    Il gain è espresso in dBi rispetto all'antenna isotropica ideale (nell'immagine il punto $mr("A")$ ha un gain peggiore rispetto all'antenna isotropica).
+    Il cerchio grigio rappresenta l'antenna ideale che "spara" in tutte le direzioni.\
+    Il cerchio blu rappresenta l'antenna reale con *Gain*.\
+    Il *Gain* è espresso in dBi (con "i" che sta per "_isotropic_") rispetto all'antenna isotropica ideale (nell'immagine il punto $mr("A")$ ha un *Gain* peggiore rispetto all'antenna isotropica).
   ]
 )
 
@@ -819,7 +819,7 @@ Più *alto* è il *Gain*, *minore* è la *perdita* di segnale. Possiamo riscrive
 $
   L_"dB" = 10 log_10 P_t/P_r = 20(log_10 (4pi f)/c - log_10 G_"tx" - log_10G_("rx"))
 $
-il gain ovviamente viene sottratto in modo da diminure la loss. 
+il *Gain* ovviamente viene sottratto in modo da diminure la loss/perdita. 
 
 #attenzione()[
   Usare antenne direzionali (High Gain) è rischioso. Se non sono perfettamente allineate, c'è il rischio di finire nella _zona morta_ (fuori dal *beam*). In questo spicchio il segnale è peggiore, rispetto ad un antenna isotropica.
