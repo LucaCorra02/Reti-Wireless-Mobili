@@ -285,7 +285,7 @@ Un *simbolo* è una forma d'onda, uno stato (livello di voltaggio) o una condizi
 Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un secondo, si misura in _Bd_ (_Baud_). 
 
 #esempio()[
-  Il symbol rate può rappresentare quante volte il livello fisico è in grado di cambiare il voltaggio in un secondo. 
+  Il symbol rate può rappresentare quante volte il livello fisico è in grado di cambiare il voltaggio in un secondo (immaginiamo ad esempio un voltaggio di 3V che persiste per 1 secondo). 
 ]
 
 
@@ -296,6 +296,10 @@ Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un second
   "bit rate" >= "symbol rate"
   $*
   Queste due misure corrispondono quando il livello fisico è in grado di produrre solamente $2$ segnali, _alto_ e _basso_. 
+
+  È inoltre molto importante non fare confusione tra *informazione* e *simbolo*:
+  - *Informazione* $->$ È il contenuto (i veri e propri bit, che compongono una mail o un contenuto multimediale);
+  - *Simbolo* $->$ È il contenitore (l'evento *fisico* e ciò che viaggia lungo il cavo o nell'aria).
 ]
 
 Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un onda* per identificare i diversi simboli (cambia l'altezza dell'onda). Questa tecnica prende il nome di *Amplitude shift key* (coppia chiave, parametri): 
