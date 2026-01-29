@@ -302,9 +302,9 @@ Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un second
   - *Simbolo* $->$ È il contenitore (l'evento *fisico* e ciò che viaggia lungo il cavo o nell'aria).
 ]
 
-Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un onda* per identificare i diversi simboli (cambia l'altezza dell'onda). Questa tecnica prende il nome di *Amplitude shift key* (coppia chiave, parametri): 
-- *chiave*: è la sequenza di bit che vogliamo rappresentare 
-- *parametri*: è l'onda elettromagnetica che dobbiamo emettere per un certo intervallo di tempo
+Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un'onda* per identificare i diversi simboli (cambia l'altezza dell'onda). Questa tecnica prende il nome di *Amplitude Shift Key* (coppia chiave-parametri): 
+- *Chiave*: è la sequenza di bit che vogliamo rappresentare 
+- *Parametri*: è l'onda elettromagnetica che dobbiamo emettere per un certo intervallo di tempo
 
 #figure(
   {
@@ -484,7 +484,7 @@ Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un onda* p
 Se il segnale è pulito, possiamo andare a "riempire" un simbolo con più bit. Se c'è rumore, dobbiamo svuotarlo per essere sicuri che arrivi a destinazione. Seguendo questa idea una data *bandwidth* può supportare *diversi data rate* a seconda dell'abilità del ricevente di distinguere $0$ e $1$ in presenza di rumore. 
 
 #esempio()[
-  Supponendo di usare una $4$-ASK (4 bit per simbolo), vogliamo andare a creare $4$ livelli di ampiezza dove ogni livello corrisponde ad una coppia di bit: 
+  Supponendo di usare una $4$-ASK (2 bit per simbolo, con $2^2=4$ livelli), vogliamo andare a creare $4$ livelli di ampiezza dove ogni livello corrisponde ad una coppia di bit: 
   - Ampiezza $100% -> 11$ 
   - Ampiezza $75% -> 10$
   - Ampiezza $50% -> 01$
@@ -501,7 +501,7 @@ Ci sono diversi tipi di onde radio, in base alla frequenza utilizzata:
 
 - *Ground Wave propagation*: se siamo sotto i $2"MHz"$ non è necessario che trasmettitore e ricevitore si vedano (in linea d'aria).
 
-- *Sky wave propagation*: se siamo nel range $2-30 "MHz"$ il segnale rimbalza sulla iomosfera. Trasmettitore e ricevitore possono non essere in linea d'aria.
+- *Sky wave propagation*: se siamo nel range $2-30 "MHz"$ il segnale rimbalza sulla ionosfera. Trasmettitore e ricevitore possono non essere in linea d'aria.
 
 - *Line-Of-sight* (LOS) propagation: sopra i $30"MHz"$ (frequenza delle telecomunicazioni) il trasmettitore e il ricevitore devono vedersi, devono trovarsi sulla stessa retta in linea d'aria.
 
@@ -511,26 +511,26 @@ Anche le antenne si dividono in due tipi:
 - *Direzionale*: si vuole propagare il segale in una certa direzione, l'energia viene concentrata in un unico punto (line of site) sia per la trasmissione che per la ricezione.
 
   #nota()[
-    L'antenna direzionale non è perfetta. Il segnale potrebbe essere propagato (con una potenza minore) anche in altre  direzioni rispetto alla _los_.
+    L'antenna direzionale non è perfetta. Il segnale potrebbe essere propagato (con una potenza minore) anche in altre  direzioni rispetto alla _LOS_.
   ]
 
 == Trasmissione LOS
 
 Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr("problemi")$*: 
 
-- *Path lost*: attenuazione del segnale in base alla distanza e all'ambiente in cui il segnale si propaga (problema presente anche su cavo ma in maniera limitata).
+- *Path loss*: attenuazione del segnale in base alla distanza e all'ambiente in cui il segnale si propaga (problema presente anche su cavo ma in maniera limitata).
 
 - *Rumore*: diturbo che distorce il segnale, il canale wireless non ha isolamento (a differenza del cavo).
 
-- *Multipath*: la strada più breve dalla  sorgente alla destinazione è il line of site. Tuttavia, la propagazione spinge l'energia verso altre parti (*rifrazione*). Dalla sorgente le onde escono con un diverso angolo.\ 
-  Oltre ai segnali provenienti dalla via più breve, il ricevitore viene raggiunto da altri segmenti (percorrono spazi più lunghi con alla stessa velocità), causando così un *interferenza*. 
+- *Multipath*: la strada più breve dalla  sorgente alla destinazione è il _line of site_. Tuttavia, la propagazione spinge l'energia verso altre parti (*rifrazione*). Dalla sorgente le onde escono con un diverso angolo.\ 
+  Oltre ai segnali provenienti dalla via più breve, il ricevitore viene raggiunto da altri segmenti (percorrono spazi più lunghi con alla stessa velocità), causando così un'*interferenza*. 
 
-- *Effetto dopler*: shift di frequenza del segnale in base al movimento della sorgente, della destinazione o presenza di ostacoli. 
+- *Effetto doppler*: shift di frequenza del segnale in base al movimento della sorgente, della destinazione o presenza di ostacoli. 
   #nota()[
     Lo shift aumenta in maniera proporzionale alla velocità di spostamento della sorgenete o destinazione.
   ]
 
-=== Path Lost
+=== Path Loss
 
 #informalmente()[
   Quantifica la *perdità di potenza* del segnale trasmesso rispetto a quello ricevuto.
