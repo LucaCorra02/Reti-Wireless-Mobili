@@ -535,7 +535,7 @@ Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr
 #informalmente()[
   Quantifica la *perdità di potenza* del segnale trasmesso rispetto a quello ricevuto.
 
-  Si misura in *decibel $"dB"$*
+  Si misura in *decibel ($"dB"$)*.
 ]
 
 Viene calcolata come: 
@@ -543,10 +543,12 @@ $
   L = P_t / P_r = ((4pi)/(lambda))^2 d^n underbrace(=, mr(lambda = c/f)) ((4pi f)/(c))^2 d^n 
 $
 Dove: 
-- $d$: distanza tra le antenne
-- $f$: frequenza del segnale
-- $c$: velocità della luce $3 dot 10^8 m/s$
-- *$n$*: esponente della path loos (valore base = 2), man mano che aumentano gli ostacoli sale (*dipende dall'ambiente*) 
+- $d$: distanza tra le antenne;
+- $f$: frequenza del segnale;
+- $c$: velocità della luce $3 dot 10^8 m\/s$;
+- $P_t$: potenza di trasmissione;
+- $P_r$: potenza di ricezione;
+- *$n$*: esponente della path loss (valore base = 2), man mano che aumentano gli ostacoli sale (*dipende dall'ambiente*).
 
 #nota()[
   La potenza di trasmissione ($P_t$) è in generale maggiore di quella di ricezione ($P_r$). 
@@ -565,7 +567,7 @@ Se aumentiamo la frequenza, la lunghezza d'onda $lambda$ diventa più piccola. C
 Un'antenna più piccola cattura meno segnale. 
 
 #nota()[
-  A parità di distanza, maggiore è la frequenza, maggiore è il path loss.
+  A parità di distanza, maggiore è la frequenza, maggiore è il *path loss*.
 
   Con _free space loss_ si intende la perdita ideale in caso di spazio completamente libero, quindi con $d^n = d^2$ .
 ]
@@ -573,11 +575,11 @@ Un'antenna più piccola cattura meno segnale.
 
 #informalmente()[
   La formula ci dice : 
-  - più il *ricevitore è lontano*, più la *potenza del segnale ricevuto è minore*
-  - *dipende anche dalla frequenza* $f$. A parità di potenza, più la frequenza è alta, minore è il raggio di copertura.
+  - Più il *ricevitore è lontano*, più la *potenza del segnale ricevuto è minore*;
+  - *Dipende anche dalla frequenza* $f$. A parità di potenza, più la frequenza è alta, minore è il raggio di copertura.
 
   #esempio()[
-    A parità di potenza, la copertura di un acces point è maggiore con una frequenza pari a $2.4"Ghz"$ rispetto a $5"Ghz"$.
+    A parità di potenza, la copertura di un _access point_ è maggiore con una frequenza pari a $2.4"Ghz"$ rispetto a $5"Ghz"$.
   ]
 ]
 
