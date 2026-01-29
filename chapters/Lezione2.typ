@@ -833,7 +833,7 @@ Anche se la trasmissione avviene in maniera direzionale, il segnale avrà una _f
  
 - *Scattering*: il segnale colpisce un oggetto avente la stessa lunghezza d'onda $lambda$, le onde vengono sparate in diverse direzioni.
 
-- *Diffrazione*: se la lunghezza d'onda $lambda <<$ della dimensione dell'oggetto colpito e l'impatto avviene sui bordi, il segnale cambia e devia la sua direzione (_impatto con un palazzo_).
+- *Diffrazione*: se la lunghezza d'onda $lambda <<$ della dimensione dell'oggetto colpito e l'impatto avviene sui bordi, il segnale cambia e devia la sua direzione (es. _impatto con un palazzo_).
 
 Al ricevitore $R_x$ arriveranno tutti questi segnali. Inoltre, i segnali possono *combinarsi tra di loro* in modo casuale, portando a due fenomeni, *fading* e *interferenza inter-simbolo*.
 
@@ -1220,8 +1220,8 @@ La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un d
   )
   Descrizione: 
   - Il primo *grafico* rappresenta l'onda sinusoidale prima che esca dall'antenna del trasmettitore. 
-  - I grafici $mb("blu")$, $mg("verde")$ e $mo("arancione")$ rappresentano cosa succede quando il segnale viene trasmesso nell'ambiente. In particolare, il segnale $mg("verde")$ ha fatto un giro più lungo, ed è arrivata in ritardo. Se il ritardo è troppo grande, l'onda $mg("verde")$ arriverà addosso al simbolo successivo, causando ISR. 
-  - il grafico $mr("rosso")$ è ciò che "sente" l'antenna ricevente ($R_x$). Il ricevitore non sente le singole linee separate ma la *somma* di tutte le onde sopra (Arancione + Verde + Blu + Rumore).
+  - I grafici $mb("blu")$, $mg("verde")$ e $mo("arancione")$ rappresentano cosa succede quando il segnale viene trasmesso nell'ambiente. In particolare, il segnale $mg("verde")$ ha fatto un giro più lungo ed è arrivato in ritardo. Se il ritardo è troppo grande, l'onda $mg("verde")$ arriverà addosso al simbolo successivo, causando *ISR*. 
+  - Il grafico $mr("rosso")$ è ciò che "sente" l'antenna ricevente ($R_x$). Il ricevitore non sente le singole linee separate ma la *somma* di tutte le onde sopra (Arancione + Verde + Blu + Rumore).
 ]
 
 == Codifica e trasmissione dei dati
@@ -1236,6 +1236,89 @@ Uno schema di trasmissione radio presenta le seguenti fasi:
   - Demodulation & decoding
   - Forward Error Correction
   - Decoder
+
+#figure(
+  align(center)[
+    #cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let box-style = (stroke: (paint: rgb("#0072BD"), thickness: 1.5pt), fill: white)
+      let arrow-style = (mark: (end: ">", fill: black))
+
+      let draw-signal(pos) = {
+        line(
+          (pos.at(0), pos.at(1)), 
+          (pos.at(0), pos.at(1) + 0.8), 
+          stroke: 0.5pt + gray
+        )
+        line(
+          (pos.at(0), pos.at(1)), 
+          (pos.at(0) + 1.5, pos.at(1)), 
+          mark: (end: ">", size: 0.15), stroke: 0.5pt + gray
+        )
+        content((pos.at(0) + 1.6, pos.at(1)), text(size: 0.6em)[$t$])
+        
+        line(
+          (pos.at(0), pos.at(1) + 0.6),
+          (pos.at(0) + 0.3, pos.at(1) + 0.6),
+          (pos.at(0) + 0.3, pos.at(1) + 0.1),
+          (pos.at(0) + 0.6, pos.at(1) + 0.1),
+          (pos.at(0) + 0.6, pos.at(1) + 0.6),
+          (pos.at(0) + 0.9, pos.at(1) + 0.6),
+          (pos.at(0) + 0.9, pos.at(1) + 0.1),
+          (pos.at(0) + 1.2, pos.at(1) + 0.1),
+          stroke: (thickness: 1pt, paint: black)
+        )
+      }
+
+      let draw-antenna(pos) = {
+        let x = pos.at(0)
+        let y = pos.at(1)
+        
+        line((x + 0.25, y - 0.25), (x + 0.25, y + 0.8), stroke: 1.5pt)
+        line((x, y - 0.25), (x + 0.5, y - 0.25), stroke: 1.5pt)
+        circle((x + 0.25, y + 0.8), radius: 0.1, fill: black)
+      }
+
+      draw-signal((-4, 0))
+      content((-3.2, 1.2))[Dati utente]
+
+      rect((-1.5, -0.75), (2.5, 0.75), ..box-style, name: "fec-enc")
+      content("fec-enc", align(left)[Forward Error\ Correction (FEC)\ - Encoder])
+
+      rect((3.5, -0.5), (6.5, 0.5), ..box-style, name: "mod")
+      content("mod", align(left)[Modulation &\ coding])
+
+      rect((7.5, -0.5), (10.5, 0.5), ..box-style, name: "amp")
+      content("amp", align(left)[Power\ Amplifier])
+
+      line((-2.5, 0), "fec-enc.west", ..arrow-style)
+      line("fec-enc.east", "mod.west", ..arrow-style)
+      line("mod.east", "amp.west", ..arrow-style)
+      line("amp.east", (11.5, 0), ..arrow-style)
+
+      draw-antenna((11.5, 0))
+
+      line((5, 1.5), "mod.north", ..arrow-style)
+      content((5, 1.8), align(center)[Frequenza\ portante $f_c$])
+
+      draw-antenna((11.5, -4))
+      line((11.75, -0.25), (11.75, -3.1), stroke: (dash: "dashed", thickness: 1.5pt), mark: (end: ">"))
+
+      rect((4.5, -4.5), (8.5, -3.5), ..box-style, name: "demod")
+      content("demod", align(left)[Demodulation\ & decoding])
+
+      rect((-1.5, -4.75), (2.5, -3.25), ..box-style, name: "fec-dec")
+      content("fec-dec", align(left)[Forward Error\ Correction (FEC)\ - Decoder])
+
+      line((11.5, -4), "demod.east", ..arrow-style)
+      line("demod.west", "fec-dec.east", ..arrow-style)
+      line("fec-dec.west", (-2.5, -4), ..arrow-style)
+
+      draw-signal((-4, -4.4))
+    })
+  ]
+)
 
 === Modulazione e Codifica
 
