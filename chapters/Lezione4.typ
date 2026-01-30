@@ -159,3 +159,63 @@ Quando lo slave di mezzo vuole comunicare o ascoltare deve utilizzare il codice 
 #nota()[
   Non è una soluzione totale, ma è parziale, mitiga di molto il problema. 
 ]
+
+== Baseband SCO & ACL
+
+// riguardare 
+
+=== Formato frame
+- Access code: 
+  - Ha un preambolo per sincronizzare la parte radio.
+  Acces Code può essere (o uno o l'altro): 
+  - CAC: identifica la piconet 
+  - DAC: derivato dall'hardware dello slave, serve per dire che un certo messaggio è destinato a quel dispositivo
+  - IAC: usato per trovare l'indirizzo di un dispositivo
+- Head: 
+  - AMA: indirizzo del membro attivo della piconet (master o slave)
+  - Type: identifica se è un canale SCO o ACL
+  - Flow: per le ACL
+  - ARQN: parte per la ritrasmissione
+  - SEQN: sequence number
+  - HEC: Conrollo degli errori
+- Payload (30 byte per SCO o variabile per ACL):
+
+== Controllo degli errori
+//aggungere imamgine
+Abbiamo uan comunicazione tra un singolo master e un singolo slave. 
+Il bit scritto nel header è il SEQN (sequence number), il bit è relativo all'ACK. 
+
+- La prima trasmissione master slave ha SEQN 0. Lo slave risponde un ACK con SEQN 0. 
+- il master trasmetter il SEQN del pacchetto succevvo, ovvero 1. tuttavia la trasmissione fallisce
+- lo slave non riceve, siccome si aspettava un pacchetto con SEQN $1$ risponde con un NAK pari a $1$. Lo slave si aspettava di ricevere qualcosa (turno del master), comuncia di nona aver ricevuto SEQN. 
+
+- più avanti nella figura fallisce l'ACK. Il master nella frequenza 5 si apettava l'ACK dello slave ma non è arrivato, il master assume che sia stao perso. Il master rimandera messagio con SEQN $1$
+
+- lo slave lo riveve, siccome lo ha già nel buffer viene scartato. QUesta volta l'ACK arriva. 
+
+- Alla fine viene trasferito il messaggio successivo (SEQN modulo 2 = 0).
+
+#nota()[
+  Se non ci fosse questa alternanza rigida (sincronismo implicito) non basterebbe un controllo dell'errore così semlice. 
+
+  Basta un solo bit per controllare il flusso. Se trasmetto l'1 e rivevo conferma di aver ricevuto 1 il successivo è lo 0. 
+]
+
+== Link manager protocol (LMP)
+
+Come arriviamo dallo stanby mode (non sappiamo frequency hopping, come contattare i master ecc) alla modalità attiva essendo in una modalità distributia. 
+
+L'idea è scegliere un sotto-insieme (non tutti per evitare interferenze) di canali in cui il Master chiede se ci sono dei dispositivi (inquiring message) che si vogliono conettere, lo slave ascolta (ogni tanto per risparmiare batteria). Allo stesso modo il master fa polling tra i vari canali (wake-up channel) di connessione durante in un certo intervallo. 
+
+#attenzione()[
+  Tutto questo meccanismo è non coordinato
+]
+Il master ogni tanto trasmesse un inquiry packet (intervallo di tempo fissato). Lo slave ogni tanto scansiona il canale di connessione. Se lo slave intercetta il segnsle non risponde subito ma aspetta un  *random backoff time*. In modo tale da evitare collisioni con altri slave che si vogliono collegare. 
+
+il random backoff è calcolato apposta per cercare di beccare la sincronizzazione del master. 
+
+Una volta che il master ha scoperto la presenza di uno slave viene dato l'accesso allo slave. Vengono comunicati: 
+- l'indirizzo 
+- il frequency hopping
+
+Inoltre viene uitlizzato semrpe un insieme di canali standard specifici (più piccoli), in quanto lo slave non è ancora a conoscenza del frequency hopping. 
