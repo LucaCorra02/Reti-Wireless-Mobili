@@ -1851,3 +1851,158 @@ A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema 
   - Canale ottimo: 64-QAM (veloce) con Rate $5/6$ (poco protetto). Velocità di trasmissione elevata.
 
 ]
+
+#pagebreak()
+
+// Può capitare all'esame
+#esempio[
+  *Dati*:
+  - *SNR* (_Signal to Noise Ratio_) = $8 "dB"$;
+  - *BER* (_Target Bit Error Rate_) = $10^(-2)$.
+
+  *Richiesta*: determinare il *DR* (_Data Rate_) massimo.
+
+  *Risoluzione grafica*:
+
+  #align(center)[
+  #set text(size: 9pt)
+  #table(
+    columns: (auto, 1fr, 1fr, 1fr),
+    inset: 6pt,
+    align: (col, row) => (if col == 0 { left } else { center } + horizon),
+    fill: (_, row) => if row < 2 { luma(240) } else { white },
+    stroke: 0.5pt + luma(200),
+    
+    [], table.cell(colspan: 3)[*Coding rate*],
+    
+    [*SNR*], [*BPSK*], [*QPSK*], [*16-QAM*],
+    
+    [< 6dB], [0.6], [0.4], [0.2],
+    [6-10 dB], [0.8], [0.6], [0.5],
+    [> 10 dB], [0.9], [0.8], [0.7]
+  )
+]
+
+  #figure(
+  {
+    set text(size: 8pt)
+    
+    box(width: 75%, height: 230pt, {
+      for i in range(0, 11) {
+        let y = 20pt + i * 18pt
+        place(dx: 40pt, dy: y, line(length: 320pt, stroke: (paint: gray.lighten(70%), thickness: 0.3pt)))
+      }
+      for i in range(0, 17) {
+        let x = 40pt + i * 20pt
+        place(dx: x, dy: 20pt, line(length: 180pt, angle: 90deg, stroke: (paint: gray.lighten(70%), thickness: 0.3pt)))
+      }
+      
+      place(dx: 40pt, dy: 200pt, {
+        line(length: 320pt, stroke: 1pt + black)
+        place(dx: 140pt, dy: 20pt, text(size: 9pt)[$"SNR" = E_b\/N_0$ (dB)])
+      })
+      
+      place(dx: 40pt, dy: 20pt, {
+        line(length: 180pt, angle: 90deg, stroke: 1pt + black)
+        place(dx: -115pt, dy: -80pt, text(size: 9pt)[Bit Error Rate (BER)])
+      })
+      
+      for i in range(0, 9) {
+        let x = 40pt + i * 40pt
+        let label = i * 4
+        place(dx: x - 5pt, dy: 208pt, text(size: 7pt)[#label])
+      }
+      
+      place(dx: 10pt, dy: 17pt, text(size: 7pt)[$10^0$])
+      place(dx: 5pt, dy: 53pt, text(size: 7pt)[$10^(-1)$])
+      place(dx: 5pt, dy: 89pt, text(size: 7pt)[$10^(-2)$])
+      place(dx: 5pt, dy: 125pt, text(size: 7pt)[$10^(-3)$])
+      place(dx: 5pt, dy: 161pt, text(size: 7pt)[$10^(-4)$])
+      place(dx: 5pt, dy: 197pt, text(size: 7pt)[$10^(-5)$])
+      
+      let ber_to_y(ber) = {
+        20pt + (-calc.log(ber) / calc.log(10)) * 36pt
+      }
+      
+      let eb_to_x(eb) = {
+        40pt + eb * 10pt
+      }
+      
+      let max_x = 360pt 
+      let max_y = 200pt 
+      
+      for i in range(0, 50) {
+        let eb1 = i * 0.64
+        let eb2 = (i + 1) * 0.64
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, eb1 / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, eb2 / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + blue))
+        }
+      }
+      place(dx: 145pt, dy: 140pt, text(size: 8pt, fill: blue, weight: "bold")[QPSK])
+      
+      for i in range(0, 50) {
+        let eb1 = i * 0.74
+        let eb2 = (i + 1) * 0.74
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, (eb1 - 4) / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, (eb2 - 4) / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + orange.lighten(40%)))
+        }
+      }
+      place(dx: 170pt, dy: 110pt, text(size: 8pt, fill: orange.lighten(40%), weight: "bold")[16-QAM])
+      
+      for i in range(0, 50) {
+        let eb1 = i * 0.54
+        let eb2 = (i + 1) * 0.54
+        
+        let ber1 = calc.max(calc.exp(-calc.pow(10, (eb1 - 8) / 10) * 0.8), 1e-6)
+        let ber2 = calc.max(calc.exp(-calc.pow(10, (eb2 - 8) / 10) * 0.8), 1e-6)
+        
+        let x1 = eb_to_x(eb1)
+        let x2 = eb_to_x(eb2)
+        let y1 = ber_to_y(ber1)
+        let y2 = ber_to_y(ber2)
+        
+        if x1 <= max_x and x2 <= max_x and y1 <= max_y and y2 <= max_y {
+          place(dx: x1, dy: y1, line(end: (x2 - x1, y2 - y1), stroke: 2pt + red.lighten(40%)))
+        }
+      }
+      place(dx: 190pt, dy: 69pt, text(size: 8pt, fill: red.lighten(40%), weight: "bold")[64-QAM])
+
+      let target_snr_x = eb_to_x(8)
+      let target_ber_y = ber_to_y(1e-2)
+
+      place(dx: target_snr_x, dy: 20pt, line(length: 180pt, angle: 90deg, stroke: (paint: green, dash: "dashed", thickness: 1.5pt)))
+      place(dx: target_snr_x + 3pt, dy: 30pt, text(size: 7pt, fill: green, weight: "bold")[SNR = 8dB])
+
+      place(dx: 40pt, dy: target_ber_y, line(length: 320pt, stroke: (paint: green, dash: "dashed", thickness: 1.5pt)))
+      place(dx: 250pt, dy: target_ber_y - 8pt, text(size: 7pt, fill: green, weight: "bold")[Target BER = $10^(-2)$])
+
+      place(dx: target_snr_x, dy: target_ber_y, circle(radius: 3pt, fill: green))
+
+      place(dx: 100pt, dy: 160pt, text(fill: green, size: 8pt, weight: "bold")[OK])
+      place(dx: 155pt, dy: 85pt, text(fill: red, size: 8pt, weight: "bold")[NO])
+      place(dx: 180pt, dy: 55pt, text(fill: red, size: 8pt, weight: "bold")[NO])
+    })
+  },
+  caption: [
+    Analisi curve BER: con SNR=8dB, solo BPSK/QPSK soddisfa il BER $< 10^(-2)$.
+  ]
+)
+]
