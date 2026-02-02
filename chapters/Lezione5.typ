@@ -209,7 +209,7 @@ IL GTS è un contratto che il coordinatore ha fatto con i dispositivi, per garan
 Il livello fisico (CS) ascoltiamo la portante e sentiamo se qualcuno sta comunicando. Il livello fisico mette a disposizione la CCA per capire se il canale è libero (ascolta per intervalli brevi in quanto costa). Viene tenuta una sora di variabili interne (ogni dispositivo):
 - NB = numero di backoff, Inizialmente è a zero (ottimista) e al massimo è $4$. Se l'operazione non va a buon fine, viene comunicato al livello superiore che la connesione non è avvenuta dopo 4 tentativi
 
-- BE: periodo di backoff per riprovare la connesione, numero di contation slot che dobbiamo aspettare per comunicare
+- BE: periodo di backoff per riprovare la connesione, numero di contation slot che dobbiamo aspettare per comunicare. Serve per diselianearsi in quanto tutti siamo allineati alla ricezione del beacon. 
 
 - CW: quante volto devo osservare il canle e quante luci verdi devo avere dal livello fisico per trasmettere (numero di slot consecutivi liberi)
 
@@ -235,4 +235,8 @@ Il livello fisico (CS) ascoltiamo la portante e sentiamo se qualcuno sta comunic
     Non ho bisogno di bassa latenza o qualità di servizio
   ]
 
+  Più in la nel tempo si va (dal becon all'inizo del Contection free-period) potrei finire oltre al tempo messo a disposizione del CAP. Per evitare di continaure a sparare un numero random (molto alto) e sapendo che siamo oltre ai limiti del CAP, allora blocco il timer e al beacon successivo parto da quel numero (rimaniamo in una sorta di coda). Quando riprende il conteggio ripato da BE precedente altrimenti partendo da zero rischierei di avere una starvation del dispositivo.  
+
 ]
+
+//aggiungere tempo d Turn around 
