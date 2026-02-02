@@ -190,3 +190,49 @@ All'interno del beacon dobbiamo comunicare $"BO"$ e $"SO"$. Dati questi due nume
 $
   "duty-cycle" = 2^"SO" / 2^"BO"
 $
+
+super-frame specification: 
+- Beacon Order: Serve sapere ogni quanto aspettarci un beacon, quanto devo aspettare per il prossimo beacon (o il primo beacon, riguardare)
+- SO: quanto è grande la parte attiva
+- Final Cap slot: indica in che punto termina il CAP. Il CAP non può sforare nel contantion free period in quanto sono comunicazioni riservate già allocate. 
+- Reserved: 
+- Pan Coordinator: se il dispositivo è un coordinatore PAN. 
+- Association permit: bit di controllo
+
+La grandezza di CAP e CFP è data dal numero totali di simboli (da $2^0$ a $2^14$) succesivamente prendo il numero di simboli di SD e lo divido in 16 parti uguai. Quello è il tempo interno alla comunicazione, divido in slot la parte in contesa. 
+
+//aggiungere somma
+IL GTS è un contratto che il coordinatore ha fatto con i dispositivi, per garantire di parlare senza interferenze in un certo slot. La durata degli slot condivisi dipende da quanti simboli ho diviso 16. 
+
+=== Come avviene l'accesso a CAP 
+
+Il livello fisico (CS) ascoltiamo la portante e sentiamo se qualcuno sta comunicando. Il livello fisico mette a disposizione la CCA per capire se il canale è libero (ascolta per intervalli brevi in quanto costa). Viene tenuta una sora di variabili interne (ogni dispositivo):
+- NB = numero di backoff, Inizialmente è a zero (ottimista) e al massimo è $4$. Se l'operazione non va a buon fine, viene comunicato al livello superiore che la connesione non è avvenuta dopo 4 tentativi
+
+- BE: periodo di backoff per riprovare la connesione, numero di contation slot che dobbiamo aspettare per comunicare
+
+- CW: quante volto devo osservare il canle e quante luci verdi devo avere dal livello fisico per trasmettere (numero di slot consecutivi liberi)
+
+#esempio()[
+  Trasmissione con successo in contesa (CSMA/CA):
+  - slot condivisi 
+  - acoltiamo il canale
+  - no collisioni (tramissione assime)
+
+  Prima di chiedere se è libero, adniamo ad attendere un numero casuale [0,7] e lo moltiplichiamo per 20 simboli 
+
+  chiamiamo 2 volte CCA, se è libero entrambe ele volte aspetto 5 slot da 20 simboli (CCA). La CW è a 1, dobbiamo ritestrare con due CCA consecutive (nello slot di contesa successivo), siccome ottengo ok, allora CW = 0 e posso iniziare a trasmettere. 
+
+  Quando CW = 0 posso iniziare a trasmettere. Chi ascolta nel momento successivo sentirà il canale occupato. 
+
+  Canale occupato: 
+  - il secondo CCA non va a buon fine. La CW viene reimpostata a 2 e NB=1 e BE=4, viene aumentato l'esponente (sceglo tra un numero maggiore di numeri randomo per aumentare la probabilità di diffierenziarci). 
+  - Aspetto un altro numero di slot random
+  - Non tengo acceso la radio. Se mi accorgo che il canale è occupato non ascolto per tutto il periodo di back-of ma calcolo un alro numero di slot spegndo la radio. 
+  - il CS viene fatto solo per un periodo limitato di tempo (salva batteria ma perdo occasioni).
+
+  #nota()[
+    Non ho bisogno di bassa latenza o qualità di servizio
+  ]
+
+]
