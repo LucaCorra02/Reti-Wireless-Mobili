@@ -1862,7 +1862,7 @@ A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema 
 
   *Richiesta*: determinare il *DR* (_Data Rate_) massimo.
 
-  *Risoluzione grafica*:
+  *Risoluzione*:
 
   Prima di capire come risolvere il problema, è necessario consultare la tabella all'interno della quale si trovano _modulation_ e _coding scheme_ adatti al canale per l'_Error Rate_ richiesto:
 
@@ -1892,5 +1892,11 @@ A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema 
 
   Dall'immagine è possibile notare che, per un *SNR* di $8 "dB"$ e un *BER* di $10^(-2)$, la modulazione più veloce che può essere utilizzata è la *QPSK* con *coding rate* $0.6$ ed è valida anche la *BPSK*. Al contrario, la *16-QAM* non è utilizzabile in quanto il *BER* risulta troppo alto.
 
-  *Risoluzione numerica:*
+  Si può calcolare il *Data Rate* massimo, solo per le modulazioni valide nello schema, utilizzando la seguente formula:
+  $
+    "bit/s" = "sym/s" dot "bit/sym" dot "coding rate"
+  $
+  
+  - *BPSK*: $"bit/s" = 1 "Msym/s" dot 1 "bit/sym" dot 0.8 = 800 "bit/s"$
+  - *QPSK*: $"bit/s" = 1 "Msym/s" dot 2 "bit/sym" dot 0.6 = 1200 "bit/s"$
 ]
