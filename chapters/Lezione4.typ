@@ -112,7 +112,7 @@ Si tratta di una codifica *lossless* per onde. Partendo da un segnale continuo, 
   Per la voce dovremmo utilizzare frequenza di campionamento PCM a $8$ bit $8000"Hz"-> 64 "Kbps"$ (il segnale vole è a $300-3400"HZ"$). Con $8$ bit possiamo coodificare $256$ livelli di segnale.
 ]
 
-== Standard bluetooth (802.15.1)
+= Standard bluetooth ($802.15.1$)
 
 Lo standard comprende un insieme di tecnologie per la comunicazione a corto raggio. Tra cui il bluetooth.
 
