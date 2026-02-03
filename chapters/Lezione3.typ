@@ -155,3 +155,7 @@ In sintesi, la precisione matematica $Delta f = 1/T$ è il cuore di tutto e perm
   Per prima cosa, viene rimosso il prefisso aggiunto al termine delle operazioni del trasmettitore. In seguito, la trasformazione *_Serial to Parallel_* prepara i campioni per l'elaborazione matmatica, grazie all'*FFT* e viene ricomposto infine il flusso di bit tramite la fase di *_Parallel to Serial_*.
 ]
 
+#attenzione[
+  In generale, *Multiple Access* $!=$ *Multiplexing*: far passare più segnali contemporaneamente non significa far comunicare più utenti allo stesso tempo.
+]
+
