@@ -136,3 +136,22 @@ Prendendo come spunto la curva #text(fill: red)[rossa], in particolare nel punto
 
 In sintesi, la precisione matematica $Delta f = 1/T$ è il cuore di tutto e permette dunque di far corrispondere a un picco di una sotto-portante al nullo delle altre.
 
+=== Implementazione
+#figure(
+  image("/assets/implementazione.png", width: 80%),
+  caption: [Schema dell'implementazione dell'Orthogonal Frequency Division Multiplexing.],
+)
+
+#pagebreak()
+
+#nota[
+  1. *Trasmettitore (parte alta)*:
+  Il _Bit Stream_, come detto in precedenza, passa da *seriale* a *parallelo*, facendolo diventare un insieme di tanti flussi lenti per essere inviato alle varie sotto-portanti. Successivamente, si utilizza l'*IFFT* per passare dal dominio delle frequenze a quello del tempo e il risultato fa in modo tale da produrre un blocco di campioni digitali (*_Parallel to Serial_*) da spedire uno a uno. Infine, viene aggiunto un prefisso ciclico, che ha lo scopo di proteggere da "echi" che disturberebbero il segnale.
+
+  2. *Canale di trasmissione (freccia curva)*:
+  Qui il segnale viaggia nell'aria e, dal trasmettitore, arriva al ricevitore.
+
+  3. *Ricevitore (parte bassa)*:
+  Per prima cosa, viene rimosso il prefisso aggiunto al termine delle operazioni del trasmettitore. In seguito, la trasformazione *_Serial to Parallel_* prepara i campioni per l'elaborazione matmatica, grazie all'*FFT* e viene ricomposto infine il flusso di bit tramite la fase di *_Parallel to Serial_*.
+]
+
