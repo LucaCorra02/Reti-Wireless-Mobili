@@ -37,5 +37,5 @@
 
 #include "chapters/Lezione2.typ"
 
-#part("WLAN")
+#part("Bluetooth")
 #include "chapters/Lezione4.typ"
