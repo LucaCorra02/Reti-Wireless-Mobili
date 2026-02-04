@@ -316,44 +316,47 @@ L'architettura di bluetooth è composta dalle seguenti parti:
   })
 ]
 
-Tutti i livelli $mb("blu")$ rappresentano i _core protocols_, ovvero le componenti sempre presenti in un qualsiasi dispositivo bluetooth.
-
+Tutti i livelli $mb("blu")$ rappresentano i _core protocols_, ovvero le componenti sempre presenti in un qualsiasi dispositivo bluetooth. La linea $mr("rossa")$ divide la parte hardware da quella sofware.
 
 #nota()[
   Completamente diverso dallo stack TCP/IP o ISO/OSI.
 ]
 
+=== Layer Bluetooth Radio
+
+Si tratta del livello fisico. Si occupa di ricevere e trasmettere radio frequenze, in particolare:
+- Gestisce il *Frequency Hopping*.
+- Decide lo schema di modulazione in base al canale
+- Determina la potenza della trasmissione
+
+Il Bluetooth opera nella banda dei $2.4 "GHz"$, che è molto affollata. Per evitare eccessive interferenze viene utilizzato il Frequency-hopping spread spectrum (*FHSS*) nel seguente modo:
+
+- Divisione dello Spettro: La banda viene divisa in canali più piccoli. Tipicamente per bluetooth classico vengono creati $79$ canali da $1 "MHz"$ ciascuno.
+
+- Hop: Il segnale non sta fermo. _Salta_ da un canale all'altro seguendo uno schema pseudocasuale. In particolare viene spostata la frequenza centrale:
+$
+  f_c = 2402 + underbrace(k, "Numero"\ "canale") "Mhz"
+$
+
+#nota()[
+  Il trasmettitore (Master) e il ricevitore (Slave) devono conoscere esattamente lo stesso schema di salti. Questa sequenza è determinata dall'orologio interno (clock) del Master e dal suo indirizzo univoco.
+]
+
+I vantaggi introdotti sono:
+- Prevenzione delle interferenze
+- Sicurezza: Resistenza a intercettazione e jamming. Un attaccante dovrebbe conoscere l'esatta sequenza di salti e la tempistica precis
+- Coesistenza (CDMA).
+
+=== Layer Baseband
+
+Questo livello si occupa di :
+- Stabilire la connessione con la _piconet_
+- Gestione dell'indirizzamento. Ogni dispositivo nella rete presenta sia un'indirizzo hardware (del dispositivo) che uno logico (a livello di pico-net).
+- Sincronizzazione e tempistiche di comunicazione. Vengono utilizzati Time division duplex (TDD) e Time division Multipe Access (TDMA).
+- Gestisce la potenza della trasmissione (indicazioni passate a livello radio)
 
 
-
-
-
-
-Abbiamo i seguenti pezzi:
-
-Tutti i livelli in blu, sono sempre presenti in un qualsiasi dispositivo bluetooth.
-
-La linea rossa divide la parte hardware da quella sofware.
-
-=== bluetooth Radio
-
-Livello fisico
-
-Si occupa di trasmettere e ricevere radio frequenze.
-Gestisce:
-- Gestione del frequency hopping
-- Lo schema di modulazione di forwarder e correction
-- Gestisce la potenza di trasmissione
-
-=== Baseband
-
-Si occupa di :
-- Stabile la connessione con la pico-net
-- Gestisce l'indirizzamento. Abbiamo sia l'indirizzo hardware del dispositivo che logico a livello di pico-net.
-- Sincronizzazione e tempistiche di comunicazione, Time division duplex, frequency division duplex (2 trasmissioni divere).
-- Gestisce la potenza di trasmissione
-
-Duplex, come gestisco la trasmissione e la ricezione (il cavo ethernet è full-duplex). In ambito Wireless non si può fare o trasmettiano o riceviamo
+La gestione della comunicazione è *Duplex*. A differenza della trasmissione via cavo (cavo ethernet full-duplex), in ambito wireless non possiamo trasmettere e ricevere nello stesso istante.  
 
 === LMP
 Si tratta di un livello di controllo. Non trasmette dati ma li gestisce.
