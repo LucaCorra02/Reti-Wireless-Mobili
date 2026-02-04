@@ -114,31 +114,222 @@ Si tratta di una codifica *lossless* per onde. Partendo da un segnale continuo, 
 
 = Standard bluetooth ($802.15.1$)
 
-Lo standard comprende un insieme di tecnologie per la comunicazione a corto raggio. Tra cui il bluetooth.
+Bluetooth aderisce come tutte le altre tecnologie per le comunicazioni a corto raggio allo standard $802.15.x$. In particolare, bluetooth rientra nello standard $802.15.1$.
 
-LIFI, trasmissione del segnale attraverso la luce. Altamente direzionabile e mascherabile.
+Un'altra tecnologia che usa questo standard sono le Visible-Light-Comunication (VLC), trasmissione del segnale attraverso la luce. Altamente direzionale e mascherabile.
 
-La struttura di bluetooth è fortemente gerarchica e fissa:
-- Rete *pico-net*
-- Master node, coordina l'interà attività della pico-net.
-- Abbiamo una serie di slave, l'architetture è di tipo master e slave. GLi slave comunicano solo con quello che è stato deciso dal master, sia in termini di tempo che di frequenze.
+La struttura di bluetooth è *fortemente gerarchica*. I dispositivi sono all'interno di una *_piconet_*, composta da:
+- Un solo *master node*: Esso ha il compito di coordinare l'intera attività della rete.
+- Uno o più *slave*: dispositivi appartenenti alla rete.
 
-Caratteristiche del bluetooth:
-- Corto raggio (10-50 metri)
-- Lavora sulla banda ISM $2.4 "GHz"$ (la stessa del wifi)
-- Il data rate può variare, molto meno del wifi.
+Si tratta quindi di una topologia di rete master-slave. Gli slave comunicano solo con quanto deciso dal master, sia in termini di tempo che di frequenze.
 
-Solitamente vtecnologia utilizzato per sostituire i cavi, oppure come punto di accesso per dati e voce.
+Inoltre, bluetooth presenta le seguenti caratteristiche:
+- *Corto raggio* (10-50 metri)
+- Lavora sulla banda ISM $2.4 "GHz"$ (la stessa del WiFi)
+- Il data rate può variare ($2.1 "Mbps"-24 "Mbps"$)
 
-=== Stack di bluetooth
+Solitamente questa tecnologia viene utilizzata per sostituire i cavi, come punto di accesso per dati e voce e per comunciazione ad hoc con altri dispositivi bluetooth.
+
+== Stack di bluetooth
+
+L'architettura di bluetooth è composta dalle seguenti parti:
+- Livello fisico.
+- Livello Data-Link, con il relativo layer di controllo.
+- Livello _adattatore_, permette di convogliare e adattare tutto il traffico proveniente dall'esterno.
+
+#align(center)[
+  #cetz.canvas(length: 1.2cm, {
+    import cetz.draw: *
+
+    // Definizione colori
+    let core-color = rgb("#2E4A6F")
+    let cable-color = black
+    let telephony-color = rgb("#8B4545")
+    let adopted-color = rgb("#6B4545")
+
+    // Funzione helper per disegnare box
+    let draw-box(x, y, w, h, txt, fill-color, txt-color: white, txt-size: 9pt) = {
+      rect((x, y), (x + w, y + h), fill: fill-color, stroke: black)
+      content((x + w / 2, y + h / 2), text(size: txt-size, fill: txt-color, weight: "bold", txt))
+    }
+
+    // Legenda (in alto a sinistra)
+    let legend-x = 3
+    let legend-y = 11
+    let legend-box-size = 0.4
+    let legend-spacing = 0.5
+
+    draw-box(legend-x, legend-y, legend-box-size, legend-box-size, "", core-color)
+    content(
+      (legend-x + legend-box-size + 0.2, legend-y + legend-box-size / 2),
+      text(size: 10pt, "Core protocols"),
+      anchor: "west",
+    )
+
+    draw-box(legend-x, legend-y - 1 * legend-spacing, legend-box-size, legend-box-size, "", cable-color)
+    content(
+      (legend-x + legend-box-size + 0.2, legend-y - 1 * legend-spacing + legend-box-size / 2),
+      text(size: 10pt, "Cable replacement protocol"),
+      anchor: "west",
+    )
+
+    draw-box(legend-x, legend-y - 2 * legend-spacing, legend-box-size, legend-box-size, "", telephony-color)
+    content(
+      (legend-x + legend-box-size + 0.2, legend-y - 2 * legend-spacing + legend-box-size / 2),
+      text(size: 10pt, "Telephony control protocols"),
+      anchor: "west",
+    )
+
+    draw-box(legend-x, legend-y - 3 * legend-spacing, legend-box-size, legend-box-size, "", adopted-color)
+    content(
+      (legend-x + legend-box-size + 0.2, legend-y - 3 * legend-spacing + legend-box-size / 2),
+      text(size: 10pt, "Adopted protocols"),
+      anchor: "west",
+    )
+
+    // Architettura dei protocolli (parte destra)
+    let base-x = 7
+    let base-y = 5
+
+    // Bluetooth Radio (livello più basso)
+    draw-box(base-x, base-y, 8, 0.6, "Bluetooth Radio", core-color, txt-size: 12pt)
+
+    // Baseband
+    draw-box(base-x, base-y + 0.7, 8, 0.6, "Baseband", core-color, txt-size: 12pt)
+
+    // LMP (Link Manager Protocol)
+    draw-box(base-x + 3.5, base-y + 1.4, 4.5, 0.5, "Link Manager Protocol (LMP)", core-color, txt-size: 11pt)
+
+    // Linea rossa tratteggiata (divisione HW/SW)
+    let line-y = base-y + 2.0
+    set-style(stroke: (paint: red, thickness: 2pt, dash: "dashed"))
+    line((base-x + -2, line-y), (base-x + 10, line-y))
+    set-style(stroke: (paint: black, thickness: 1pt))
+
+    // L2CAP
+    let l2cap-y = base-y + 2.1
+    draw-box(
+      base-x,
+      l2cap-y,
+      8,
+      0.6,
+      "Logical Link Control and Adaptation Protocol (L2CAP)",
+      core-color,
+      txt-size: 10pt,
+    )
+
+    // Audio (a sinistra, separato)
+    let audio-x = base-x - 2.5
+    let audio-y = base-y + 2.3
+    draw-box(audio-x, audio-y + -0.1, 1.2, 0.5, "Audio", adopted-color, txt-size: 11pt)
+
+    // Control (a destra di LMP)
+    let control-x = base-x + 8.2
+    let control-y = base-y + 2.2
+    draw-box(control-x, control-y, 1.5, 0.5, "Control", adopted-color, txt-size: 11pt)
+
+    // RFCOMM
+    let rfcomm-x = base-x + 0.5
+    let rfcomm-y = base-y + 2.8
+    draw-box(rfcomm-x, rfcomm-y, 4.5, 0.5, "RFCOMM", cable-color, txt-size: 12pt)
+
+    // UDP/TCP + IP + PPP (colonna sinistra sopra RFCOMM)
+    let udp-x = base-x + 0.5
+    let udp-y = base-y + 3.5
+    draw-box(udp-x, udp-y, 1.3, 0.5, "UDP/TCP", adopted-color, txt-size: 10pt)
+
+    let ip-y = base-y + 4.1
+    draw-box(udp-x, ip-y, 1.3, 0.5, "IP", adopted-color, txt-size: 11pt)
+
+    let ppp-y = base-y + 4.7
+    draw-box(udp-x, ppp-y, 1.3, 0.5, "PPP", adopted-color, txt-size: 11pt)
+
+    // vCard/vCal
+    let vcard-y = base-y + 5.4
+    draw-box(udp-x, vcard-y, 1.3, 0.5, "vCard/vCal", adopted-color, txt-size: 9pt)
+
+    // OBEX
+    let obex-y = base-y + 6.0
+    draw-box(udp-x, obex-y, 1.3, 0.5, "OBEX", adopted-color, txt-size: 11pt)
+
+    // AT commands (centro sopra RFCOMM)
+    let at-x = base-x + 2.0
+    let at-y = base-y + 3.5
+    draw-box(at-x, at-y, 1.4, 1.6, "AT\ncommands", telephony-color, txt-size: 10pt)
+
+    // WAE + WAP (a destra, sopra L2CAP)
+    let wae-x = base-x + 3.5
+    let wae-y = base-y + 2.8
+    draw-box(wae-x, wae-y + 0.8, 1.3, .8, "WAE", adopted-color, txt-size: 11pt)
+    draw-box(wae-x, base-y + 0.8 + 3.7, 1.3, 0.6, "WAP", adopted-color, txt-size: 11pt)
+
+    // TCS BIN (a destra)
+    let tcs-x = base-x + 5.5
+    let tcs-y = base-y + 4.4
+    draw-box(tcs-x, tcs-y + 0.4, 1.3, 0.7, "TCS BIN", telephony-color, txt-size: 10pt)
+
+    // SDP (estrema destra)
+    let sdp-x = base-x + 7.0
+    let sdp-y = base-y + 2.8
+    draw-box(sdp-x, sdp-y + 2, 1.8, 0.7, "SDP", core-color, txt-size: 13pt)
+
+    // Linee di connessione (nere)
+    set-style(stroke: (paint: black, thickness: 1.5pt))
+
+    // Radio -> Baseband (centro)
+    line((base-x + 4, base-y + 0.6), (base-x + 4, base-y + 0.7))
+
+    // Baseband -> LMP (centro)
+    line((base-x + 4, base-y + 1.3), (base-x + 4, base-y + 1.4))
+
+    // Baseband -> Audio (sinistra, linea diretta)
+    line((audio-x + 0.65, audio-y + -0.1), (audio-x + 0.65, base-y + 1.0))
+    line((base-x, base-y + 1.0), (audio-x + 0.6, base-y + 1.0))
+
+    // Baseband -> L2CAP (lato sinistro del baseband)
+    line((base-x + 1, base-y + 1.3), (base-x + 1, l2cap-y))
+
+    // LMP -> Control (a destra)
+    line((control-x + 0.75, control-y), (control-x + 0.75, base-y + 1.6))
+
+    line((14.9, control-y + -0.6), (control-x + 0.75, base-y + 1.6))
+
+
+    // L2CAP -> RFCOMM (lato sinistro)
+    line((rfcomm-x + 1, l2cap-y + 0.6), (rfcomm-x + 1, rfcomm-y))
+
+    // UDP/TCP -> IP -> PPP -> RFCOMM (stack verticale a sinistra)
+    line((udp-x + 0.65, udp-y), (udp-x + 0.65, rfcomm-y + 0.9))
+
+    // AT commands -> RFCOMM (centro)
+    line((at-x + 0.7, at-y), (at-x + 0.7, rfcomm-y + 0.5))
+
+    // vCard/vCal -> OBEX -> RFCOMM (stessa colonna UDP/TCP)
+    line((udp-x + 0.65, vcard-y + -2.), (udp-x + 0.65, rfcomm-y + 0.4))
+
+    // TCS BIN -> L2CAP (lato destro)
+    line((tcs-x + 0.65, tcs-y + 0.4), (tcs-x + 0.65, l2cap-y + 0.6))
+
+    // SDP -> L2CAP (estrema destra)
+    line((sdp-x + 0.9, sdp-y + 2), (sdp-x + 0.9, l2cap-y + 0.6))
+  })
+]
+
+Tutti i livelli $mb("blu")$ rappresentano i _core protocols_, ovvero le componenti sempre presenti in un qualsiasi dispositivo bluetooth.
+
 
 #nota()[
   Completamente diverso dallo stack TCP/IP o ISO/OSI.
 ]
+
+
+
+
+
+
+
 Abbiamo i seguenti pezzi:
-- Livello fisico
-- Livello Data-Link, con il relativo controllo
-- Abbiamo un livello che ci permette di convogliare tutto quello che è il mondo esterno
 
 Tutti i livelli in blu, sono sempre presenti in un qualsiasi dispositivo bluetooth.
 
