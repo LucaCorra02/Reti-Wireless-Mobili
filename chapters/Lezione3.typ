@@ -178,3 +178,20 @@ Concettualmente, lo spettro espanso è possibile schematizzarlo come segue:
   caption: [Schema dello _Spread Spectrum_.],
 )
 
+=== Frequency Hopping Spread Spectrum (FHSS)
+Si tratta di una tecnica, che sfrutta lo _Spread Spectrum_, che utilizza il salto ("_hopping_") di frequenza per la trasmissione dell'informazione. È stata utilizzata per
+le trasmissioni *Bluetooth* e per le prime reti *Wi-Fi*.
+
+Tecnicamente, consiste nel determinare, ad ogni intervallo di tempo prestabilito, quale debba essere la frequenza utilizzata per la trasmissione del segnale. La frequenza viene cambiata in maniera pseudo-casuale (ad esempio, con le trasmissioni *Bluetooth 802.15.1*, la frequenza muta ogni $625 mu s$).
+
+Schema di funzionamento:
+
+#figure(
+  image("/assets/FHSS.png", width: 80%),
+  caption: [Schema del _Frequency Hopping Spread Spectrum_.],
+)
+
+Dallo schema, è possibile notare come la *Channel Table* debba essere la medesima sia per _TX_ sia per _RX_: permette di scegliere la frequenza da utilizzare, in base ad un valore pseudo-casuale. Il tempo di _hopping_ è predefinito, ma serve un _seed_ per la frequenza di valori pseudo-casuali usati per determinare la frequenza di cui sopra.
+
+Il vantaggio principale consiste nella resistenza al *rumore/jamming*: una frequenza sola compromessa, non compromette potenzialmente il deterioramente di tutta la trasmissione. È inoltre una tecnica particolarmente sicura poiché, se un utente malintenzionato volesse ascoltare la trasmissione, non disponendo della sequenza di _hopping_, potrebbe leggere solo alcuni pezzi di messaggi. 
+
