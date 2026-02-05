@@ -159,3 +159,22 @@ In sintesi, la precisione matematica $Delta f = 1/T$ è il cuore di tutto e perm
   In generale, *Multiple Access* $!=$ *Multiplexing*: far passare più segnali contemporaneamente non significa far comunicare più utenti allo stesso tempo.
 ]
 
+== Spread Spectrum
+Tradotto letteralmente sarebbe "_Spettro Espanso_", questo perché è una tecnica che consiste nel trasmette un segnale occupando uno spettro di frequenze *più ampio*. Le motivazioni dell'utilizzo di questa tecnica sono le seguenti:
+- *Segnale più robusto*: informalmente, possiamo dire che spalmando il segnale lungo una banda più ampia, questo lo renda più resiliente a rumore e interferenze. 
+- *Cifratura del segnale*: essendo una tecnica nata in ambito militare, la sicurezza collegata al segnale è di primaria importanza. Solo trasmettitore e ricevitore conoscono infatti il _codice di spreading_ e, anche se non si tratta di una vera e propria crittografia che protegge i dati matematicamente, è una sorta di "mimetismo fisico" che protegge la comunicazione.
+- *Accesso multiplo*: molti utenti possono utilizzare la stessa banda contemporaneamente senza interferenze.
+
+#nota[
+  Per quanto riguarda il concetto di *accesso multiplo*, ci si rifà al concetto di utilizzo di codici diversi per potersi sovrapporre, durante la comunicazione, senza disturbarsi.
+  #esempio[
+    Un esempio informale e intuitivo per capire questo aspetto è il seguente: immaginiamo di essere in una stanza assieme ad altre persone e che tutte parlino allo stesso tempo. Supponiamo inoltre che queste persone siano divise in coppie e che ognuna di esse parli una lingua diversa. Il filtro linguistico permette di "non impazzire" (è il concetto di *ortogonalità*): se io sono il ricevitore della prima coppia, che parla in italiano, il mio cervello è settato per comprendere solo quella lingua. Tutto ciò che mi arriva in cinese o finlandese, ad esempio, lo percepirò solo come rumore di fondo e non rappresenta in alcun modo l'informazione.
+  ]
+]
+
+Concettualmente, lo spettro espanso è possibile schematizzarlo come segue:
+#figure(
+  image("/assets/Spread_Spectrum.png", width: 80%),
+  caption: [Schema dello _Spread Spectrum_.],
+)
+
