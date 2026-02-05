@@ -241,3 +241,22 @@ Un altro aspetto fondamentale è che, come ovvio che sia, ricevitore e trasmetti
 )
 ]
 
+=== Code Division Multiple Access (CDMA)
+Basandosi sullo *Spread Spectrum*, questa tecnica prevede ovviamente che agli utenti venga permesso di trasmettere contemporaneamente e sulla stessa frequenza senza disturbarsi. Il concetto di base, in questo caso, è che ogni utente abbia il proprio *codice di spreading*, in modo che siano ortogonali.
+
+In questo caso si utilizza, al posto dello zero, il valore -1, per rendere più comodi i conti e le questioni legate proprio all'ortogonalità.
+
+#nota[
+  Due *codici di spreading* si dicono ortogonali se, sommati, la loro somma è zero per ogni bit che compone il risultato.
+]
+
+Come per la tecnica analizzata precedentemente, anche in questo caso non viene inviato il singolo bit, ma la stringa "trasformata", che il ricevitore avrà la possibilità di decifrare opportunamente.
+
+Esempi di *sequenze di spreading*:
+- *_Walsh_*: sono ortogonali e matematicamente "perfette". Non ci può quindi essere interferenza fra gli utenti nell'invio delle informazioni, ma allo stesso tempo il numero di queste sequenze è *limitato* ed è possibile generare solo 64 codici $!=$.
+- *_PN, Gold, Kasami_*: questi codici *non* sono ortogonali, ma sono quasi infiniti. Si utilizzano tipicamente nei casi in cui vi sono tantissimi utenti in un ambiente e si accetta di avere rumore/interferenze pur di connettere tutti.
+
+#attenzione[
+  In questa tecnica, il trasmettitore è *anarchico*: si preoccupa solo di inviare le informazioni, senza preoccuparsi in alcun modo delle interferenze. È infatti compito del ricevitore di distinguere correttamente tutto ciò che gli arriva.
+]
+
