@@ -260,3 +260,73 @@ Esempi di *sequenze di spreading*:
   In questa tecnica, il trasmettitore è *anarchico*: si preoccupa solo di inviare le informazioni, senza preoccuparsi in alcun modo delle interferenze. È infatti compito del ricevitore di distinguere correttamente tutto ciò che gli arriva.
 ]
 
+Il ricevitore calcola inoltre la seguente funzione:
+$ 
+  s_u(d) = sum_(i=1)^k d_i dot c_i 
+$
+Dove:
+- $d ->$ Dati ricevuti, ovvero ciò che arriva all'antenna;
+- $c ->$ Codice/Chip, ovvero la _sequenza di spreading_ che il ricevitore ha in memoria;
+- $k ->$ Lunghezza del codice, il numero di chip da cui è composto.
+
+È possibile considerare questa formula come un "filtro matematico": i segnali che corrispondono effettivamente al codice che ha il trasmettitore, danno un risultato grande, altrimenti uno uguale o molto vicino a zero.
+
+#esempio[
+  Esempio con 3 utenti:
+  #align(center)[
+    #table(
+      columns: (auto, 2em, 2em, 2em, 2em, 2em, 2em),
+      inset: 6pt,
+      align: (col, row) => (if col == 0 { left } else { center } + horizon),
+      stroke: 0.5pt + black,
+      
+      [User A], [1], [-1], [-1], [1], [-1], [1],
+      [User B], [1], [1], [-1], [-1], [1], [1],
+      [User C], [1], [1], [-1], [1], [1], [-1]
+    )
+  ]
+
+  Ognuno di questi utenti ha a propria disposizione un codice univoco lungo 6 chip (di conseguenza, facendo riferimento alla formula di cui sopra, $k = 6$).
+
+  Supponiamo ora che l'utente A voglia trasmettere il primo 1: deve spedire il codice così com'è (altrimenti avrebbe dovuto inviare il codice moltiplicato per -1). 
+
+  Il ricevitore decodifica ciò che gli è arrivato e utilizza il codice, che ha in memoria, per decifrare:
+
+  #align(center)[
+    #table(
+      columns: (auto, 2em, 2em, 2em, 2em, 2em, 2em, 2.5em),
+      inset: 6pt,
+      align: (col, row) => (if col == 0 { left } else { center } + horizon),
+      stroke: 0.5pt + black,
+
+      [Transmit (data bit = 1) A], [1], [-1], [-1], [1], [-1], [1], [],
+      [Receiver codeword A], [1], [-1], [-1], [1], [-1], [1], [],
+      [Multiplication], [1], [1], [1], [1], [1], [1], [=6]
+    )
+  ]
+
+  Essendo il risultato, pari a 6, il massimo possibile (perché $k = 6$), allora sicuramente è stato ricevuto tutto correttamente.
+
+  Ovviamente, se venisse usato il codice di A per decifrare un messaggio di B, il risultato sarebbe molto diverso:
+
+  #align(center)[
+    #table(
+      columns: (auto, 2em, 2em, 2em, 2em, 2em, 2em, 2.5em),
+      inset: 6pt,
+      align: (col, row) => (if col == 0 { left } else { center } + horizon),
+      stroke: 0.5pt + black,
+
+      [Transmit (data bit = 1) B], [1], [1], [-1], [-1], [1], [1], [],
+      [Receiver codeword A], [1], [-1], [-1], [1], [-1], [1], [],
+      [Multiplication], [1], [-1], [1], [-1], [-1], [1], [=0]
+    )
+  ]
+
+  In questo caso il risultato è 0, di conseguenza il ricevitore può essere sicuro che non sia stato A a trasmettere, ma un altro utente.
+]
+
+Più è alto il numero di utenti, maggiore dev'essere lo *_spreading factor_* (la lunghezza del codice), riducendo al contempo sia il rischio di interpretazioni sbagliate delle informazioni arrivate che del _data rate_ del dispositivo.
+
+#nota[
+  Questo sistema funziona correttamente se i segnali ricevuti hanno circa la stessa potenza, altrimenti non verrebbero interpretati correttamente i segnali inviati; da qui nascono difficoltà di trasmissione per dispositivi che si trovano lontani. Per ovviare a questo problema, che prende il nome di *Near-Far Problem*, si utilizzano potenze diverse in base alla distanza (di contro, si consuma più batteria del dispositivo).
+]
