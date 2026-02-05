@@ -200,4 +200,44 @@ Il vantaggio principale consiste nella resistenza al *rumore/jamming*: una frequ
 ]
 
 === Direct Sequence Spread Spectrum (DSSS)
+Possiamo pensare alla tecnica di *_Direct Sequence Spread Spectrum_* come una vera e propria _diliuzione_ del segnale: data un sequenza di $N$ bit, ognuno di essi viene rappresentato da un insieme di bit utilizzando un codice di _spread_ pseudo-casuale.
+
+Intuitivamente, è possibile notare un problema che potrebbe nascere dall'uso di questa tecnica: se ho, ipoteticameente, un secondo di tempo per poter trasmettere un bit, dopo che quest'ultimo verrà trasformato in una _sequenza di chip_ (e quindi sarà formato da più di un solo bit), il tempo che avevo inizialmente a disposizione per la trasmissione del singolo bit non varia e dovrà essere utilizzato anche per trasmetterne di più.
+
+Per ovviare a questo problema, le _sequenze di chip_ si fanno "durare meno": durano quindi $1/n$ del tempo dei bit di informazione. Inoltre, per il mantenimento dello stesso *data rate*, si utilizza $n$ volte la banda (con $n$ che equivale al fattore di _spreading_).
+
+Infine, si effettua lo `XOR` degli $n$ bit utilizzati trasformando il bit singolo. L'utilizzo dello `XOR` è fondamentale, in quanto si tratta di un'operazione *reversibile*.
+
+Un altro aspetto fondamentale è che, come ovvio che sia, ricevitore e trasmettitore conoscono la *sequenza do spreading* ed è così possibile, assieme all'inverso dello `XOR`, la decifratura del segnale trasmesso.
+
+#nota[
+  Schema di funzionamento ad alto livello:
+  $
+    "bit" -> "spread code" -> "M bit/Sequenza di chip" -> "bit" xor "Sequenza" -> "Info trasmessa"
+  $
+]
+
+#pagebreak()
+
+#esempio[
+  #align(center)[
+    #table(
+      columns: (auto, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em),
+      inset: 5pt,
+      align: center + horizon,
+      stroke: 0.5pt,
+
+      [*Bit informazione*], table.cell(colspan: 4)[*1*], table.cell(colspan: 4)[*0*],
+
+      [*Sequenza di chip*], [0], [1], [1], [1], [0], [0], [1], [0],
+
+      [*Trasmesso (XOR)*], [1], [0], [0], [0], [0], [0], [1], [0]
+    )
+  ]
+
+  #figure(
+  image("/assets/DSSS.png", width: 80%),
+  caption: [Nello schema è possibile osservare il #text(fill: green)[segnale originale], la #text(fill: blue)[sequenza di chip] e #text(fill: red)[ciò che viene inviato al ricevitore].],
+)
+]
 
