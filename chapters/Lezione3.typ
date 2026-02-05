@@ -195,3 +195,9 @@ Dallo schema, è possibile notare come la *Channel Table* debba essere la medesi
 
 Il vantaggio principale consiste nella resistenza al *rumore/jamming*: una frequenza sola compromessa, non compromette potenzialmente il deterioramente di tutta la trasmissione. È inoltre una tecnica particolarmente sicura poiché, se un utente malintenzionato volesse ascoltare la trasmissione, non disponendo della sequenza di _hopping_, potrebbe leggere solo alcuni pezzi di messaggi. 
 
+#esempio[
+  Come detto precedentemente, questa tecnica è stata fondamentale per lo sviluppo delle comunicazioni *Bluetooth*. Consiste infatti nella divisione della banda, da $2.4 "GHz"$, in 79 canali. Vengono effettuati 1600 salti al secondo; questo è il motivo grazie al quale, se ci si trova all'interno di una stanza molto affollata tra apparecchi e *Wi-Fi*, il segnale delle cuffie *Bluetooth* che sto utilizzando è un segnale praticamente impossibile da colpire in maniera continuativa per disturbarne la comunicazione.
+]
+
+=== Direct Sequence Spread Spectrum (DSSS)
+
