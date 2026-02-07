@@ -814,7 +814,7 @@ Il protocollo Bluetooth utilizza uno schema di controllo degli errori *Stop-and-
         // Slot f1 ricevuto: Master riceve ACK
         draw-packet-dashed(start-x + 1 * slot-width + 0.175, master-y, 0)
         line(
-          (start-x + 1 * slot-width + 0.5, slave-y +0.3),
+          (start-x + 1 * slot-width + 0.5, slave-y + 0.3),
           (start-x + 1 * slot-width + 0.5, master-y + 0.35),
           stroke: 1.2pt + black,
           mark: (end: ">"),
@@ -948,10 +948,13 @@ Il protocollo Bluetooth utilizza uno schema di controllo degli errori *Stop-and-
 
 Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency hopping, non sa come contattare i master) alla *modalità attiva* all'interno di una piconet?
 
-*Fase di Discovery (Inquiry)*. Il processo di scoperta funziona nel seguente modo:
-+ *Master in inquiry*: il master sceglie un sotto-insieme specifico di canali (non tutti i $79$ per evitare interferenze) chiamati *inquiry channels*. Su questi canali trasmette periodicamente *inquiry packet* per chiedere se ci sono dispositivi che vogliono connettersi
+=== Fase di Discovery (Inquiry)
 
-+ *Slave in scan*: lo slave, per risparmiare energia, scansiona i canali di connessione *periodicamente* (non in modo continuo). Quando intercetta un inquiry packet, non risponde immediatamente
+Il processo di scoperta funziona nel seguente modo:
+
++ *Master in inquiry*: il master sceglie un sotto-insieme specifico di canali (non tutti i $79$ per evitare interferenze) chiamati *inquiry channels*. Su questi canali trasmette periodicamente *inquiry packet* ogni $625 mu s$ (uno slot BT) per chiedere se ci sono dispositivi che vogliono connettersi
+
++ *Slave in scan*: lo slave, per risparmiare energia, scansiona i canali di connessione *periodicamente* (non in modo continuo). L'inquiry scan dura circa $11.25 "ms"$ e viene eseguito con intervalli di $1.28$ o $2.56$ secondi. Quando intercetta un inquiry packet, non risponde immediatamente
 
 + *Random backoff*: lo slave attende un *random backoff time* prima di rispondere. Questo meccanismo evita collisioni con altri slave che potrebbero voler connettersi contemporaneamente. Il backoff è calcolato in modo da sincronizzarsi con il timing del master
 
@@ -961,7 +964,144 @@ Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency 
   Tutto questo meccanismo è *non coordinato* e *distribuito*. Master e slave devono trovare un accordo senza una sincronizzazione preesistente.
 ]
 
-*Fase di Paging (Connessione)*: Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
+//TODO FI
+#esempio()[
+  Esempio di fase di discovery tra un master e uno slave:
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
+
+        let slot-width = 0.35
+        let master-y = 3.5
+        let slave-y = 1.5
+        let num-inquiry = 30
+        let start-x = 1
+
+        // Timeline Master
+        line((start-x, master-y), (start-x + num-inquiry * slot-width, master-y), stroke: 1.2pt + black, mark: (
+          end: ">",
+        ))
+        content((start-x - 0.8, master-y), text(size: 9pt, weight: "bold", "MASTER"))
+        content((start-x + num-inquiry * slot-width + 0.5, master-y), text(size: 9pt, "t"))
+
+        // Timeline Slave
+        line((start-x, slave-y), (start-x + num-inquiry * slot-width, slave-y), stroke: 1.2pt + black, mark: (end: ">"))
+        content((start-x - 0.8, slave-y), text(size: 9pt, weight: "bold", "SLAVE"))
+        content((start-x + num-inquiry * slot-width + 0.5, slave-y), text(size: 9pt, "t"))
+
+        // Etichetta slot BT
+        content((start-x + 6, master-y + 0.8), text(size: 8pt, "BT slot 625μs"))
+
+        // Etichetta durata totale
+        content((start-x + num-inquiry * slot-width / 2, master-y + 1.2), text(size: 8pt, "5.12 secondi"))
+
+        // Inquiry packets del master (pattern casuale di verdi e bianchi e rossi)
+        let inquiry-pattern = (1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1)
+        for i in range(num-inquiry) {
+          let x = start-x + i * slot-width
+          if inquiry-pattern.at(i) == 1 {
+            rect(
+              (x, master-y - 0.25),
+              (x + slot-width - 0.02, master-y + 0.25),
+              fill: rgb("#90EE90"),
+              stroke: 0.8pt + black,
+            )
+          } else {
+            rect((x, master-y - 0.25), (x + slot-width - 0.02, master-y + 0.25), fill: white, stroke: 0.8pt + black)
+          }
+        }
+
+        // Legenda inquiry packet
+        rect((start-x, master-y - 1), (start-x + 0.3, master-y - 0.6), fill: rgb("#90EE90"), stroke: 0.8pt + black)
+        content((start-x + 0.8, master-y - 0.8), text(size: 7pt, "Inquiry packet"), anchor: "west")
+
+        // Inquiry scan dello slave - primi tentativi falliti
+        // Scan 1 (fallito)
+        let scan1-x = start-x + 2 * slot-width
+        rect((scan1-x - 0.15, slave-y - 0.3), (scan1-x + 0.95, slave-y + 0.3), fill: rgb("#E0E0E0"), stroke: 1pt + blue)
+        line((scan1-x + 0.4, master-y - 0.3), (scan1-x + 0.4, slave-y + 0.35), stroke: 1pt + gray, mark: (end: ">"))
+        // X rossa per indicare fallimento
+        line((scan1-x + 0.2, slave-y - 0.15), (scan1-x + 0.6, slave-y + 0.15), stroke: 2pt + red)
+        line((scan1-x + 0.2, slave-y + 0.15), (scan1-x + 0.6, slave-y - 0.15), stroke: 2pt + red)
+
+        // Scan 2 (fallito)
+        let scan2-x = start-x + 8 * slot-width
+        rect((scan2-x - 0.15, slave-y - 0.3), (scan2-x + 0.95, slave-y + 0.3), fill: rgb("#E0E0E0"), stroke: 1pt + blue)
+        line((scan2-x + 0.4, master-y - 0.3), (scan2-x + 0.4, slave-y + 0.35), stroke: 1pt + gray, mark: (end: ">"))
+        // X rossa per indicare fallimento
+        line((scan2-x + 0.2, slave-y - 0.15), (scan2-x + 0.6, slave-y + 0.15), stroke: 2pt + red)
+        line((scan2-x + 0.2, slave-y + 0.15), (scan2-x + 0.6, slave-y - 0.15), stroke: 2pt + red)
+
+        // Scan 3 (successo!)
+        let scan3-x = start-x + 15 * slot-width
+        rect(
+          (scan3-x - 0.15, slave-y - 0.3),
+          (scan3-x + 0.95, slave-y + 0.3),
+          fill: rgb("#90EE90"),
+          stroke: 1.2pt + green.darken(20%),
+        )
+        line(
+          (scan3-x + 0.4, master-y - 0.3),
+          (scan3-x + 0.4, slave-y + 0.35),
+          stroke: 1.2pt + green.darken(20%),
+          mark: (end: ">"),
+        )
+        // Checkmark verde per indicare successo
+        line((scan3-x + 0.2, slave-y), (scan3-x + 0.35, slave-y - 0.12), stroke: 2.5pt + green.darken(30%))
+        line((scan3-x + 0.35, slave-y - 0.12), (scan3-x + 0.6, slave-y + 0.18), stroke: 2.5pt + green.darken(30%))
+
+        // Random backoff e risposta
+        let response-x = start-x + 20 * slot-width
+        rect(
+          (response-x - 0.15, slave-y - 0.3),
+          (response-x + 0.5, slave-y + 0.3),
+          fill: rgb("#87CEEB"),
+          stroke: 1.2pt + blue,
+        )
+        line((response-x + 0.15, slave-y - 0.35), (response-x + 0.15, master-y + 0.35), stroke: 1.2pt + blue, mark: (
+          end: ">",
+        ))
+
+        // Etichetta random backoff
+        content((scan3-x + 2.5, slave-y - 0.8), text(size: 7pt, "Random Backoff"), anchor: "center")
+        line((scan3-x + 0.9, slave-y - 0.35), (response-x - 0.2, slave-y - 0.35), stroke: (
+          paint: black,
+          thickness: 0.8pt,
+          dash: "dashed",
+        ))
+        line((scan3-x + 0.9, slave-y - 0.5), (scan3-x + 0.9, slave-y - 0.35), stroke: 0.8pt + black)
+        line((response-x - 0.2, slave-y - 0.5), (response-x - 0.2, slave-y - 0.35), stroke: 0.8pt + black)
+
+        // Etichette inquiry scan
+        content((start-x + 5.5, slave-y - 1.3), text(size: 7pt, "Inquiry scan"))
+        content((start-x + 5.5, slave-y - 1.6), text(size: 7pt, "Time 11.25 ms"))
+
+        // Etichetta scan interval
+        content((start-x + 5, slave-y - 2.1), text(size: 7pt, "Scan interval 1,28 | 2,56 s"))
+        line((scan1-x + 0.4, slave-y - 1.9), (scan2-x + 0.4, slave-y - 1.9), stroke: 0.8pt + black, mark: (
+          start: ">",
+          end: ">",
+        ))
+        line((scan1-x + 0.4, slave-y - 0.35), (scan1-x + 0.4, slave-y - 1.9), stroke: 0.8pt + black)
+        line((scan2-x + 0.4, slave-y - 0.35), (scan2-x + 0.4, slave-y - 1.9), stroke: 0.8pt + black)
+      })
+    ]
+    caption: [Fase di Discovery: Inquiry tra Master e Slave]
+  ]
+
+  Il diagramma mostra come:
+  - Il master trasmette continuamente inquiry packets (rettangoli $mg("verdi")$) ogni $625 mu s$
+  - Lo slave effettua inquiry scan periodici (rettangoli $mb("blu")$) con lunghi intervalli tra uno scan e l'altro
+  - I primi due scan falliscono ($mr("X rossa")$) perché non coincidono con l'invio di un inquiry packet
+  - Il terzo scan ha successo (checkmark verde) intercettando un inquiry packet
+  - Lo slave attende un random backoff prima di rispondere per evitare collisioni
+]
+
+=== Fase di Paging (Connessione)
+
+Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
 + Il master invia *page packet* sullo slave utilizzando il suo indirizzo hardware (DAC)
 
 + Lo slave risponde e inizia la negoziazione dei parametri di connessione
