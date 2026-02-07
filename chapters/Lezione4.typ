@@ -339,10 +339,10 @@ $
 $
 
 #nota()[
-  Il trasmettitore (Master) e il ricevitore (Slave) devono conoscere esattamente lo stesso schema di salti. Questa sequenza è determinata dall'orologio interno (clock) del Master e dal suo indirizzo univoco.
+  Il trasmettitore (Master) e il ricevitore (Slave) devono conoscere esattamente lo stesso schema di salti. Questa sequenza è determinata dal clock del Master e dal suo indirizzo univoco.
 ]
 
-I vantaggi introdotti sono:
+I $mg("vantaggi")$ introdotti sono:
 - Prevenzione delle interferenze
 - Sicurezza: Resistenza a intercettazione e jamming. Un attaccante dovrebbe conoscere l'esatta sequenza di salti e la tempistica precis
 - Coesistenza (CDMA).
@@ -351,18 +351,19 @@ I vantaggi introdotti sono:
 
 Questo livello si occupa di :
 - Stabilire la connessione con la _piconet_
-- Gestione dell'indirizzamento. Ogni dispositivo nella rete presenta sia un'indirizzo hardware (del dispositivo) che uno logico (a livello di pico-net).
+- *Gestione dell'indirizzamento*. Ogni dispositivo nella rete presenta sia un'indirizzo hardware (del dispositivo) che uno logico (a livello di pico-net).
 - Sincronizzazione e tempistiche di comunicazione. Vengono utilizzati Time division duplex (TDD) e Time division Multipe Access (TDMA).
 - Gestisce la potenza della trasmissione (indicazioni passate a livello radio)
 
-
-La gestione della comunicazione è *Duplex*. A differenza della trasmissione via cavo (cavo ethernet full-duplex), in ambito wireless non possiamo trasmettere e ricevere nello stesso istante.  
+La gestione della comunicazione è *Duplex*. A differenza della trasmissione via cavo (cavo ethernet full-duplex), in ambito wireless non possiamo trasmettere e ricevere nello stesso istante.
 
 === LMP
-Si tratta di un livello di controllo. Non trasmette dati ma li gestisce.
 
-- Configura i collegamenti
-- Gestisce la sicurezza
+Si tratta di un *livello di controllo*. Non trasmette dati ma li gestisce:
+- Configura i collegamenti tra dispositivi
+- Gestisce i *collegamenti attivi*
+- Aggiunge funzionalità di Sicurezza e cifratura
+
 
 === L2CAP
 
