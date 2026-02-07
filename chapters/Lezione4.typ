@@ -131,6 +131,12 @@ Inoltre, bluetooth presenta le seguenti caratteristiche:
 
 Solitamente questa tecnologia viene utilizzata per sostituire i cavi, come punto di accesso per dati e voce e per comunciazione ad hoc con altri dispositivi bluetooth.
 
+Inoltre, i dispositivi bluetooth si differenziano in base alla classe di potenza:
+- Power Class 1: $100 "mW"$ (100 metri senza ostacoli)
+- Power Class 2: $2.5 "mW"$ (10 metri)
+- Power class 3: $1 "mW"$ (1-2 metri)
+
+
 == Stack di bluetooth
 
 L'architettura di bluetooth è composta dalle seguenti parti:
@@ -357,45 +363,135 @@ Questo livello si occupa di :
 
 La gestione della comunicazione è *Duplex*. A differenza della trasmissione via cavo (cavo ethernet full-duplex), in ambito wireless non possiamo trasmettere e ricevere nello stesso istante.
 
-=== LMP
+=== Link Manager Protocol (LMP)
 
 Si tratta di un *livello di controllo*. Non trasmette dati ma li gestisce:
 - Configura i collegamenti tra dispositivi
 - Gestisce i *collegamenti attivi*
 - Aggiunge funzionalità di Sicurezza e cifratura
 
+=== Logic Link Control and Adaptation Protocol (L2CAP)
 
-=== L2CAP
+Primo livello della parte _software_. Il compito principale è di fare da *adattatore* tra i procolli di servizio di livello superiore e il livello baseband.
 
-Siamo nella parte sofware. Si tratta di fatto di un protocollo che permette la convergenza di quello che c'è sopra adattandolo ai servizi offerti dai livelli inferiori.
+Inoltre, offre ai livelli superiori serivzi _connectionless e connection-oriented_.
 
-=== SDP
+=== Service Discovery Protocol (SDP)
 
-serve per gestire cosa il dispositivo è in grado di fare (auricolari bluetooth fanno qualcosa di diverso da orologio bluetooth). Implementa un protocollo che permette ad un dispositivo che si conette alla pico-net di trovare il dispositivo con un certo profilo (cosa è in grado di fare) nella rete.
+Permette di *gestire le informazioni sul dispositivo* corrente. In particolare conosce:
+- Servizi disponibili sul dispositivo
+- Caratteristiche del dispositivo
 
-=== RFCOMM
+Inoltre, implementa un protocollo che permette ad un dispositivo che si conette alla piconet di trovare un dispositivo con un certo profilo (cosa è in grado di fare) aderente alle sue richieste.
 
-emulatore di porta seriale. Non è fondamentale che ci sia
+=== Radio Frequency Communication (RFCOMM)
 
-=== ALtro
+Si tratta di un protocollo che *emula una porta seriale*, simulando la comunicazione via cavo.
 
-Lo standard bluetooth intende riutilizzare il maggior numero di protocolli già esistenti. bluetooth si occupa tramite i suoi livelli proprietari di convertire il mondo esterno in quello bluetooth
-//TODO aggiungere cosa sono i profili
+=== Altri livelli
 
-== pico-net & scatternet
+Lo standard bluetooth intende *riutilizzare il maggior numero di protocolli già esistenti*. Bluetooth si occupa, tramite i suoi livelli proprietari, di convertire il mondo esterno in quello bluetooth.
 
-Active slave (AS): Membro attivo della rete. Al massino il suo indirizzo è $3$ bit.
+In particolare lo standard bluetooth fornisce i cosi detti *_profili_*. Essi indicano un particolare modello di utilizzo dell'architettura (ovvero quali componenti utilizza per supportare determinate applicazioni).
 
-Al più in una piconet ci possono essere 8 dispositivi che comunicano attiviamento (uno di quelli è il master)
+#esempio()[
+  Ad esempio per il trasferimento di file, un dispositivo deve seguire il seguente profilo:
+  - Protocolli esterni: OBEX, RFCOMM
+  - Layer interni: SDP, L2CAP
+]
 
-Parked Salve (PS): Comunque parte della pico-net ma non ha accesso diretto alla comunicazione. Può ascoltare messaggi ma non puà comunicare attivamente. Il master decide se risvegliarlo, assegnandoli un active member address. Per farlo serve una parked member address, al massimo $255$ dispositivi (lo zero è riservato al master)
+== Pico-net & Scatternet
 
-Stanby Salve (SS): Ci sono anche dei dispositivi che possono ascoltare messaggi ma sono esclusi dalla rete (non sono indirizzati).
+Come detto in precedenza, nella piconet ogni dispositivo può avere due etichette:
+
+- *Active slave (AS)*: Membro attivo della rete. Al massimo il suo indirizzo è su `3 bit` *Active Member Address (AMA)* ($0$ è il master).
+
+  #nota()[
+    Al più in una piconet ci possono essere $8$ ($2^3$) dispositivi che comunicano attiviamento (compreso il master).
+  ]
+
+- *Parked Salve (PS)*: Si tratta di un dispositivo che fa comunque parte della piconet ma *non ha accesso diretto alla comunicazione*. Può ascoltare i messaggi ma non può comunicare attivamente. Il master decide se risvegliarlo, assegnandoli un indirizzo AMA.\
+  Ogni dispositivo possiede un *parked member address (PMA)* su `8 bit`, al massimo $255$ ($2^8$) dispositivi. L'indirizzo zeresimo è riservato al master.
+
+- *Stanby Salve (SS)*: Ci sono anche dei dispositivi che sono conosciuti, ma sono esclusi dalla rete (*non sono indirizzati*). Essi possono essere in una quantità illimitata.
+
+Siccome lo standard bluetooth permette ad *uno slave di far parte di più piconet*. In questo modo si viene a creare una *scatternet*: insieme di più piconet che condividono slave tra di loro.
 
 #nota()[
-  Lo standard bluetooth permette ad uno slave di far parte di più piconet.
+  Ogni piconet è separata, ciascuna è gestita dal proprio master.
 ]
-Uno slave può essere una qualsiasi combinazione dei possibili stati nelle varie reti. In questo modo viene a crearsi una *scatternet*. Insieme di più pico-net (pico-net che condividono slave), tuttavia ogni pico-net è separata, ognuna è gestita dal proprio master.
+
+#align(center)[
+  #cetz.canvas(length: 1cm, {
+    import cetz.draw: *
+
+    // Colori
+    let node-color = rgb("#87CEEB")
+    let text-color = black
+
+    // Funzione per disegnare un nodo
+    let draw-node(pos, label) = {
+      rect(
+        (pos.at(0) - 0.4, pos.at(1) - 0.3),
+        (pos.at(0) + 0.4, pos.at(1) + 0.3),
+        fill: node-color,
+        stroke: 1pt + black,
+        radius: 0.1,
+      )
+      content(pos, text(size: 10pt, fill: text-color, weight: "bold", label))
+    }
+
+    // Piconet A (cerchio tratteggiato sinistra) - SI INTERSECA con B
+    circle((5, 5), radius: 3.8, stroke: (dash: "dashed", thickness: 1.5pt, paint: gray))
+    content((2.2, 8.5), text(size: 11pt, fill: gray, weight: "bold", "Piconet A"))
+
+    // Piconet B (cerchio tratteggiato destra) - SI INTERSECA con A
+    circle((9, 5), radius: 3.8, stroke: (dash: "dashed", thickness: 1.5pt, paint: gray))
+    content((11.8, 8.5), text(size: 11pt, fill: gray, weight: "bold", "Piconet B"))
+
+    // Etichetta Scatternet (in alto al centro)
+    content((7, 9.5), text(size: 12pt, fill: gray, weight: "bold", "Scatternet"))
+
+    // Nodi Piconet A (solo nella parte sinistra)
+    draw-node((2.5, 6.5), "SS") // Standby Slave in alto a sinistra
+    draw-node((3.5, 5), "M") // MASTER A - nella Piconet A
+    draw-node((3.2, 3.5), "AS") // Active Slave in basso a sinistra
+    draw-node((3.8, 7.5), "PS") // Parked Slave in alto
+    draw-node((5, 3), "AS") // Active Slave in basso
+
+    // Nodo nell'intersezione (SOLO AS - condiviso tra le due piconet)
+    draw-node((7, 5), "AS") // Active Slave al centro dell'intersezione - UNICO NODO CONDIVISO
+
+    // Nodi Piconet B (solo nella parte destra)
+    draw-node((10.5, 5), "M") // MASTER B - nella Piconet B
+    draw-node((11.5, 6.5), "PS") // Parked Slave in alto a destra
+    draw-node((10.8, 3.5), "SS") // Standby Slave in basso a destra
+    draw-node((10.2, 7.5), "PS") // Parked Slave in alto
+    draw-node((9, 3), "AS") // Active Slave in basso
+
+    // Frecce - Piconet A (connessioni dal Master A agli slave)
+    set-style(stroke: (paint: gray.darken(20%), thickness: 1.2pt))
+    line((3.7, 4.8), (6.6, 4.9), mark: (end: ">")) // AS centrale -> Master A
+    line((3.5, 4.7), (3.4, 3.8), mark: (end: ">")) // Master A -> AS basso
+    line((3.8, 5.2), (4.7, 3.3), mark: (end: ">")) // Master A -> AS basso destro
+
+    // Frecce tratteggiate per PS e SS (Piconet A)
+    set-style(stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
+    line((2.8, 6.3), (3.3, 5.3)) // SS -> Master A
+    line((3.8, 7.2), (3.5, 5.3)) // PS -> Master A
+
+    // Frecce - Piconet B (connessioni dal Master B agli slave)
+    set-style(stroke: (paint: gray.darken(20%), thickness: 1.2pt))
+    line((10.1, 4.9), (7.4, 4.9), mark: (end: ">")) // AS centrale -> Master B
+    line((10.5, 4.7), (9.3, 3.3), mark: (end: ">")) // Master B -> AS basso
+
+    // Frecce tratteggiate per PS e SS (Piconet B)
+    set-style(stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
+    line((11.2, 6.3), (10.7, 5.3)) // PS -> Master B
+    line((10.4, 7.2), (10.5, 5.3)) // PS -> Master B
+    line((10.5, 3.8), (10.5, 4.7)) // SS -> Master B
+  })
+]
 
 === COmunicazione
 FH:
