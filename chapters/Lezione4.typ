@@ -662,86 +662,320 @@ La comunicazione avviene tramite:
   ]
 ]
 
-=== FH + CDMA
-
-=== SCO & ACL
-
-=== Pacchetti Baseband
-
-
-
 === Scatternet FH + CDMA
 
-In alcuni momenti (non si sa quali ) dei 79 canali che possiamo usare ci può essere una sovrapposzione, lo stesso canale viene utilizzato. Lo slave riceve un interferenza in quanto si sta trasmettendo sulla stessa frequenza.
+All'interno di una scatternet la frequency hopping viene decisa dal relativo master e condivisa all'interno della piconet. *Ogni piconet* avrà una sequenza diversa e sara *completamente autonoma*.
 
-Soluzione:
-- Non risolvere il problema, usare molti meno canali
-- CDMA, comunicare sulla stessa frequenza senza interferenza.
+Un AS connesso a più piconet deve essere in grado di gestire le varie connessioni in maniera indipendente (anche a livello di capacità fisica del processore).
 
-Il master comunica un codice ortogonale per la propia piconet. Nella comunicazione oltre al frequency hopping usiamo anche CDMA.
+In alcuni momenti (non si sa quali) sui $79$ canali utilizzabili si può verificare una sovrapposzione: viene utilizzato lo stesso canale. Lo slave riceve di conseguenza un'interferenza in quanto si sta trasmettendo sulla stessa frequenza. Possibili soluzioni:
 
-Quando lo slave di mezzo vuole comunicare o ascoltare deve utilizzare il codice della piconet di riferimento.
+- Non risolvere il problema, usare molti meno canali. FH su un sotto-insieme di canali ($>= 20, < 79$).
 
-#nota()[
-  Non è una soluzione totale, ma è parziale, mitiga di molto il problema.
-]
-
-== Baseband SCO & ACL
-
-// riguardare
-
-=== Formato frame
-- Access code:
-  - Ha un preambolo per sincronizzare la parte radio.
-  Acces Code può essere (o uno o l'altro):
-  - CAC: identifica la piconet
-  - DAC: derivato dall'hardware dello slave, serve per dire che un certo messaggio è destinato a quel dispositivo
-  - IAC: usato per trovare l'indirizzo di un dispositivo
-- Head:
-  - AMA: indirizzo del membro attivo della piconet (master o slave)
-  - Type: identifica se è un canale SCO o ACL
-  - Flow: per le ACL
-  - ARQN: parte per la ritrasmissione
-  - SEQN: sequence number
-  - HEC: Conrollo degli errori
-- Payload (30 byte per SCO o variabile per ACL):
-
-== Controllo degli errori
-//aggungere imamgine
-Abbiamo uan comunicazione tra un singolo master e un singolo slave.
-Il bit scritto nel header è il SEQN (sequence number), il bit è relativo all'ACK.
-
-- La prima trasmissione master slave ha SEQN 0. Lo slave risponde un ACK con SEQN 0.
-- il master trasmetter il SEQN del pacchetto succevvo, ovvero 1. tuttavia la trasmissione fallisce
-- lo slave non riceve, siccome si aspettava un pacchetto con SEQN $1$ risponde con un NAK pari a $1$. Lo slave si aspettava di ricevere qualcosa (turno del master), comuncia di nona aver ricevuto SEQN.
-
-- più avanti nella figura fallisce l'ACK. Il master nella frequenza 5 si apettava l'ACK dello slave ma non è arrivato, il master assume che sia stao perso. Il master rimandera messagio con SEQN $1$
-
-- lo slave lo riveve, siccome lo ha già nel buffer viene scartato. QUesta volta l'ACK arriva.
-
-- Alla fine viene trasferito il messaggio successivo (SEQN modulo 2 = 0).
+- *CDMA*, per evitare interferenze tra piconet. Il master comunica un *codice ortogonale* per la propia piconet. Quando uno slave vuole comunicare o ascoltare, deve utilizzare il codice della piconet di riferimento.
 
 #nota()[
-  Se non ci fosse questa alternanza rigida (sincronismo implicito) non basterebbe un controllo dell'errore così semlice.
-
-  Basta un solo bit per controllare il flusso. Se trasmetto l'1 e rivevo conferma di aver ricevuto 1 il successivo è lo 0.
+  *Non* è una *soluzione totale*, ma è parziale, mitiga di molto il problema.
 ]
 
-== Link manager protocol (LMP)
+== Collegamenti Baseband: SCO & ACL
 
-Come arriviamo dallo stanby mode (non sappiamo frequency hopping, come contattare i master ecc) alla modalità attiva essendo in una modalità distributia.
+All'interno del livello Baseband esistono due tipi di collegamenti tra master e slave.
 
-L'idea è scegliere un sotto-insieme (non tutti per evitare interferenze) di canali in cui il Master chiede se ci sono dei dispositivi (inquiring message) che si vogliono conettere, lo slave ascolta (ogni tanto per risparmiare batteria). Allo stesso modo il master fa polling tra i vari canali (wake-up channel) di connessione durante in un certo intervallo.
+*Synchronous Connection-Oriented (SCO)*: Si tratta di un collegamento *orientato alla connessione sincrona*, principalmente utilizzato per la trasmissione di *dati real-time* come la voce. Le caratteristiche principali sono:
+- *Simmetrico*: stessa banda in entrambe le direzioni (master $->$ slave e slave $->$ master)
+- *Slot riservati*: il master riserva slot temporali fissi e periodici per la comunicazione SCO
+- *Senza ritrasmissione*: i pacchetti persi non vengono ritrasmessi (meglio perdere qualche dato che introdurre ritardi)
+- *Payload fisso*: tipicamente $30$ byte per pacchetto
+- *Latenza bassa e costante*: ideale per applicazioni real-time
+- *Circuit-switched*: il canale è sempre disponibile una volta stabilito
+
+#esempio()[
+  Un collegamento SCO viene utilizzato per le chiamate vocali Bluetooth: il master riserva slot temporali regolari per garantire un flusso audio continuo senza interruzioni.
+]
+
+*Asynchronous Connection-Less (ACL)*: Si tratta di un collegamento *asincrono senza connessione*, utilizzato per la trasmissione di *dati generici*. Le caratteristiche principali sono:
+- *Asimmetrico*: può allocare più banda in una direzione rispetto all'altra
+- *Slot dinamici*: gli slot vengono assegnati dinamicamente dal master in base alle necessità
+- *Con ritrasmissione*: supporta meccanismi di controllo degli errori e ritrasmissione (ARQ)
+- *Payload variabile*: dimensione del payload variabile in base alle esigenze
+- *Throughput variabile*: dipende dalle condizioni del canale e dal carico della rete
+- *Packet-switched*: i pacchetti vengono inviati quando necessario
+
+#esempio()[
+  Un collegamento ACL viene utilizzato per il trasferimento di file o per la navigazione web: la ritrasmissione garantisce l'integrità dei dati e la banda può essere allocata asimmetricamente (più in download che in upload).
+]
+
+#nota()[
+  In una piconet possono coesistere sia collegamenti SCO che ACL. Il master gestisce entrambi i tipi attraverso lo scheduling degli slot temporali.
+]
+
+== Formato frame Baseband
+
+Ogni frame Baseband è composto da tre parti principali:
+
+
+*Access Code* ($72$ bit): Serve per la sincronizzazione e l'identificazione. Ha un preambolo per sincronizzare la parte radio del ricevitore. L'Access Code può essere di tre tipi:
+- *CAC (Channel Access Code)*: identifica univocamente la piconet. Derivato dall'indirizzo del master
+- *DAC (Device Access Code)*: derivato dall'indirizzo hardware dello slave, serve per indicare che un certo messaggio è destinato a quel dispositivo specifico
+- *IAC (Inquiry Access Code)*: usato nella fase di scoperta per trovare dispositivi nelle vicinanze
+
+*Header* ($54$ bit): Contiene informazioni di controllo per la gestione del collegamento:
+- *AM_ADDR (Active Member Address)*: indirizzo del membro attivo della piconet (master o slave) su $3$ bit
+
+- *Type*: identifica il tipo di pacchetto e se utilizza un canale SCO o ACL ($4$ bit)
+- *Flow*: controllo di flusso per i collegamenti ACL ($1$ bit)
+- *ARQN (Automatic Repeat reQuest)*: acknowledgment per la ritrasmissione ($1$ bit)
+- *SEQN (Sequence Number)*: numero di sequenza per ordinare i pacchetti ($1$ bit)
+- *HEC (Header Error Check)*: controllo degli errori dell'header ($8$ bit)
+
+Il header viene trasmesso tre volte per garantire robustezza agli errori.
+
+*Payload* (variabile): Dimensione variabile in base al tipo di pacchetto:
+- *SCO*: payload fisso di $30$ byte
+
+- *ACL*: payload variabile, può occupare $1$, $3$ o $5$ slot temporali consecutivi (fino a circa $340$ byte)
+
+== Controllo degli errori con Stop-and-Wait ARQ
+
+Il protocollo Bluetooth utilizza uno schema di controllo degli errori *Stop-and-Wait ARQ* semplificato grazie alla natura sincrona della comunicazione TDD.
+
+#esempio()[
+  Consideriamo una comunicazione tra un master e uno slave:
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 0.9cm, {
+        import cetz.draw: *
+
+        let slot-width = 1.5
+        let master-y = 4.5
+        let slave-y = 1.5
+        let num-slots = 9
+        let start-x = 1.5
+
+        // Funzione per disegnare un pacchetto pieno (trasmesso)
+        let draw-packet-full(x, y, seqn, corrupted: false) = {
+          rect((x, y - 0.3), (x + 0.65, y + 0.3), fill: rgb("#87CEEB"), stroke: 1.3pt + blue)
+          content((x + 0.325, y), text(size: 11pt, fill: black, weight: "bold", str(seqn)))
+          if corrupted {
+            line((x, y - 0.3), (x + 0.65, y + 0.3), stroke: 2.5pt + red)
+            line((x, y + 0.3), (x + 0.65, y - 0.3), stroke: 2.5pt + red)
+          }
+        }
+
+        // Funzione per disegnare un pacchetto vuoto/tratteggiato (ricevuto/atteso)
+        let draw-packet-dashed(x, y, seqn) = {
+          rect((x, y - 0.3), (x + 0.65, y + 0.3), fill: rgb("#E6F3FF"), stroke: (
+            paint: blue,
+            thickness: 1.3pt,
+            dash: "dotted",
+          ))
+          content((x + 0.325, y), text(size: 11pt, fill: black, weight: "bold", str(seqn)))
+        }
+
+        // Etichette frequenze in alto
+        for i in range(num-slots) {
+          let x = start-x + i * slot-width
+          content((x + 0.425, master-y + 0.9), text(size: 9pt, $f_#i$))
+          // Linee verticali tratteggiate
+          if i > 0 {
+            line((x, master-y - 3.8), (x, master-y + 0.6), stroke: (
+              paint: gray.lighten(50%),
+              dash: "dashed",
+              thickness: 0.6pt,
+            ))
+          }
+        }
+
+        // Etichette Master e Slave
+        content((start-x - 1.1, master-y), text(size: 10pt, weight: "bold", "Master"))
+        content((start-x - 1.1, slave-y), text(size: 10pt, weight: "bold", "Slave"))
+
+        // Timeline Master
+        line((start-x, master-y), (start-x + num-slots * slot-width, master-y), stroke: 1pt + black, mark: (end: ">"))
+        content((start-x + num-slots * slot-width + 0.6, master-y), text(size: 9pt, "t"))
+
+        // Timeline Slave
+        line((start-x, slave-y), (start-x + num-slots * slot-width, slave-y), stroke: 1pt + black, mark: (end: ">"))
+        content((start-x + num-slots * slot-width + 0.6, slave-y), text(size: 9pt, "t"))
+
+        // Slot f0: Master trasmette 0
+        draw-packet-full(start-x + 0.175, master-y, 0)
+
+        // Slot f0 ricevuto: Slave riceve 0
+        draw-packet-dashed(start-x + 0.175, slave-y, 0)
+        line((start-x + 0.5, master-y - 0.35), (start-x + 0.5, slave-y + 0.35), stroke: 1.2pt + black, mark: (end: ">"))
+
+        // Slot f1: Slave trasmette ACK
+        draw-packet-full(start-x + 1 * slot-width + 0.175, slave-y, 0)
+        content((start-x + 1 * slot-width + 0.5, slave-y - 0.65), text(size: 8pt, weight: "bold", "ACK"))
+
+        // Slot f1 ricevuto: Master riceve ACK
+        draw-packet-dashed(start-x + 1 * slot-width + 0.175, master-y, 0)
+        line(
+          (start-x + 1 * slot-width + 0.5, slave-y +0.3),
+          (start-x + 1 * slot-width + 0.5, master-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Slot f2: Master trasmette 1, ma corrotto
+        draw-packet-full(start-x + 2 * slot-width + 0.175, master-y, 1, corrupted: true)
+        line(
+          (start-x + 2 * slot-width + 0.5, master-y - 0.35),
+          (start-x + 2 * slot-width + 0.5, slave-y + 0.35),
+          stroke: (paint: red, thickness: 1.5pt, dash: "dashed"),
+          mark: (end: ">"),
+        )
+
+        // Slot f3: Slave trasmette NAK
+        draw-packet-full(start-x + 3 * slot-width + 0.175, slave-y, 1)
+        content((start-x + 3 * slot-width + 0.5, slave-y - 0.65), text(size: 8pt, weight: "bold", "NAK"))
+
+        // Slot f3 ricevuto: Master riceve NAK
+        draw-packet-dashed(start-x + 3 * slot-width + 0.175, master-y, 1)
+        line(
+          (start-x + 3 * slot-width + 0.5, slave-y + 0.35),
+          (start-x + 3 * slot-width + 0.5, master-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Slot f4: Master ritrasmette 1
+        draw-packet-full(start-x + 4 * slot-width + 0.175, master-y, 1)
+
+        // Slot f4 ricevuto: Slave riceve 1
+        draw-packet-dashed(start-x + 4 * slot-width + 0.175, slave-y, 1)
+        line(
+          (start-x + 4 * slot-width + 0.5, master-y - 0.35),
+          (start-x + 4 * slot-width + 0.5, slave-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Slot f5: Slave trasmette ACK, ma si perde
+        draw-packet-full(start-x + 5 * slot-width + 0.175, slave-y, 1)
+        content((start-x + 5 * slot-width + 0.5, slave-y - 0.65), text(size: 8pt, weight: "bold", "ACK"))
+        line(
+          (start-x + 5 * slot-width + 0.5, slave-y + 0.35),
+          (start-x + 5 * slot-width + 0.5, master-y + 0.35),
+          stroke: (paint: red, thickness: 1.5pt, dash: "dashed"),
+          mark: (end: ">"),
+        )
+
+        // Slot f6: Master ritrasmette 1 (duplicato)
+        draw-packet-full(start-x + 6 * slot-width + 0.175, master-y, 1)
+
+        // Slot f6 ricevuto: Slave riceve duplicato (aspetta 0)
+        draw-packet-dashed(start-x + 6 * slot-width + 0.175, slave-y, 0)
+        content((start-x + 6 * slot-width + 0.5, slave-y + 0.75), text(size: 7pt, fill: gray, "duplicate detected as"))
+        content((start-x + 6 * slot-width + 0.5, slave-y + 1.05), text(size: 7pt, fill: gray, "SEQN = 0 expected"))
+        line(
+          (start-x + 6 * slot-width + 0.5, master-y - 0.35),
+          (start-x + 6 * slot-width + 0.5, slave-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Slot f7: Slave trasmette ACK
+        draw-packet-full(start-x + 7 * slot-width + 0.175, slave-y, 1)
+        content((start-x + 7 * slot-width + 0.5, slave-y - 0.65), text(size: 8pt, weight: "bold", "ACK"))
+
+        // Slot f7 ricevuto: Master riceve ACK
+        draw-packet-dashed(start-x + 7 * slot-width + 0.175, master-y, 1)
+        line(
+          (start-x + 7 * slot-width + 0.5, slave-y + 0.35),
+          (start-x + 7 * slot-width + 0.5, master-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Slot f8: Master trasmette 0
+        draw-packet-full(start-x + 8 * slot-width + 0.175, master-y, 0)
+
+        // Slot f8 ricevuto: Slave riceve 0
+        draw-packet-dashed(start-x + 8 * slot-width + 0.175, slave-y, 0)
+        line(
+          (start-x + 8 * slot-width + 0.5, master-y - 0.35),
+          (start-x + 8 * slot-width + 0.5, slave-y + 0.35),
+          stroke: 1.2pt + black,
+          mark: (end: ">"),
+        )
+
+        // Legenda
+        let legend-x = start-x
+        let legend-y = 0.2
+
+        draw-packet-full(legend-x, legend-y, 0)
+        content((legend-x + 1, legend-y), text(size: 8pt, "or"), anchor: "west")
+        draw-packet-full(legend-x + 1.5, legend-y, 1)
+        content((legend-x + 2.5, legend-y), text(size: 8pt, "= sequence number, SEQN in packet header"), anchor: "west")
+
+        line(
+          (legend-x + 8.5, legend-y),
+          (legend-x + 9.5, legend-y),
+          stroke: (paint: red, thickness: 1.5pt, dash: "dashed"),
+          mark: (end: ">"),
+        )
+        content((legend-x + 10, legend-y), text(size: 8pt, "= packet corrupted"), anchor: "west")
+      })
+    ]
+  ]
+
+  + *Trasmissione iniziale* ($f_0$): il master invia un pacchetto con SEQN $= 0$. Lo slave lo riceve correttamente e risponde con un ACK ($f_1$)
+
+  + *Pacchetto corrotto* ($f_2$): il master trasmette il pacchetto con SEQN $= 1$, ma la trasmissione fallisce (pacchetto corrotto)
+
+  + *NAK implicito* ($f_3$): lo slave non riceve nulla. Siccome si aspettava un pacchetto nel turno del master, risponde con un NAK, comunicando di non aver ricevuto il pacchetto atteso
+
+  + *Ritrasmissione* ($f_4$): il master ritrasmette il pacchetto con SEQN $= 1$. Questa volta arriva correttamente allo slave
+
+  + *ACK perso* ($f_5$): lo slave invia un ACK, ma questo si perde. Il master, non avendo ricevuto l'ACK, assume che il pacchetto sia stato perso
+
+  + *Duplicato scartato* ($f_6$): il master ritrasmette nuovamente con SEQN $= 1$. Lo slave riceve il pacchetto duplicato, ma avendo già il pacchetto con SEQN $= 1$ nel buffer (e aspettandosi SEQN $= 0$), lo scarta. Invia nuovamente l'ACK ($f_7$)
+
+  + *Prosecuzione* ($f_8$): finalmente l'ACK arriva correttamente. Il master può procedere con il messaggio successivo (SEQN $= 0$ modulo $2$)
+]
+
+#nota()[
+  Grazie all'alternanza rigida tra slot master $->$ slave e slave $->$ master (sincronismo implicito gestito dal TDD), è sufficiente un *singolo bit* per il controllo del flusso.
+
+  Se trasmetto il pacchetto $1$ e ricevo conferma, il successivo sarà lo $0$. Il sequence number alterna tra $0$ e $1$ (SEQN modulo $2$).
+]
+
+== Connessione alla piconet
+
+Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency hopping, non sa come contattare i master) alla *modalità attiva* all'interno di una piconet?
+
+*Fase di Discovery (Inquiry)*. Il processo di scoperta funziona nel seguente modo:
++ *Master in inquiry*: il master sceglie un sotto-insieme specifico di canali (non tutti i $79$ per evitare interferenze) chiamati *inquiry channels*. Su questi canali trasmette periodicamente *inquiry packet* per chiedere se ci sono dispositivi che vogliono connettersi
+
++ *Slave in scan*: lo slave, per risparmiare energia, scansiona i canali di connessione *periodicamente* (non in modo continuo). Quando intercetta un inquiry packet, non risponde immediatamente
+
++ *Random backoff*: lo slave attende un *random backoff time* prima di rispondere. Questo meccanismo evita collisioni con altri slave che potrebbero voler connettersi contemporaneamente. Il backoff è calcolato in modo da sincronizzarsi con il timing del master
+
++ *Inquiry response*: dopo il backoff, lo slave risponde al master comunicando il proprio indirizzo hardware (BD_ADDR)
 
 #attenzione()[
-  Tutto questo meccanismo è non coordinato
+  Tutto questo meccanismo è *non coordinato* e *distribuito*. Master e slave devono trovare un accordo senza una sincronizzazione preesistente.
 ]
-Il master ogni tanto trasmesse un inquiry packet (intervallo di tempo fissato). Lo slave ogni tanto scansiona il canale di connessione. Se lo slave intercetta il segnsle non risponde subito ma aspetta un  *random backoff time*. In modo tale da evitare collisioni con altri slave che si vogliono collegare.
 
-il random backoff è calcolato apposta per cercare di beccare la sincronizzazione del master.
+=== Fase di Paging (Connessione)
 
-Una volta che il master ha scoperto la presenza di uno slave viene dato l'accesso allo slave. Vengono comunicati:
-- l'indirizzo
-- il frequency hopping
+Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
 
-Inoltre viene uitlizzato semrpe un insieme di canali standard specifici (più piccoli), in quanto lo slave non è ancora a conoscenza del frequency hopping.
++ Il master invia *page packet* sullo slave utilizzando il suo indirizzo hardware (DAC)
+
++ Lo slave risponde e inizia la negoziazione dei parametri di connessione
+
++ Il master comunica allo slave:
+  - *Indirizzo logico AMA* (Active Member Address) nella piconet
+  - *Sequenza di frequency hopping* da utilizzare
+  - *Clock offset* per la sincronizzazione temporale
+
++ La connessione viene stabilita e lo slave entra in modalità *attiva* (active slave)
+
+#nota()[
+  Durante le fasi di inquiry e paging viene utilizzato sempre un *insieme ridotto di canali standard* (inquiry/paging channels), proprio perché lo slave non è ancora a conoscenza della sequenza di frequency hopping specifica della piconet.
+]
