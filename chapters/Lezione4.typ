@@ -493,35 +493,182 @@ Siccome lo standard bluetooth permette ad *uno slave di far parte di più picone
   })
 ]
 
-=== COmunicazione
-FH:
+== Comunicazione piconet
 
-TDD: In uno solot temporare la comunicazione avviene master slave mentre quello successivo slave master e cosi via. Nell'immagine gli indici delle frequenze pari (slot pari delle frequenze) abbiamo comunicazione master slave. Nell'istante di tempo successivo su una frequenza diversa abbiamo la comunciazione slave - master.
+All'interno di una piconet possono esistere diversi schemi di comunicazione.
 
-#nota()[
-  La direzione è decisa a priori. Nelle frequenze pari (in termini di tempo e non nei canali) il master parla con gli slave e in quelle dispari viceversa
+=== FH + TDD + TDMA
+
+La comunicazione avviene tramite:
+- *Frequency hopping (FH)*: sequenza specifica decisa dal master e condivisa all'interno della piconet.
+
+- *Time Division Duplex (TDD)*: serve per implementare le due direzioni nella comunicazione $M -> S -> M$. In uno slot temporale la comunicazione avviene $M -> S$, mentre in quello successivo $S -> M$ e cosi via.
+
+- *Time Division Multiple Access (TDMA)*: permette di gestire più dispositivi (slave) che vogliono comunicare all'interno della piconet. Lo spazio di comunicazione viene frammentato tra i vari dispositivi dal master, esso decide quale slave può parlare e per quanti slot di tempo.
+
+#informalmente()[
+  La trasmissione è come se fosse sincrona implicitamente, la sincronia viene gestita dal master.
 ]
 
-Tutti gli slave sono Sincronizzati temporalmente e condividono al stessa frequenza di frequency hopping (altrimenti non sarebbe possibile)
-
-TDMA: Aggiugnere
-
-//aggiungere imamgine
 #esempio()[
-  in TDMA il master decise di paralre con lo slave 2. In particolare lo slave 2 ascolterare sulla sequenza 2 del frequency holding. per tutti i 3 slot successivi il master non cambia la frequenza. Una volta scelto una frequenza non la cambia (i clock sono distributii).\
-  Lo slave risponde sulal frequenza $5$. Il metronomo assoluto della pico-net continua a battere ogni $225 "ms"$. Chi dovrà parlare in questo istante dovrà usare la frequenza $5$ in base alla frequency hopping globale.
+  Esempio di comunicazione tra master e $3$ slave. Tutti gli slave sono sincronizzati temporalmente e condividono la stessa frequenza di frequency hopping.
 
   #nota()[
-    GLi slot possono essere solo dispari. Con la rigidità del TDM, tutti i dispositivi della pico-net sanno che sulle freuqnze pari devono ascoltare, sulle frequenze pari sanno che possono comunicare.
-
-    Si tratta di una convenzione. La frequency hopping viene data dal master, ogni tot secondi c'è alternanza e se si trasmette su più slot non si cambia frequenza. La frequenza successiva non dipenderà dalla precedente ma da quella globale.
-
-    In questo modo non c'è comunicazione.
+    La direzione nella comunicazione è decisa a priori. Nelle frequenze pari (in termini di tempo e non di canali) il master parla con gli slave, viceversa negli slot di tempo dispari
   ]
-  #attenzione()[
-    é come se la trasmissione fosse sincrona implicitamente, la sincronia viene gestita dal master.
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 0.9cm, {
+        import cetz.draw: *
+
+        let slot-width = 1.0
+        let row-height = 1.0
+        let num-slots = 12
+        let start-x = 1
+        let start-y = 5.5
+
+        // Funzione per disegnare un pacchetto trasmesso (rettangolo con tratteggio)
+        let draw-transmitted(x, y, w, label) = {
+          // Rettangolo con riempimento tratteggiato
+          rect((x, y - 0.35), (x + w, y + 0.35), fill: rgb("#87CEEB"), stroke: 1.3pt + blue)
+          // Aggiungi linee diagonali per simulare il tratteggio
+          for i in range(0, int(w * 8)) {
+            line((x + i * 0.15, y - 0.35), (x + i * 0.15 + 0.25, y + 0.35), stroke: 0.7pt + white)
+          }
+        }
+
+        // Funzione per disegnare un pacchetto ricevuto (rettangolo tratteggiato)
+        let draw-received(x, y, w, label) = {
+          rect((x, y - 0.35), (x + w, y + 0.35), fill: none, stroke: (paint: blue, thickness: 1.3pt, dash: "dotted"))
+          rect((x, y - 0.35), (x + w, y + 0.35), fill: rgb("#87CEEB").lighten(60%), stroke: none)
+        }
+
+        // Funzione per disegnare una freccia
+        let draw-arrow(x, y, direction) = {
+          if direction == "down" {
+            line((x, y + 0.45), (x, y - 0.45), mark: (end: ">"), stroke: 1pt + black)
+          } else {
+            line((x, y - 0.45), (x, y + 0.45), mark: (end: ">"), stroke: 1pt + black)
+          }
+        }
+
+        // Disegna gli slot temporali (etichette in alto)
+        for i in range(num-slots) {
+          let x = start-x + i * slot-width
+          content((x + slot-width / 2, start-y + 0.7), text(size: 8pt, $f_#i$))
+          // Linee verticali tratteggiate per separare gli slot
+          if i > 0 {
+            line((x, start-y - 4), (x, start-y + 0.4), stroke: (
+              paint: gray.lighten(40%),
+              dash: "dashed",
+              thickness: 0.7pt,
+            ))
+          }
+        }
+
+        // Etichette delle righe
+        content((start-x - 0.7, start-y), text(size: 9pt, weight: "bold", "Master"))
+        content((start-x - 0.7, start-y - 1.3), text(size: 9pt, "Slave 1"))
+        content((start-x - 0.7, start-y - 2.4), text(size: 9pt, "Slave 2"))
+        content((start-x - 0.7, start-y - 3.5), text(size: 9pt, "Slave 3"))
+
+        // Linee orizzontali per le timeline
+        line((start-x, start-y), (start-x + num-slots * slot-width, start-y), stroke: 0.9pt + black, mark: (end: ">"))
+        content((start-x + num-slots * slot-width + 0.4, start-y), text(size: 8pt, "Time"))
+
+        line((start-x, start-y - 1.3), (start-x + num-slots * slot-width, start-y - 1.3), stroke: 0.9pt + black, mark: (
+          end: ">",
+        ))
+        content((start-x + num-slots * slot-width + 0.4, start-y - 1.3), text(size: 8pt, "t"))
+
+        line((start-x, start-y - 2.4), (start-x + num-slots * slot-width, start-y - 2.4), stroke: 0.9pt + black, mark: (
+          end: ">",
+        ))
+        content((start-x + num-slots * slot-width + 0.4, start-y - 2.4), text(size: 8pt, "t"))
+
+        line((start-x, start-y - 3.5), (start-x + num-slots * slot-width, start-y - 3.5), stroke: 0.9pt + black, mark: (
+          end: ">",
+        ))
+        content((start-x + num-slots * slot-width + 0.4, start-y - 3.5), text(size: 8pt, "t"))
+
+        // Master trasmette in slot pari (f0, f2, f4)
+        draw-transmitted(start-x, start-y, slot-width, "f0")
+        draw-transmitted(start-x + 2 * slot-width, start-y, slot-width, "f2")
+        draw-transmitted(start-x + 4 * slot-width, start-y, slot-width, "f4")
+
+        // Da f6 a f8: comunicazione prolungata con Slave 2 (3 slot consecutivi sulla stessa frequenza)
+        draw-transmitted(start-x + 6 * slot-width, start-y, 3 * slot-width, "f6-f8")
+
+        draw-transmitted(start-x + 10 * slot-width, start-y, slot-width, "f10")
+
+        // Slave 1: riceve f0, trasmette f1
+        draw-arrow(start-x + 0.5, start-y - 0.5, "down")
+        draw-received(start-x, start-y - 1.3, slot-width, "f0")
+        draw-arrow(start-x + 1.5, start-y - 1.3 + 0.4, "up")
+        draw-transmitted(start-x + slot-width, start-y - 1.3, slot-width, "f1")
+
+        // Slave 2: riceve f2, trasmette f3
+        draw-arrow(start-x + 2 * slot-width + 0.5, start-y - 1.2, "down")
+        draw-received(start-x + 2 * slot-width, start-y - 2.4, slot-width, "f2")
+        draw-arrow(start-x + 3 * slot-width + 0.5, start-y - 2.4 + 0.4, "up")
+        draw-transmitted(start-x + 3 * slot-width, start-y - 2.4, slot-width, "f3")
+
+        // Slave 2: riceve f6-f8 (pacchetto lungo), trasmette f9
+        draw-arrow(start-x + 7 * slot-width, start-y - 1.2, "down")
+        draw-received(start-x + 6 * slot-width, start-y - 2.4, 3 * slot-width, "f6-f8")
+        draw-arrow(start-x + 9 * slot-width + 0.5, start-y - 2.4 + 0.4, "up")
+        draw-transmitted(start-x + 9 * slot-width, start-y - 2.4, slot-width, "f9")
+
+        // Slave 3: riceve f10, trasmette f11
+        draw-arrow(start-x + 10 * slot-width + 0.5, start-y - 2.3, "down")
+        draw-received(start-x + 10 * slot-width, start-y - 3.5, slot-width, "f10")
+        draw-arrow(start-x + 11 * slot-width + 0.5, start-y - 3.5 + 0.4, "up")
+        draw-transmitted(start-x + 11 * slot-width, start-y - 3.5, slot-width, "f11")
+
+        // Indicatore "1 slot time" in basso
+        let indicator-y = start-y - 4.6
+        line((start-x, indicator-y), (start-x, indicator-y + 0.25), stroke: 0.9pt + black)
+        line((start-x + slot-width, indicator-y), (start-x + slot-width, indicator-y + 0.25), stroke: 0.9pt + black)
+        line((start-x, indicator-y + 0.12), (start-x + slot-width, indicator-y + 0.12), stroke: 0.9pt + black, mark: (
+          start: ">",
+          end: ">",
+        ))
+        content((start-x + slot-width / 2, indicator-y - 0.25), text(size: 8pt, "1 slot time"))
+
+        // Legenda
+        let legend-x = start-x + 5.5
+        let legend-y = indicator-y - 0.7
+
+        draw-transmitted(legend-x, legend-y, 0.7, "")
+        content((legend-x + 1.5, legend-y), text(size: 8pt, "= transmitted packet"), anchor: "west")
+
+        draw-received(legend-x, legend-y - 0.5, 0.7, "")
+        content((legend-x + 1.5, legend-y - 0.5), text(size: 8pt, "= received packet"), anchor: "west")
+      })
+    ]]
+
+  Supponiamo di essere al $6$ slot di tempo.:
+  - In TDMA il master decise di paralre con lo slave $2$. In particolare lo slave $2$ ascolterà sulla frequenza $f_2$ del frequency holding. Per tutti i $3$ slot successivi il master *non cambia la frequenza*.\
+
+  - Lo slave risponde sulla frequenza $f_9$.
+
+  #nota()[
+    Questo offset è presente, in quanto il metronomo assoluto della piconet continua a battere ogni $225 "ms"$. Chi dovrà parlare in un certo istante dovrà usare la *frequenza $f_i$* in base alla *frequency hopping globale*.
+
+    La frequency hopping viene scelta dal master, ogni tot secondi si _cambia_. Se si trasmette su *più slot temporali* *non* viene cambiata frequenza. La frequenza successiva non dipenderà dalla precedente ma da quella globale.
+
+    Inoltre, a causa della rigidità del modello il tempo di trasmissione può impiegare *solo slot di durata dispari*.
   ]
 ]
+
+=== FH + CDMA
+
+=== SCO & ACL
+
+=== Pacchetti Baseband
+
+
 
 === Scatternet FH + CDMA
 
