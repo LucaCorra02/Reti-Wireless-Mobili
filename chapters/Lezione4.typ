@@ -961,10 +961,7 @@ Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency 
   Tutto questo meccanismo è *non coordinato* e *distribuito*. Master e slave devono trovare un accordo senza una sincronizzazione preesistente.
 ]
 
-=== Fase di Paging (Connessione)
-
-Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
-
+*Fase di Paging (Connessione)*: Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
 + Il master invia *page packet* sullo slave utilizzando il suo indirizzo hardware (DAC)
 
 + Lo slave risponde e inizia la negoziazione dei parametri di connessione
