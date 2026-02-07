@@ -649,12 +649,12 @@ La comunicazione avviene tramite:
     ]]
 
   Supponiamo di essere al $6$ slot di tempo.:
-  - In TDMA il master decise di paralre con lo slave $2$. In particolare lo slave $2$ ascolterà sulla frequenza $f_2$ del frequency holding. Per tutti i $3$ slot successivi il master *non cambia la frequenza*.\
+  - In TDMA il master decise di paralre con lo slave $2$. In particolare lo slave $2$ ascolterà sulla frequenza $f_6$ del frequency holding. Per tutti i $3$ slot successivi il master *non cambia la frequenza* (viene mantenuta la frequenza $f_6$ per tutto lo sloto).\
 
   - Lo slave risponde sulla frequenza $f_9$.
 
   #nota()[
-    Questo offset è presente, in quanto il metronomo assoluto della piconet continua a battere ogni $225 "ms"$. Chi dovrà parlare in un certo istante dovrà usare la *frequenza $f_i$* in base alla *frequency hopping globale*.
+    Questo offset è presente in quanto il metronomo assoluto della piconet continua a battere ogni $625 mu s$. Chi dovrà parlare in un certo istante dovrà usare la *frequenza $f_i$* in base alla *frequency hopping globale*.
 
     La frequency hopping viene scelta dal master, ogni tot secondi si _cambia_. Se si trasmette su *più slot temporali* *non* viene cambiata frequenza. La frequenza successiva non dipenderà dalla precedente ma da quella globale.
 
