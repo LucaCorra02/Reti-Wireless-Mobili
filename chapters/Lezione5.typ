@@ -18,31 +18,31 @@
 
 === Identificazione dei canali
 
-I 3 canali (servizi offerti da L2CAP) vengono riconosciuti da un $mb("Channel ID")$ ($2$ byte):
+I 3 canali (servizi offerti da L2CAP) vengono riconosciuti da un *Channel ID* ($2$ byte):
 
-- $mg("ID = 1")$: *Canale di controllo*
-- $mg("ID = 2")$: *Connectionless path*
-- $mg("ID" >= 64)$: *Connection-oriented*
+- $"ID" = 1$: *Canale di controllo*
+- $"ID" = 2$: *Connectionless path*
+- $"ID" >= 64$: *Connection-oriented*
 
 === SDP Service Discovery
 
-$mb("SDP")$ (#[*Service Discovery Protocol*]) è il protocollo utilizzato lato $mo("client")$ per:
+*SDP* (#[*Service Discovery Protocol*]) è il protocollo utilizzato lato client per:
 - *Ricercare* un servizio specifico
 - Fare *browsing* dei servizi disponibili
 
 #nota()[
-  SDP si appoggia sui canali $mg("ACL")$ per la comunicazione.
+  SDP si appoggia sui canali ACL per la comunicazione.
 ]
 
 = Bluetooth Low Energy
 
 #attenzione()[
-  Introdotto nello standard $mb("4.0")$, l'obiettivo principale è $mr("ridurre drasticamente")$ le risorse utilizzate da Bluetooth, in particolare il *consumo energetico*.
+  Introdotto nello standard *4.0*, l'obiettivo principale è *ridurre drasticamente* le risorse utilizzate da Bluetooth, in particolare il *consumo energetico*.
 ]
 
 === Differenze principali rispetto a Bluetooth Classic
 
-La procedura di $mg("inquiring")$ cambia, diventando *molto più semplice* e richiedendo $mo("meno consumo di batteria")$.
+La procedura di *inquiry* cambia, diventando *molto più semplice* e richiedendo *meno consumo di batteria*.
 
 A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*:
 
@@ -54,33 +54,33 @@ A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*
 
 / *Presenza*: notifica automatica della presenza di un dispositivo
 
-/ *Distanza*: misura della distanza tramite radio frequenze ($mr("RSSI")$)
+/ *Distanza*: misura della distanza tramite radio frequenze (RSSI)
 
 / *Direction*: individuazione della direzione di provenienza del segnale
 
 #nota()[
-  *Tutti* i beacon Bluetooth sono dispositivi $mb("Low Energy")$.
+  *Tutti* i beacon Bluetooth sono dispositivi *Low Energy*.
 ]
 
 === Caratteristiche tecniche
 
 Per quanto riguarda il protocollo cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*.
 
-La banda rimane $mg(2.4 "GHz")$. I canali diventano $mb(40)$ canali:
-- $mo(37)$ canali usati come *data channels*
-- $mr(3)$ canali dedicati all'*advertising*: canali $37$, $38$, $39$
+La banda rimane $2.4 "GHz"$. I canali diventano 40 canali:
+- 37 canali usati come *data channels*
+- 3 canali dedicati all'*advertising*: canali $37$, $38$, $39$
 
 #nota()[
-  Il $mp("frequency hopping")$ è *molto più semplice*. Il canale successivo viene calcolato come:
+  Il *frequency hopping* è *molto più semplice*. Il canale successivo viene calcolato come:
   $
-    mg("Channel") = ("curr_channel" + "hop") mod 37
+    "Channel" = ("curr_channel" + "hop") mod 37
   $
   dove $"hop"$ è stabilito all'atto della connessione.
 ]
 
 === Modulazione
 
-Viene utilizzata $mb("GFSK")$ (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $mo(1 "Mbps")$, sufficiente per gli scopi di Bluetooth Low Energy.
+Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $1 "Mbps"$, sufficiente per gli scopi di Bluetooth Low Energy.
 
 #figure[
   #align(center)[
@@ -155,23 +155,23 @@ Viene utilizzata $mb("GFSK")$ (#[*Gaussian Frequency Shift Keying*]) con rate di
 ]
 
 #attenzione()[
-  I canali di $mr("advertising")$ sono posizionati strategicamente: uno all'*inizio*, uno al *centro* e uno alla *fine* dello spettro. Questo serve per $mo("ridurre le interferenze")$ con altri dispositivi (come WiFi). Vengono spalmati in modo _equo_ all'interno dello spettro.
+  I canali di *advertising* sono posizionati strategicamente: uno all'*inizio*, uno al *centro* e uno alla *fine* dello spettro. Questo serve per *ridurre le interferenze* con altri dispositivi (come WiFi). Vengono spalmati in modo _equo_ all'interno dello spettro.
 ]
 
 == Stati del Link Layer BLE
 
-Cambia la *macchina a stati finiti*, in particolare gli $mb("stati del link-layer")$. Gli stati sono diversi dal punto di vista dell'*utilizzo* che ne viene fatto:
+Cambia la *macchina a stati finiti*, in particolare gli *stati del link-layer*. Gli stati sono diversi dal punto di vista dell'*utilizzo* che ne viene fatto:
 
-/ $mo("Isochronous Broadcasting")$: modo *temporizzato* di fare broadcasting. Il livello link layer mette a disposizione questo servizio che periodicamente invia sui $3$ canali di advertising.
+/ *Isochronous Broadcasting*: modo *temporizzato* di fare broadcasting. Il livello link layer mette a disposizione questo servizio che periodicamente invia sui 3 canali di advertising.
 
-/ $mp("Advertising")$: Si $mr("inverte")$ il paradigma classico! Non c'è più un master che fa enquiring, è lo $mg("slave")$ che annuncia _"ci sono!"_ sui canali di advertising.
+/ *Advertising*: Si *inverte* il paradigma classico! Non c'è più un master che fa inquiry, è lo *slave* che annuncia _"ci sono!"_ sui canali di advertising.
 
 #attenzione()[
   *Inversione di paradigma*: in Bluetooth classico il master cerca attivamente gli slave (inquiry), in BLE sono gli slave che si annunciano periodicamente (advertising) e il master li ascolta passivamente.
 ]
 
 #nota()[
-  Rimane la completa $mr("non sincronizzazione")$ del sistema: master e slave non hanno un clock comune.
+  Rimane la completa *non sincronizzazione* del sistema: master e slave non hanno un clock comune.
 ]
 
 === Meccanismo di Advertising
@@ -182,18 +182,18 @@ L'advertising viene fatto nel seguente modo:
   Il dispositivo che vuole essere scoperto (advertiser) trasmette periodicamente pacchetti di advertising sui 3 canali dedicati.
 ]
 
-Il $mb("tempo di advertising")$ è l'intervallo tra due eventi di advertising consecutivi:
+Il *tempo di advertising* è l'intervallo tra due eventi di advertising consecutivi:
 $
-  mg(T_"advEvent") = mo("advInterval") + mr("advDelay")
+  T_"advEvent" = "advInterval" + "advDelay"
 $
 
 Dove:
 
-/ $mo("advInterval")$: parametro *configurabile* interno al dispositivo. La scelta di questo tempo influisce direttamente sul $mr("consumo di batteria")$:
-  - Intervallo $mo("breve")$ → maggiore consumo, ma più veloce discovery
-  - Intervallo $mo("lungo")$ → minor consumo, ma discovery più lenta
+/ $"advInterval"$: parametro *configurabile* interno al dispositivo. La scelta di questo tempo influisce direttamente sul *consumo di batteria*:
+  - Intervallo *breve* → maggiore consumo, ma più veloce discovery
+  - Intervallo *lungo* → minor consumo, ma discovery più lenta
 
-/ $mr("advDelay")$: numero $mp("random")$ tra $0$ e $10"ms"$. Serve per ridurre la possibilità di $mr("collisioni")$ tra più dispositivi che fanno advertising contemporaneamente.
+/ $"advDelay"$: numero *random* tra $0$ e $10"ms"$. Serve per ridurre la possibilità di *collisioni* tra più dispositivi che fanno advertising contemporaneamente.
 
 #figure[
   #align(center)[
@@ -241,63 +241,63 @@ Dove:
 ]
 
 #attenzione()[
-  *Non ci sono garanzie di latenza* (a causa del delay random). Bluetooth Low Energy $mr("non ha requisiti real-time")$.
+  *Non ci sono garanzie di latenza* (a causa del delay random). Bluetooth Low Energy *non ha requisiti real-time*.
 ]
 
 === GATT (Generic Attribute Profile)
 
-$mb("GATT")$ gestisce i *profili* dei dispositivi BLE. I profili sono specifici e definiscono $mo("cosa fa")$ il dispositivo.
+*GATT* gestisce i *profili* dei dispositivi BLE. I profili sono specifici e definiscono *cosa fa* il dispositivo.
 
 #esempio()[
   Alcuni profili comuni:
-  - $mg("BCS")$ - Body Composition Service
-  - $mg("CSCP")$ - Cycling Speed and Cadence Profile
-  - $mg("HRS")$ - Heart Rate Service
-  - $mg("BAS")$ - Battery Service
+  - *BCS* - Body Composition Service
+  - *CSCP* - Cycling Speed and Cadence Profile
+  - *HRS* - Heart Rate Service
+  - *BAS* - Battery Service
 ]
 
 #nota()[
-  Un dispositivo può $mp("includere più profili")$ contemporaneamente. I profili $mr("non sono esclusivi")$.
+  Un dispositivo può *includere più profili* contemporaneamente. I profili *non sono esclusivi*.
 ]
 
 === GAP (Generic Access Profile)
 
-$mb("GAP")$ gestisce lo *stato del dispositivo* a un livello più alto, più vicino al software applicativo.
+*GAP* gestisce lo *stato del dispositivo* a un livello più alto, più vicino al software applicativo.
 
 #informalmente()[
-  GAP definisce i $mo("ruoli")$ che un dispositivo può assumere nella rete BLE.
+  GAP definisce i *ruoli* che un dispositivo può assumere nella rete BLE.
 ]
 
 I quattro ruoli principali sono:
 
-- $mg("Broadcaster")$ (TX): spedisce advertising packet
-- $mo("Observer")$ (RX): ascolta sui canali di advertising (passivo)
-- $mp("Peripheral")$ (Slave): si annuncia e vuole essere scoperto
-- $mr("Central")$ (Master): scopre e si connette ai peripheral
+- *Broadcaster* (TX): spedisce advertising packet
+- *Observer* (RX): ascolta sui canali di advertising (passivo)
+- *Peripheral* (Slave): si annuncia e vuole essere scoperto
+- *Central* (Master): scopre e si connette ai peripheral
 
 === Processo di connessione
 
 #nota()[
-  Il processo è $mr("specchiato")$ rispetto a Bluetooth Classic!
+  Il processo è *specchiato* rispetto a Bluetooth Classic!
 ]
 
-A livello link layer, durante la fase di connessione troviamo i seguenti stati (obiettivo: creare una comunicazione $mo("unicast")$ per scambiare messaggi):
+A livello link layer, durante la fase di connessione troviamo i seguenti stati (obiettivo: creare una comunicazione *unicast* per scambiare messaggi):
 
-+ Il dispositivo che vuole essere scoperto ($mg("slave")$) usa periodicamente i $3$ canali di advertising
++ Il dispositivo che vuole essere scoperto (*slave*) usa periodicamente i 3 canali di advertising
 
-+ Il dispositivo $mp("scanner")$ ascolta questi canali
++ Il dispositivo *scanner* ascolta questi canali
 
-+ Una volta ricevuto un messaggio, il scanner $mo("risponde sempre su quel canale")$. Se non riceve risposta cambia canale
++ Una volta ricevuto un messaggio, il scanner *risponde sempre su quel canale*. Se non riceve risposta cambia canale
 
-+ Dopo aver connesso lo slave, viene comunicato l'$mr("hop")$ dall'$"initiator"$ che diventa client
++ Dopo aver connesso lo slave, viene comunicato l'*hop* dall'initiator che diventa client
 
 #informalmente()[
-  Il master svolge il ruolo di $mb("client")$ per verificare se lo slave si è collegato correttamente.
+  Il master svolge il ruolo di *client* per verificare se lo slave si è collegato correttamente.
 ]
 
 === Comunicazione broadcast
 
-In questo caso abbiamo un dispositivo in modalità $mg("Broadcaster")$ che vuole trasmettere a tutti.
+In questo caso abbiamo un dispositivo in modalità *Broadcaster* che vuole trasmettere a tutti.
 
 #figure[
   #align(center)[
@@ -350,11 +350,11 @@ In questo caso abbiamo un dispositivo in modalità $mg("Broadcaster")$ che vuole
 ]
 
 #informalmente()[
-  Chi vuole ascoltare si mette in modalità $mp("Observer")$ ricevendo le informazioni. $mr("Solamente")$ chi è nel raggio di comunicazione le riceve.
+  Chi vuole ascoltare si mette in modalità *Observer* ricevendo le informazioni. *Solamente* chi è nel raggio di comunicazione le riceve.
 ]
 
 #nota()[
-  L'observer scandaglia solamente i $mg(3)$ canali di advertising. $mo("Non c'è risposta")$ della ricezione delle informazioni, è solamente un *ascolto passivo*.
+  L'observer scandaglia solamente i 3 canali di advertising. *Non c'è risposta* della ricezione delle informazioni, è solamente un *ascolto passivo*.
 ]
 
 === Passive and Active scanning
@@ -364,75 +364,75 @@ In questo caso abbiamo un dispositivo in modalità $mg("Broadcaster")$ che vuole
 = ZigBee
 
 #attenzione()[
-  ZigBee è uno standard per reti wireless *personali* ($"WPAN"$) ottimizzato per $mr("basso consumo")$, $mo("basso costo")$ e $mg("alta affidabilità")$.
+  ZigBee è uno standard per reti wireless *personali* (WPAN) ottimizzato per *basso consumo*, *basso costo* e *alta affidabilità*.
 ]
 
 === Obiettivi di design
 
 *Requisiti principali*:
 
-/ $mr("Affidabilità")$: comunicazione robusta e stabile
+/ *Affidabilità*: comunicazione robusta e stabile
 
-/ $mo("Basso costo")$: dispositivi economici e accessibili
+/ *Basso costo*: dispositivi economici e accessibili
 
-/ $mg("Lunga durata batteria")$: anni di funzionamento con una singola batteria
+/ *Lunga durata batteria*: anni di funzionamento con una singola batteria
 
-/ $mp("Bassa complessità")$: hardware semplice per ridurre costi e consumi
+/ *Bassa complessità*: hardware semplice per ridurre costi e consumi
 
-/ $mb("Banda ISM gratuita")$: $2.4 "GHz"$ senza licenze da pagare
+/ *Banda ISM gratuita*: $2.4 "GHz"$ senza licenze da pagare
 
-/ $mo("Alto numero di nodi")$: supporto per migliaia di dispositivi (vs. 7 slave in Bluetooth)
+/ *Alto numero di nodi*: supporto per migliaia di dispositivi (vs. 7 slave in Bluetooth)
 
-/ $mg("Interoperabilità")$: standard aperto, compatibilità tra diversi vendor
+/ *Interoperabilità*: standard aperto, compatibilità tra diversi vendor
 
 === Tipi di dispositivi
 
-- $mg("FFD")$ (Full Function Device): coordinatore di rete, può instradare
-- $mo("Router FFD")$ (Router Full Function Device): instrada pacchetti tra dispositivi
-- $mp("EndDevice RFD")$ (Reduced Function Device): dispositivo finale, solo TX/RX
+- *FFD* (Full Function Device): coordinatore di rete, può instradare
+- *Router FFD* (Router Full Function Device): instrada pacchetti tra dispositivi
+- *EndDevice RFD* (Reduced Function Device): dispositivo finale, solo TX/RX
 
 === Tipologie di scambio dati
 
 ZigBee supporta tre pattern di comunicazione:
 
-/ $mg("Dati periodici")$: invio $mo("regolare e programmato")$ di dati
+/ *Dati periodici*: invio *regolare e programmato* di dati
   - Esempio: sensori di temperatura, umidità, dispositivi IoT smart
   - Prevedibile e ottimizzabile per il consumo energetico
 
-/ $mr("Dati intermittenti asincroni")$: comunicazione $mp("guidata da eventi")$
+/ *Dati intermittenti asincroni*: comunicazione *guidata da eventi*
   - Esempio: interruttori, pulsanti, allarmi
   - Stimoli esterni imprevedibili
 
-/ $mb("Dati ripetitivi a bassa latenza")$: comunicazione $mo("time-critical")$
-  - Richiede allocazione di $mg("time slot garantiti")$ (GTS)
+/ *Dati ripetitivi a bassa latenza*: comunicazione *time-critical*
+  - Richiede allocazione di *time slot garantiti* (GTS)
   - Esempio: controllo in tempo reale, automazione industriale
 
 == Architettura
 
 #nota()[
-  Lo standard $mb("IEEE 802.15.4")$ definisce i livelli *fisico* e *MAC*, che rimangono fissi. I livelli superiori sono definiti dalla ZigBee Alliance.
+  Lo standard *IEEE 802.15.4* definisce i livelli *fisico* e *MAC*, che rimangono fissi. I livelli superiori sono definiti dalla ZigBee Alliance.
 ]
 
 === Livello fisico
 
-Lo standard specifica la tipologia di $mg("modulazione")$ e di $mo("spread spectrum")$ per 3 bande di frequenza:
+Lo standard specifica la tipologia di *modulazione* e di *spread spectrum* per 3 bande di frequenza:
 
-/ $mp("Spread Spectrum")$: tecnica DSSS (Direct Sequence Spread Spectrum)
-  - *Spread factor*: sequenza di bit pseudo-casuale ($"PN code"$) messa in $mr("XOR")$ con il bit da trasmettere
+/ *Spread Spectrum*: tecnica DSSS (Direct Sequence Spread Spectrum)
+  - *Spread factor*: sequenza di bit pseudo-casuale (PN code) messa in *XOR* con il bit da trasmettere
   - *Chip rate*: rapporto tra bit trasmessi fisicamente e bit utili di payload
 
-/ $mg("Modulazione")$:
-  - $mb("BPSK")$ (Binary Phase Shift Keying): $1$ chip per simbolo
-  - $mo("O-QPSK")$ (Offset Quadrature Phase Shift Keying): $2$ chip per simbolo
+/ *Modulazione*:
+  - *BPSK* (Binary Phase Shift Keying): $1$ chip per simbolo
+  - *O-QPSK* (Offset Quadrature Phase Shift Keying): $2$ chip per simbolo
 
 *Bande di frequenza supportate*:
 
 - $868 "MHz"$: $1$ canale, BPSK, $20 "Kbps"$
 - $915 "MHz"$: $10$ canali, BPSK, $40 "Kbps"$
-- $mg(2.4 "GHz")$: $mg(16)$ canali, $mo("O-QPSK")$, $mo(250 "Kbps")$ (più usata)
+- $2.4 "GHz"$: 16 canali, O-QPSK, $250 "Kbps"$ (più usata)
 
 #informalmente()[
-  Il data rate massimo è $mo(250 "Kbps")$, circa $mr(1/4)$ del data rate di Bluetooth Classic. Sembra molto basso, ma per l'utilizzo tipico di ZigBee (sensori, controllo, automazione) è $mg("più che sufficiente")$.
+  Il data rate massimo è $250 "Kbps"$, circa $1/4$ del data rate di Bluetooth Classic. Sembra molto basso, ma per l'utilizzo tipico di ZigBee (sensori, controllo, automazione) è *più che sufficiente*.
 ]
 
 == Livello MAC
@@ -440,58 +440,58 @@ Lo standard specifica la tipologia di $mg("modulazione")$ e di $mo("spread spect
 === Duty-Cycle
 
 #attenzione()[
-  Il $mb("duty-cycle")$ è il parametro fondamentale per il risparmio energetico in ZigBee. È specifico per ogni dispositivo.
+  Il *duty-cycle* è il parametro fondamentale per il risparmio energetico in ZigBee. È specifico per ogni dispositivo.
 ]
 
 #informalmente()[
-  Se l'obiettivo è ridurre l'utilizzo della batteria, $mr("non")$ conviene mantenere la radio $mo("sempre accesa")$ in ascolto e trasmissione. Andiamo a scegliere dei *tempi di spegnimento* a seconda del tipo di dispositivo e del suo ruolo nella rete.
+  Se l'obiettivo è ridurre l'utilizzo della batteria, *non* conviene mantenere la radio *sempre accesa* in ascolto e trasmissione. Andiamo a scegliere dei *tempi di spegnimento* a seconda del tipo di dispositivo e del suo ruolo nella rete.
 ]
 
 $
-  mg("duty-cycle") = ("tempo attivo") / ("tempo totale") times 100%
+  "duty-cycle" = ("tempo attivo") / ("tempo totale") times 100%
 $
 
 #esempio()[
-  - Coordinatore: duty-cycle $mr("alto")$ (sempre o quasi sempre attivo)
-  - Router: duty-cycle $mo("medio")$ (attivo quando necessario)
-  - End device: duty-cycle $mg("molto basso")$ (acceso solo per TX/RX brevi)
+  - Coordinatore: duty-cycle *alto* (sempre o quasi sempre attivo)
+  - Router: duty-cycle *medio* (attivo quando necessario)
+  - End device: duty-cycle *molto basso* (acceso solo per TX/RX brevi)
 ]
 
 === Modalità di accesso al mezzo
 
-C'è sempre un $mb("coordinatore")$ che gestisce la rete. Due modalità principali:
+C'è sempre un *coordinatore* che gestisce la rete. Due modalità principali:
 
-/ *Gestione basata su beacon*: Il coordinatore emette periodicamente messaggi di $mg("beacon")$ per sincronizzare la rete
-  - $mr("Non")$ c'è TDMA puro
-  - Si usa $mo("CSMA/CA")$ (Carrier Sense Multiple Access with Collision Avoidance)
-  - In wireless $mr("non si può fare collision detection")$: non posso trasmettere e sentire contemporaneamente cosa trasmetto
-  - Devo $mg("prevenire")$ le collisioni, non solo rilevarle
+/ *Gestione basata su beacon*: Il coordinatore emette periodicamente messaggi di *beacon* per sincronizzare la rete
+  - *Non* c'è TDMA puro
+  - Si usa *CSMA/CA* (Carrier Sense Multiple Access with Collision Avoidance)
+  - In wireless *non si può fare collision detection*: non posso trasmettere e sentire contemporaneamente cosa trasmetto
+  - Devo *prevenire* le collisioni, non solo rilevarle
 
 / *Broadcast dal coordinatore*: Il coordinatore invia messaggi a tutta la rete
 
 #nota()[
   Le possibilità di gestione di CSMA/CA sono:
-  - $mo("Unslotted CSMA/CA")$: accesso asincrono, senza sincronizzazione
-  - $mg("Slotted CSMA/CA")$: richiede beacon periodici per sincronizzazione temporale
+  - *Unslotted CSMA/CA*: accesso asincrono, senza sincronizzazione
+  - *Slotted CSMA/CA*: richiede beacon periodici per sincronizzazione temporale
 ]
 
 === CSMA/CA con Beacon
 
-Il coordinatore invia periodicamente dei $mb("beacon")$. La frequenza deve essere concordata a priori, inoltre c'è una deriva del clock abbastanza importante.
+Il coordinatore invia periodicamente dei *beacon*. La frequenza deve essere concordata a priori, inoltre c'è una deriva del clock abbastanza importante.
 
 #attenzione()[
   I beacon servono per tre funzioni fondamentali:
 ]
 
-+ $mg("Sincronizzazione")$: tutti i dispositivi sincronizzano i loro clock con il coordinatore
++ *Sincronizzazione*: tutti i dispositivi sincronizzano i loro clock con il coordinatore
 
-+ $mo("Organizzazione comunicazione")$: gestire device che comunicano periodicamente vs. device asincroni
++ *Organizzazione comunicazione*: gestire device che comunicano periodicamente vs. device asincroni
 
-+ $mr("Comunicazione indiretta")$: il coordinatore mantiene una *lista di pending messages*. Nel beacon comunica quali dispositivi hanno messaggi in attesa. Il dispositivo che si riconosce nella lista sa che deve lasciare la radio $mp("accesa")$ per ricevere. Se non deve né ascoltare né trasmettere, può $mg("spegnere la radio")$ e risparmiare energia.
++ *Comunicazione indiretta*: il coordinatore mantiene una *lista di pending messages*. Nel beacon comunica quali dispositivi hanno messaggi in attesa. Il dispositivo che si riconosce nella lista sa che deve lasciare la radio *accesa* per ricevere. Se non deve né ascoltare né trasmettere, può *spegnere la radio* e risparmiare energia.
 
 === Struttura del Super-Frame
 
-Il beacon definisce la struttura del $mb("super-frame")$, che va da un beacon al successivo.
+Il beacon definisce la struttura del *super-frame*, che va da un beacon al successivo.
 
 #figure[
   #align(center)[
@@ -619,13 +619,13 @@ Il beacon definisce la struttura del $mb("super-frame")$, che va da un beacon al
   Il super-frame è diviso in due parti principali:
 
   *Parte Attiva* (divisa in due):
-  - $mo("CAP")$ - Contention Access Period: slot condivisi, tutti i dispositivi competono usando CSMA/CA
-  - $mg("CFP")$ - Contention Free Period: contiene $mr("GTS")$ (Guaranteed Time Slot), slot già allocati dal coordinatore a specifici dispositivi per comunicazioni con garanzie di latenza
+  - *CAP* - Contention Access Period: slot condivisi, tutti i dispositivi competono usando CSMA/CA
+  - *CFP* - Contention Free Period: contiene *GTS* (Guaranteed Time Slot), slot già allocati dal coordinatore a specifici dispositivi per comunicazioni con garanzie di latenza
 
   *Parte Inattiva*:
   - Nessun messaggio viene comunicato
-  - Più è grande la parte inattiva, $mp("più risparmio energia")$
-  - I dispositivi possono $mb("spegnere la radio")$ completamente
+  - Più è grande la parte inattiva, *più risparmio energia*
+  - I dispositivi possono *spegnere la radio* completamente
 ]
 
 === Parametri del Super-Frame
@@ -636,66 +636,66 @@ La durata delle varie parti del super-frame viene comunicata attraverso il beaco
   *Parametri fondamentali*:
 ]
 
-/ $mb("aBaseSuperFrameDuration")$ ($mg("aBSD")$): Unità di tempo fondamentale definita dallo standard IEEE 802.15.4
-  - Corrisponde alla trasmissione di $mr(960)$ simboli
+/ *aBaseSuperFrameDuration* (*aBSD*): Unità di tempo fondamentale definita dallo standard IEEE 802.15.4
+  - Corrisponde alla trasmissione di 960 simboli
   - Unità di base per calcolare tutte le altre durate
 
-/ $mo("Beacon Order")$ ($"BO"$): Determina l'intervallo tra beacon consecutivi
+/ *Beacon Order* ($"BO"$): Determina l'intervallo tra beacon consecutivi
   $
-    mg("Beacon Interval") = mo("aBSD") times 2^mb("BO")
+    "Beacon Interval" = "aBSD" times 2^("BO")
   $
   - Valore: $0 <= "BO" <= 14$ ($2$ byte)
   - $"BO" = 0$ → beacon molto frequenti
   - $"BO" = 14$ → beacon molto distanziati
 
-/ $mp("Super-frame Order")$ ($"SO"$): Determina la durata della parte attiva
+/ *Super-frame Order* ($"SO"$): Determina la durata della parte attiva
   $
-    mr("Super-frame Duration") = mo("aBSD") times 2^mp("SO")
+    "Super-frame Duration" = "aBSD" times 2^("SO")
   $
   - Valore: $0 <= "SO" <= "BO" <= 14$
   - Deve essere $"SO" <= "BO"$ (la parte attiva non può superare l'intervallo tra beacon)
 
 #attenzione()[
-  Il $mb("duty-cycle")$ della rete è determinato dal rapporto tra $"SO"$ e $"BO"$:
+  Il *duty-cycle* della rete è determinato dal rapporto tra $"SO"$ e $"BO"$:
   $
-    mg("duty-cycle") = (2^mo("SO")) / (2^mr("BO")) = 2^(mo("SO") - mr("BO"))
+    "duty-cycle" = (2^("SO")) / (2^("BO")) = 2^("SO" - "BO")
   $
 ]
 
 #esempio()[
   - $"BO" = 8$, $"SO" = 6$ → duty-cycle $= 2^(-2) = 1/4 = 25%$
-  - $"BO" = 10$, $"SO" = 5$ → duty-cycle $= 2^(-5) = 1/32 approx 3%$ ($mr("risparmio energetico elevato")$)
+  - $"BO" = 10$, $"SO" = 5$ → duty-cycle $= 2^(-5) = 1/32 approx 3%$ (*risparmio energetico elevato*)
   - $"BO" = "SO"$ → duty-cycle $= 100%$ (nessuna parte inattiva)
 ]
 
 === Super-Frame Specification Field
 
-Il campo $mb("Super-frame Specification")$ nel beacon contiene tutte le informazioni sulla struttura del super-frame:
+Il campo *Super-frame Specification* nel beacon contiene tutte le informazioni sulla struttura del super-frame:
 
-- $mg("Beacon Order")$ (BO): determina $mo("ogni quanto")$ aspettarsi un beacon
-- $mp("Super-frame Order")$ (SO): determina quanto è $mr("grande")$ la parte attiva
-- $mo("Final CAP Slot")$: indica in che punto $mg("termina")$ il CAP (non può sforare nel CFP)
-- $mb("Reserved")$: bit riservati per uso futuro
-- $mr("PAN Coordinator")$: flag che indica se il dispositivo è un coordinatore PAN
-- $mg("Association Permit")$: flag che indica se sono permesse nuove associazioni alla rete
+- *Beacon Order* (BO): determina *ogni quanto* aspettarsi un beacon
+- *Super-frame Order* (SO): determina quanto è *grande* la parte attiva
+- *Final CAP Slot*: indica in che punto *termina* il CAP (non può sforare nel CFP)
+- *Reserved*: bit riservati per uso futuro
+- *PAN Coordinator*: flag che indica se il dispositivo è un coordinatore PAN
+- *Association Permit*: flag che indica se sono permesse nuove associazioni alla rete
 
 #nota()[
-  Il CAP è diviso in $mg(16)$ slot temporali di uguale durata. La grandezza di ogni slot dipende dal numero totale di simboli nella parte attiva diviso 16.
+  Il CAP è diviso in 16 slot temporali di uguale durata. La grandezza di ogni slot dipende dal numero totale di simboli nella parte attiva diviso 16.
 ]
 
 #informalmente()[
-  Il numero di simboli nella Super-frame Duration può variare da $mg("aBSD") times 2^0 = 960$ simboli a $mg("aBSD") times 2^14 = 15.728.640$ simboli.
+  Il numero di simboli nella Super-frame Duration può variare da $"aBSD" times 2^0 = 960$ simboli a $"aBSD" times 2^14 = 15.728.640$ simboli.
 
-  Questi simboli vengono divisi in $mr(16)$ slot uguali nel CAP:
+  Questi simboli vengono divisi in 16 slot uguali nel CAP:
   $
-    mo("Slot size") = (mg("aBSD") times 2^mp("SO")) / 16
+    "Slot size" = ("aBSD" times 2^("SO")) / 16
   $
 ]
 
 === Guaranteed Time Slots (GTS)
 
 #attenzione()[
-  Il $mb("GTS")$ è un $mr("contratto")$ che il coordinatore ha fatto con specifici dispositivi, per garantire di comunicare $mo("senza interferenze")$ in determinati slot temporali.
+  Il *GTS* è un *contratto* che il coordinatore ha fatto con specifici dispositivi, per garantire di comunicare *senza interferenze* in determinati slot temporali.
 ]
 
 #nota()[
@@ -704,32 +704,32 @@ Il campo $mb("Super-frame Specification")$ nel beacon contiene tutte le informaz
 
 === Accesso al CAP: Algoritmo CSMA/CA
 
-Il livello fisico offre il servizio $mg("CS")$ (#[*Carrier Sense*]): ascolta la portante e rileva se qualcuno sta trasmettendo.
+Il livello fisico offre il servizio *CS* (#[*Carrier Sense*]): ascolta la portante e rileva se qualcuno sta trasmettendo.
 
 #nota()[
-  Il livello fisico mette a disposizione la $mb("CCA")$ (#[*Clear Channel Assessment*]) per capire se il canale è $mo("libero")$. Ascolta per intervalli brevi (costa energia!).
+  Il livello fisico mette a disposizione la *CCA* (#[*Clear Channel Assessment*]) per capire se il canale è *libero*. Ascolta per intervalli brevi (costa energia!).
 ]
 
 === Variabili di stato (per ogni dispositivo)
 
 Ogni dispositivo mantiene internamente tre variabili per gestire l'accesso:
 
-- $mg("NB")$ (Number of Backoffs): iniziale $= 0$, max $= 4$ - Numero di backoff tentati (ottimista!)
-- $mo("BE")$ (Backoff Exponent): iniziale $= 3$, max $= 5$ - Periodo di attesa
-- $mp("CW")$ (Contention Window): iniziale $= 2$, max $= 2$ - CCA consecutive richieste
+- *NB* (Number of Backoffs): iniziale $= 0$, max $= 4$ - Numero di backoff tentati (ottimista!)
+- *BE* (Backoff Exponent): iniziale $= 3$, max $= 5$ - Periodo di attesa
+- *CW* (Contention Window): iniziale $= 2$, max $= 2$ - CCA consecutive richieste
 
-/ $mg("NB")$ (#[*Number of Backoffs*]): Conta i tentativi di accesso falliti
+/ *NB* (#[*Number of Backoffs*]): Conta i tentativi di accesso falliti
   - Inizialmente è $0$ (siamo ottimisti!)
-  - Massimo $mr(4)$ tentativi
-  - Se dopo $4$ tentativi non va a buon fine, viene comunicato al livello superiore il $mr("fallimento")$
+  - Massimo 4 tentativi
+  - Se dopo 4 tentativi non va a buon fine, viene comunicato al livello superiore il *fallimento*
 
-/ $mo("BE")$ (#[*Backoff Exponent*]): Determina il numero di slot da attendere prima di riprovare
-  - Periodo di backoff $= "random"[0, 2^mb("BE") - 1] times 20$ simboli
-  - Aumenta ad ogni fallimento per $mp("differenziare")$ i dispositivi (exponential backoff)
-  - Serve per $mr("disallinearsi")$: tutti i dispositivi sono allineati alla ricezione del beacon
+/ *BE* (#[*Backoff Exponent*]): Determina il numero di slot da attendere prima di riprovare
+  - Periodo di backoff $= "random"[0, 2^("BE") - 1] times 20$ simboli
+  - Aumenta ad ogni fallimento per *differenziare* i dispositivi (exponential backoff)
+  - Serve per *disallinearsi*: tutti i dispositivi sono allineati alla ricezione del beacon
 
-/ $mp("CW")$ (#[*Contention Window*]): Numero di CCA $mg("consecutive")$ con esito positivo necessarie prima di trasmettere
-  - Devono essere $2$ CCA consecutive con canale libero
+/ *CW* (#[*Contention Window*]): Numero di CCA *consecutive* con esito positivo necessarie prima di trasmettere
+  - Devono essere 2 CCA consecutive con canale libero
   - Riduce la probabilità di collisioni
 
 === Algoritmo CSMA/CA: Esempio dettagliato
@@ -847,56 +847,56 @@ Ogni dispositivo mantiene internamente tre variabili per gestire l'accesso:
 
   *Passi dell'algoritmo (caso successo)*:
 
-  + $mg("Ricezione beacon")$: tutti i dispositivi si sincronizzano
+  + *Ricezione beacon*: tutti i dispositivi si sincronizzano
 
-  + $mo("Random backoff")$: attendo un numero casuale $[0, 2^mr("BE") - 1]$ slot
+  + *Random backoff*: attendo un numero casuale $[0, 2^("BE") - 1]$ slot
     - Con $"BE" = 3$ iniziale → attendo tra $[0, 7]$ slot
-    - Nel nostro caso: $3$ slot di backoff
-    - La radio può essere $mp("spenta")$ durante l'attesa (risparmio energia)
+    - Nel nostro caso: 3 slot di backoff
+    - La radio può essere *spenta* durante l'attesa (risparmio energia)
 
-  + $mg("Prima CCA")$: ascolto il canale
-    - Canale $mo("libero")$ ✓ → $"CW" = 1$
+  + *Prima CCA*: ascolto il canale
+    - Canale *libero* ✓ → $"CW" = 1$
 
-  + $mg("Seconda CCA")$: riascolto nel slot successivo
-    - Canale ancora $mo("libero")$ ✓ → $"CW" = 0$
+  + *Seconda CCA*: riascolto nel slot successivo
+    - Canale ancora *libero* ✓ → $"CW" = 0$
 
-  + $mb("Trasmissione")$: posso finalmente trasmettere il pacchetto!
+  + *Trasmissione*: posso finalmente trasmettere il pacchetto!
 ]
 
 #esempio()[
   *Scenario con collisione*:
 
-  Se durante una delle CCA il canale risulta $mr("occupato")$:
+  Se durante una delle CCA il canale risulta *occupato*:
 
-  + La $mp("CW")$ viene $mr("reimpostata")$ a $2$
+  + La *CW* viene *reimpostata* a $2$
 
-  + $mg("NB")$ viene incrementato: $"NB" = "NB" + 1$
+  + *NB* viene incrementato: $"NB" = "NB" + 1$
 
-  + $mo("BE")$ viene incrementato: $"BE" = min("BE" + 1, 5)$
-    - Aumenta l'intervallo di backoff per $mp("differenziare")$ i dispositivi
+  + *BE* viene incrementato: $"BE" = min("BE" + 1, 5)$
+    - Aumenta l'intervallo di backoff per *differenziare* i dispositivi
     - Con $"BE" = 4$ → backoff casuale tra $[0, 15]$ slot
 
-  + Si $mr("riparte")$ dal random backoff con i nuovi parametri
+  + Si *riparte* dal random backoff con i nuovi parametri
 
-  + Se $"NB" > 4$ → $mr("fallimento")$, comunicato al livello superiore
+  + Se $"NB" > 4$ → *fallimento*, comunicato al livello superiore
 ]
 
 #nota()[
-  Durante il backoff la radio può essere $mo("spenta")$ per risparmiare energia. Si $mr("perde")$ l'opportunità di trasmettere prima, ma in ZigBee $mg("non ci sono requisiti di bassa latenza")$ o real-time.
+  Durante il backoff la radio può essere *spenta* per risparmiare energia. Si *perde* l'opportunità di trasmettere prima, ma in ZigBee *non ci sono requisiti di bassa latenza* o real-time.
 ]
 
 #attenzione()[
   *Gestione del tempo limite del CAP*:
 
-  Se mentre aspetto il random backoff o faccio le CCA il tempo $mr("sconfina")$ oltre la fine del CAP (inizio del CFP), l'algoritmo:
+  Se mentre aspetto il random backoff o faccio le CCA il tempo *sconfina* oltre la fine del CAP (inizio del CFP), l'algoritmo:
 
-  + $mo("Blocca")$ il timer al valore corrente
+  + *Blocca* il timer al valore corrente
 
-  + Al $mg("beacon successivo")$ riparte da quel valore salvato
+  + Al *beacon successivo* riparte da quel valore salvato
 
-  + Rimane in una sorta di $mp("coda virtuale")$
+  + Rimane in una sorta di *coda virtuale*
 
-  Questo meccanismo $mr("previene la starvation")$ del dispositivo: se ripartisse sempre da $"BE" = 3$ potrebbe non riuscire mai a trasmettere.
+  Questo meccanismo *previene la starvation* del dispositivo: se ripartisse sempre da $"BE" = 3$ potrebbe non riuscire mai a trasmettere.
 ]
 
 //aggiungere tempo di Turn around
