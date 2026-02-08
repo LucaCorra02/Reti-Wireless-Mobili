@@ -2,20 +2,18 @@
 
 == L2CAP Canali logici
 
-$mb("L2CAP")$ (#[*Logical Link Control and Adaptation Protocol*]) supporta solo canali $mg("ACL")$. Offre tre tipi di canali logici:
+*L2CAP* (#[*Logical Link Control and Adaptation Protocol*]) supporta solo canali ACL. Offre tre tipi di canali logici:
 
-/ *Connectionless*: canale $mo("unidirezionale")$, utilizzato quando un'applicazione vuole mandare qualcosa in $mp("broadcast")$ a tutta la rete.
+/ *Connectionless*: canale unidirezionale, utilizzato quando un'applicazione vuole mandare un messaggio in *broadcast* a tutta la rete.
 
-/ *Connection-oriented*: canale $mo("bidirezionale")$, richiede di stabilire prima il livello di $mr("QoS")$ (Quality of Service). Serve per operazioni di controllo all'interno della piconet.
+/ *Connection-oriented*: canale bidirezionale, richiede di stabilire prima il livello di *QoS* (Quality of Service).
 
-/ *SOS*: canale per servizi speciali.
+/ *Signaling (SOS)*: canale bidirezionale usato per  per servizi speciali. Serve per *operazioni di controllo* all'interno della piconet.
 
 #nota()[
-  I pacchetti di L2CAP si occupano di *segmentazione* e *frammentazione* lato mittente, e *riassemblaggio* lato destinazione, in quanto un pacchetto applicativo non ci sta in un singolo pacchetto livello baseband.
-]
+  Il livello L2CAP si occupa di fare *segmentazione* e *frammentazione* dei pacchetti che arrivano lato applicazione dal mittente, e *riassemblaggio* lato destinazione. Operazioni necessarie in quanto un pacchetto applicativo non ci sta in un singolo pacchetto livello baseband.
 
-#informalmente()[
-  La frammentazione viene nascosta a livello data-link: un pacchetto fornito a L2CAP può occupare più pacchetti baseband e deve essere frammentato.
+  La frammentazione viene nascosta a livello data-link.
 ]
 
 === Identificazione dei canali
