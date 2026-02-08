@@ -379,13 +379,18 @@ Rispetta sempre lo standard IEEE $802.15$. Gli obbiettivi che si prefigge questo
 
 === Tipi di dispositivi
 
-- *FFD* (Full Function Device): coordinatore di rete, può instradare
+- *Coordinator FFD* (Full Function Device): coordinatore di rete, è l'unico all'interno della rete. Il suo compito è creare la rete e mantenere le informazioni della rete (es. chiavi di sicurezza).
+
 - *Router FFD* (Router Full Function Device): instrada pacchetti tra dispositivi
-- *EndDevice RFD* (Reduced Function Device): dispositivo finale, solo TX/RX
+
+- *EndDevice RFD* (Reduced Function Device): dispositivo finale. Da un punto di vista di rete possiedono solo la funzionalità di parlare con un router/coordinatore. Ridotta complessità ed elevato risparmio energetico.
 
 === Topologie di rete
 
 ZigBee supporta diverse topologie di rete a seconda delle esigenze applicative:
+- *Star*: La topologia più semplice, tutti i dispositivi comunicano direttamente con il coordinatore
+- *Cluster Tree*: Estende la copertura usando router che formano una struttura ad albero
+- *Mesh*: La più flessibile e robusta, i router sono interconnessi e offrono percorsi multipli per i dati
 
 #figure[
   #align(center)[
@@ -530,8 +535,8 @@ ZigBee supporta diverse topologie di rete a seconda delle esigenze applicative:
       content((mesh-x, mesh-y - 5), text(size: 11pt, weight: "bold", "Mesh"))
 
       // === LEGENDA ===
-      let legend-x = 10
-      let legend-y = -3
+      let legend-x = -4
+      let legend-y = 2
 
       circle((legend-x, legend-y), radius: 0.3, fill: red, stroke: 1.2pt + black)
       content((legend-x + 2.5, legend-y), text(size: 9pt, "ZigBee Coordinator"), anchor: "west")
@@ -546,16 +551,11 @@ ZigBee supporta diverse topologie di rete a seconda delle esigenze applicative:
   caption: [Topologie di rete ZigBee: Star, Cluster Tree e Mesh]
 ]
 
-#informalmente()[
-  - *Star*: La topologia più semplice, tutti i dispositivi comunicano direttamente con il coordinatore
-  - *Cluster Tree*: Estende la copertura usando router che formano una struttura ad albero
-  - *Mesh*: La più flessibile e robusta, i router sono interconnessi e offrono percorsi multipli per i dati
-]
+
 
 === Tipologie di scambio dati
 
 ZigBee supporta tre pattern di comunicazione:
-
 / *Dati periodici*: invio *regolare e programmato* di dati
   - Esempio: sensori di temperatura, umidità, dispositivi IoT smart
   - Prevedibile e ottimizzabile per il consumo energetico
@@ -578,7 +578,7 @@ ZigBee supporta tre pattern di comunicazione:
 
 Lo standard specifica la tipologia di *modulazione* e di *spread spectrum* per 3 bande di frequenza:
 
-/ *Spread Spectrum*: tecnica DSSS (Direct Sequence Spread Spectrum)
+/ *Spread Spectrum*: tecnica DSSS (Direct Sequence Spread Spectrum), viene usato il multiplexing sui canali all'interno della banda:
   - *Spread factor*: sequenza di bit pseudo-casuale (PN code) messa in *XOR* con il bit da trasmettere
   - *Chip rate*: rapporto tra bit trasmessi fisicamente e bit utili di payload
 
@@ -592,25 +592,26 @@ Lo standard specifica la tipologia di *modulazione* e di *spread spectrum* per 3
 - $915 "MHz"$: $10$ canali, BPSK, $40 "Kbps"$
 - $2.4 "GHz"$: 16 canali, O-QPSK, $250 "Kbps"$ (più usata)
 
-#informalmente()[
+#nota()[
   Il data rate massimo è $250 "Kbps"$, circa $1/4$ del data rate di Bluetooth Classic. Sembra molto basso, ma per l'utilizzo tipico di ZigBee (sensori, controllo, automazione) è *più che sufficiente*.
 ]
 
-== Livello MAC
+=== Livello Data Link (MAC)
 
-=== Duty-Cycle
+Il livello ha i seguenti compiti:
+- Gestisce l'invio dei beacon ( se il dispositivo è PAN coordinator)
+- Sincronizzazione con i beacon del coordinatore
+- Accesso al canale tramite CSMA/CA
+- Gestione del duty-cycle del dispositivo
+
+Se l'obiettivo è ridurre l'utilizzo della batteria, *non* conviene mantenere la radio *sempre accesa* in ascolto e trasmissione. Andiamo a scegliere dei *tempi di spegnimento* (duty cycle) a seconda del tipo di dispositivo e del suo ruolo nella rete:
+$
+  "duty-cycle" = ("tempo attivo") / ("tempo totale") times 100%
+$
 
 #attenzione()[
   Il *duty-cycle* è il parametro fondamentale per il risparmio energetico in ZigBee. È specifico per ogni dispositivo.
 ]
-
-#informalmente()[
-  Se l'obiettivo è ridurre l'utilizzo della batteria, *non* conviene mantenere la radio *sempre accesa* in ascolto e trasmissione. Andiamo a scegliere dei *tempi di spegnimento* a seconda del tipo di dispositivo e del suo ruolo nella rete.
-]
-
-$
-  "duty-cycle" = ("tempo attivo") / ("tempo totale") times 100%
-$
 
 #esempio()[
   - Coordinatore: duty-cycle *alto* (sempre o quasi sempre attivo)
@@ -620,29 +621,27 @@ $
 
 === Modalità di accesso al mezzo
 
-C'è sempre un *coordinatore* che gestisce la rete. Due modalità principali:
+C'è sempre un *coordinatore* che gestisce la rete, attraverso due modalità principali:
 
 / *Gestione basata su beacon*: Il coordinatore emette periodicamente messaggi di *beacon* per sincronizzare la rete
   - *Non* c'è TDMA puro
   - Si usa *CSMA/CA* (Carrier Sense Multiple Access with Collision Avoidance)
-  - In wireless *non si può fare collision detection*: non posso trasmettere e sentire contemporaneamente cosa trasmetto
-  - Devo *prevenire* le collisioni, non solo rilevarle
 
-/ *Broadcast dal coordinatore*: Il coordinatore invia messaggi a tutta la rete
+  #attenzione()[
+    In ambito wireless *non si può fare collision detection*: non posso trasmettere e _sentire_ contemporaneamente cosa trasmetto. Per questo motivo bisonga cercare di *prevenire* le collisioni, non solo rilevarle.
+  ]
 
-#nota()[
   Le possibilità di gestione di CSMA/CA sono:
   - *Unslotted CSMA/CA*: accesso asincrono, senza sincronizzazione
   - *Slotted CSMA/CA*: richiede beacon periodici per sincronizzazione temporale
-]
 
-=== CSMA/CA con Beacon
+/ *Broadcast dal coordinatore*: Il coordinatore invia messaggi a tutta la rete
 
-Il coordinatore invia periodicamente dei *beacon*. La frequenza deve essere concordata a priori, inoltre c'è una deriva del clock abbastanza importante.
+=== Slotted CSMA/CA con Beacon
 
-#attenzione()[
-  I beacon servono per tre funzioni fondamentali:
-]
+Nella modalità slotted, il coordinatore invia periodicamente dei *beacon* (inoltrati succesivamente dai router) per sincronizzare la rete. La frequenza deve essere concordata a priori, inoltre c'è una deriva del clock abbastanza importante.
+
+I beacon servono per tre funzioni fondamentali:
 
 + *Sincronizzazione*: tutti i dispositivi sincronizzano i loro clock con il coordinatore
 
@@ -652,7 +651,8 @@ Il coordinatore invia periodicamente dei *beacon*. La frequenza deve essere conc
 
 === Struttura del Super-Frame
 
-Il beacon definisce la struttura del *super-frame*, che va da un beacon al successivo.
+L’organizzazione che il coordinatore ha in mente (solo logica) per la gestione del tempo di comunicazione è definita *superframe* (sostanzialmente tutto
+ciò che passa tra un beacon e l’altro).
 
 #figure[
   #align(center)[
