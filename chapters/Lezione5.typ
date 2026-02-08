@@ -16,13 +16,18 @@
   La frammentazione viene nascosta a livello data-link.
 ]
 
-=== Identificazione dei canali
+=== Dimensione dei pacchetti
 
 I 3 canali (servizi offerti da L2CAP) vengono riconosciuti da un *Channel ID* ($2$ byte):
+- $"ID" = 1$: _Canale di controllo_
+- $"ID" = 2$: _Connectionless path_
+- $"ID" >= 64$: _Connection-oriented_
 
-- $"ID" = 1$: *Canale di controllo*
-- $"ID" = 2$: *Connectionless path*
-- $"ID" >= 64$: *Connection-oriented*
+Al posto di avere dati relativi all'applicazione, il payload di un pacchetto di controllo contiene:
+- _Code_: codice per il tipo di comando
+- _Id_: per l'Identificazione del comando
+
+
 
 === SDP Service Discovery
 
@@ -40,35 +45,30 @@ I 3 canali (servizi offerti da L2CAP) vengono riconosciuti da un *Channel ID* ($
   Introdotto nello standard *4.0*, l'obiettivo principale è *ridurre drasticamente* le risorse utilizzate da Bluetooth, in particolare il *consumo energetico*.
 ]
 
-=== Differenze principali rispetto a Bluetooth Classic
+== Bluetooth Low Energy vs Bluetooth Classic
 
-La procedura di *inquiry* cambia, diventando *molto più semplice* e richiedendo *meno consumo di batteria*.
+La prima differenza è che la procedura di *inquiry* cambia, diventando *molto più semplice*, richiedendo *meno consumo di batteria*.
 
 A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*:
+/ *Piconet* (stella): topologia classica con master e slave.
 
-/ *Piconet* (stella): topologia classica con master e slave
+/ *Broadcast*: trasmissione a tutti i dispositivi in ascolto.
 
-/ *Broadcast*: trasmissione a tutti i dispositivi in ascolto
+/ *Architettura Mesh*: rete distribuita tra più nodi.
 
-/ *Architettura Mesh*: rete distribuita tra più nodi
+/ *Presenza*: notifica automatica della presenza di un dispositivo.
 
-/ *Presenza*: notifica automatica della presenza di un dispositivo
+/ *Distanza*: misura della distanza tramite radio frequenze (RSSI).
 
-/ *Distanza*: misura della distanza tramite radio frequenze (RSSI)
-
-/ *Direction*: individuazione della direzione di provenienza del segnale
+/ *Direction*: individuazione della direzione di provenienza del segnale.
 
 #nota()[
   *Tutti* i beacon Bluetooth sono dispositivi *Low Energy*.
 ]
 
-=== Caratteristiche tecniche
-
-Per quanto riguarda il protocollo cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*.
-
-La banda rimane $2.4 "GHz"$. I canali diventano 40 canali:
-- 37 canali usati come *data channels*
-- 3 canali dedicati all'*advertising*: canali $37$, $38$, $39$
+Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*. La banda rimane $2.4 "GHz"$, tuttavia i canali diventano $40$:
+- $37$ canali usati come data channels
+- $3$ canali dedicati all'advertising: canali $37$, $38$, $39$
 
 #nota()[
   Il *frequency hopping* è *molto più semplice*. Il canale successivo viene calcolato come:
@@ -78,7 +78,7 @@ La banda rimane $2.4 "GHz"$. I canali diventano 40 canali:
   dove $"hop"$ è stabilito all'atto della connessione.
 ]
 
-=== Modulazione
+== BLE Radio (PHY)
 
 Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $1 "Mbps"$, sufficiente per gli scopi di Bluetooth Low Energy.
 
@@ -121,12 +121,20 @@ Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modul
 
       // Zona data channels (centro)
       rect(
-        (start-x + 1 * channel-width, 0.3),
-        (start-x + 19 * channel-width, 1.2),
+        (start-x + 1.2 * channel-width, 0.3),
+        (start-x + 19.2 * channel-width, 1.2),
         fill: rgb("#4ECDC4").lighten(50%),
         stroke: none,
       )
       content((start-x + 10 * channel-width, 0.75), text(size: 8pt, "Data Channels 0-36"))
+
+      rect(
+        (start-x + 13.2 + 1 * channel-width, 0.3),
+        (start-x + 20.8 * channel-width, 1.2),
+        fill: rgb("#4ECDC4").lighten(50%),
+        stroke: none,
+      )
+      content((start-x + 30 * channel-width, 0.75), text(size: 8pt, "Data Channels 0-36"))
 
       // Legenda
       let legend-y = -1
@@ -148,10 +156,6 @@ Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modul
     })
   ]
   caption: [Distribuzione dei 40 canali BLE nella banda 2.4 GHz]
-]
-
-#informalmente()[
-  Un ricevitore conosce l'$"hop"$, capisce qual è il $"current channel"$ perché sente trasmettere e calcola il canale successivo con queste informazioni.
 ]
 
 #attenzione()[
