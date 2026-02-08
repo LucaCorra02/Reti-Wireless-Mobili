@@ -66,7 +66,13 @@ A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*
   *Tutti* i beacon Bluetooth sono dispositivi *Low Energy*.
 ]
 
-Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*. La banda rimane $2.4 "GHz"$, tuttavia i canali diventano $40$:
+
+
+== BLE Radio (PHY)
+
+Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $1 "Mbps"$, sufficiente per gli scopi di Bluetooth Low Energy.
+
+Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*. La *banda* rimane *$2.4 "GHz"$*, tuttavia i canali diventano $40$:
 - $37$ canali usati come data channels
 - $3$ canali dedicati all'advertising: canali $37$, $38$, $39$
 
@@ -77,10 +83,6 @@ Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza de
   $
   dove $"hop"$ è stabilito all'atto della connessione.
 ]
-
-== BLE Radio (PHY)
-
-Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $1 "Mbps"$, sufficiente per gli scopi di Bluetooth Low Energy.
 
 #figure[
   #align(center)[
@@ -162,42 +164,36 @@ Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modul
   I canali di *advertising* sono posizionati strategicamente: uno all'*inizio*, uno al *centro* e uno alla *fine* dello spettro. Questo serve per *ridurre le interferenze* con altri dispositivi (come WiFi). Vengono spalmati in modo _equo_ all'interno dello spettro.
 ]
 
-== Stati del Link Layer BLE
+=== Stati del Link Layer BLE
 
 Cambia la *macchina a stati finiti*, in particolare gli *stati del link-layer*. Gli stati sono diversi dal punto di vista dell'*utilizzo* che ne viene fatto:
 
-/ *Isochronous Broadcasting*: modo *temporizzato* di fare broadcasting. Il livello link layer mette a disposizione questo servizio che periodicamente invia sui 3 canali di advertising.
+/ *Isochronous Broadcasting*: modo *temporizzato* di fare broadcasting (isocrono). Il livello link layer mette a disposizione questo servizio che periodicamente invia sui 3 canali di advertising.
 
-/ *Advertising*: Si *inverte* il paradigma classico! Non c'è più un master che fa inquiry, è lo *slave* che annuncia _"ci sono!"_ sui canali di advertising.
-
-#attenzione()[
-  *Inversione di paradigma*: in Bluetooth classico il master cerca attivamente gli slave (inquiry), in BLE sono gli slave che si annunciano periodicamente (advertising) e il master li ascolta passivamente.
-]
+/ *Advertising*: Si *inverte* il paradigma classico. Non c'è più un master che fa inquiry, è lo *slave* che *annuncia la presenza* sui canali di advertising.
 
 #nota()[
+  Nonostante l'*inversione di paradigma*: in Bluetooth classico il master cerca attivamente gli slave (inquiry), in BLE sono gli slave che si annunciano periodicamente (advertising) e il master li ascolta passivamente.\
   Rimane la completa *non sincronizzazione* del sistema: master e slave non hanno un clock comune.
 ]
 
-=== Meccanismo di Advertising
 
-L'advertising viene fatto nel seguente modo:
+=== Meccanismo di Advertising
 
 #informalmente()[
   Il dispositivo che vuole essere scoperto (advertiser) trasmette periodicamente pacchetti di advertising sui 3 canali dedicati.
 ]
 
-Il *tempo di advertising* è l'intervallo tra due eventi di advertising consecutivi:
+Il *tempo di advertising* è l'intervallo tra due eventi di advertising consecutivi ed è determinato da:
 $
   T_"advEvent" = "advInterval" + "advDelay"
 $
-
 Dove:
-
-/ $"advInterval"$: parametro *configurabile* interno al dispositivo. La scelta di questo tempo influisce direttamente sul *consumo di batteria*:
-  - Intervallo *breve* → maggiore consumo, ma più veloce discovery
+- `advInterval`: rappresenta il rate di invio dei pacchetti di advertising. Si tratta di un multiplo di $625 mu s$ nel range $20 "ms"-10.24"s"$. Il suo valore è determinato in base all'uso del dispositivo (tipologia di sensore). La scelta di questo tempo influisce direttamente sul *consumo di batteria*:
+  - Intervallo *breve* → maggiore consumo, ma più veloce nella discovery
   - Intervallo *lungo* → minor consumo, ma discovery più lenta
 
-/ $"advDelay"$: numero *random* tra $0$ e $10"ms"$. Serve per ridurre la possibilità di *collisioni* tra più dispositivi che fanno advertising contemporaneamente.
+- `advDelay`: numero *random* tra $0$ e $20"ms"$. Serve per *ridurre* la possibilità di *collisioni* tra più dispositivi che fanno advertising contemporaneamente (sempre multiplo di $625 mu s$).
 
 #figure[
   #align(center)[
@@ -240,25 +236,22 @@ Dove:
       // Etichetta
       content((start-x + 7, y-pos + 0.8), text(size: 9pt, weight: "bold", "Advertising Events"))
     })
+    caption: [
+    Timing degli eventi di advertising con advInterval e advDelay random
+    ]
   ]
-  caption: [Timing degli eventi di advertising con advInterval e advDelay random]
 ]
-
 #attenzione()[
   *Non ci sono garanzie di latenza* (a causa del delay random). Bluetooth Low Energy *non ha requisiti real-time*.
 ]
 
 === GATT (Generic Attribute Profile)
 
-*GATT* gestisce i *profili* dei dispositivi BLE. I profili sono specifici e definiscono *cosa fa* il dispositivo.
-
-#esempio()[
-  Alcuni profili comuni:
-  - *BCS* - Body Composition Service
-  - *CSCP* - Cycling Speed and Cadence Profile
-  - *HRS* - Heart Rate Service
-  - *BAS* - Battery Service
-]
+*GATT* gestisce i *profili* dei dispositivi BLE. Il suo compito è mediare tra il server (provider di servizi) e applicazione (richiede i servizi). I profili sono specifici e definiscono *cosa fa* il dispositivo. Alcuni profili comuni sono:
+- *BCS* - Body Composition Service
+- *CSCP* - Cycling Speed and Cadence Profile
+- *HRS* - Heart Rate Service
+- *BAS* - Battery Service
 
 #nota()[
   Un dispositivo può *includere più profili* contemporaneamente. I profili *non sono esclusivi*.
@@ -266,15 +259,10 @@ Dove:
 
 === GAP (Generic Access Profile)
 
-*GAP* gestisce lo *stato del dispositivo* a un livello più alto, più vicino al software applicativo.
-
-#informalmente()[
-  GAP definisce i *ruoli* che un dispositivo può assumere nella rete BLE.
-]
+*GAP* gestisce lo *stato del dispositivo* a un livello più alto, più vicino al software applicativo. Un'applicazione in base al suo scopo può decidere uno dei ruoli definiti da GAP.
 
 I quattro ruoli principali sono:
-
-- *Broadcaster* (TX): spedisce advertising packet
+- *Broadcaster* (TX): spedisce advertising packet (trasmissione connectionless)
 - *Observer* (RX): ascolta sui canali di advertising (passivo)
 - *Peripheral* (Slave): si annuncia e vuole essere scoperto
 - *Central* (Master): scopre e si connette ai peripheral
@@ -282,16 +270,16 @@ I quattro ruoli principali sono:
 === Processo di connessione
 
 #nota()[
-  Il processo è *specchiato* rispetto a Bluetooth Classic!
+  Il processo è *specchiato* rispetto a Bluetooth Classic
 ]
 
-A livello link layer, durante la fase di connessione troviamo i seguenti stati (obiettivo: creare una comunicazione *unicast* per scambiare messaggi):
+L'obiettivo è creare una comunicazione *unicast* (peer to peer) per scambiare messaggi. A livello link layer, durante la fase di connessione troviamo i seguenti stati (supponendo di avere un Host $A$ che funge da master e un Host $B$ che funge da slave) :
 
-+ Il dispositivo che vuole essere scoperto (*slave*) usa periodicamente i 3 canali di advertising
++ Il dispositivo che vuole essere scoperto (*slave*) usa periodicamente i 3 canali di advertising, inviando degli advertising packet undirect (diretti a _nessuno_).
 
-+ Il dispositivo *scanner* ascolta questi canali
++ Il dispositivo *scanner* (Master) ascolta questi canali
 
-+ Una volta ricevuto un messaggio, il scanner *risponde sempre su quel canale*. Se non riceve risposta cambia canale
++ Una volta ricevuto un messaggio, il master *risponde sempre su quel canale*. In particolare, il master invierà una *connection request* nello slot di tempo successivo (viene mantenuto sempre il *TDD*, nello slot di tempo successivo all’invio il dispositivo starà aspettando). Nella connection request sono presenti anche le informazioni per il FH.
 
 + Dopo aver connesso lo slave, viene comunicato l'*hop* dall'initiator che diventa client
 
@@ -301,7 +289,9 @@ A livello link layer, durante la fase di connessione troviamo i seguenti stati (
 
 === Comunicazione broadcast
 
-In questo caso abbiamo un dispositivo in modalità *Broadcaster* che vuole trasmettere a tutti.
+In questo caso abbiamo un dispositivo in modalità *Broadcaster* che vuole trasmettere a tutti. Utile quando un broadcaster non ha interesse ad avere un master (vuole solo inviari i dati).
+
+I dispositivi che vogliono ascoltare si mettono in modalità *Observer* ricevendo le informazioni. *Solamente* chi è nel raggio di comunicazione le riceve.
 
 #figure[
   #align(center)[
@@ -318,10 +308,10 @@ In questo caso abbiamo un dispositivo in modalità *Broadcaster* che vuole trasm
 
       // Observers intorno
       let observers = (
-        (4, 6, "O1"),
-        (10, 6, "O2"),
-        (4.5, 2.5, "O3"),
-        (9.5, 2, "O4"),
+        (6, 6, "O1"),
+        (8, 5.9, "O2"),
+        (5.2, 2.5, "O3"),
+        (8.8, 3, "O4"),
       )
 
       for (x, y, label) in observers {
@@ -353,17 +343,14 @@ In questo caso abbiamo un dispositivo in modalità *Broadcaster* che vuole trasm
   caption: [Comunicazione broadcast: un Broadcaster trasmette a tutti gli Observer nel raggio]
 ]
 
-#informalmente()[
-  Chi vuole ascoltare si mette in modalità *Observer* ricevendo le informazioni. *Solamente* chi è nel raggio di comunicazione le riceve.
-]
-
 #nota()[
   L'observer scandaglia solamente i 3 canali di advertising. *Non c'è risposta* della ricezione delle informazioni, è solamente un *ascolto passivo*.
 ]
 
-=== Passive and Active scanning
+\ *Passive scanning*: Lo scanner ascolta passivamente e periodicamente sui canali di advertising (solo passivo).
 
-// riguardare
+\ *Active scanning*: Sempre e solo usando i canali di advertising, lo scanner ascolta sul canale per poi richiedere dei dati tramite scan request (e di conseguenza otterrà la response). Quest’ultima parte è unicast con il dispositivo
+di broadcast.
 
 = ZigBee
 
