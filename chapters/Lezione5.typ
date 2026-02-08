@@ -360,27 +360,22 @@ di broadcast.
 
 = ZigBee
 
-#attenzione()[
-  ZigBee è uno standard per reti wireless *personali* (WPAN) ottimizzato per *basso consumo*, *basso costo* e *alta affidabilità*.
-]
+ZigBee è uno standard per reti wireless *personali* (WPAN) ottimizzato per *basso consumo*, *basso costo* e *alta affidabilità*.
 
-=== Obiettivi di design
+Rispetta sempre lo standard IEEE $802.15$. Gli obbiettivi che si prefigge questo protocollo sono:
+- *Affidabilità*: comunicazione robusta e stabile
 
-*Requisiti principali*:
+- *Basso costo*: dispositivi economici e accessibili
 
-/ *Affidabilità*: comunicazione robusta e stabile
+- *Lunga durata batteria*: anni di funzionamento con una singola batteria. Utilizzato soprattutto per sensoristica.
 
-/ *Basso costo*: dispositivi economici e accessibili
+- *Bassa complessità*: hardware semplice per ridurre costi e consumi
 
-/ *Lunga durata batteria*: anni di funzionamento con una singola batteria
+- *Banda ISM gratuita*: $2.4 "GHz"$ senza licenze da pagare
 
-/ *Bassa complessità*: hardware semplice per ridurre costi e consumi
+- *Alto numero di nodi*: supporto per migliaia di dispositivi (vs. 7 slave in Bluetooth)
 
-/ *Banda ISM gratuita*: $2.4 "GHz"$ senza licenze da pagare
-
-/ *Alto numero di nodi*: supporto per migliaia di dispositivi (vs. 7 slave in Bluetooth)
-
-/ *Interoperabilità*: standard aperto, compatibilità tra diversi vendor
+- *Interoperabilità*: standard aperto, compatibilità tra diversi vendor
 
 === Tipi di dispositivi
 
