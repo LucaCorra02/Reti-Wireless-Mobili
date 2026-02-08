@@ -306,24 +306,30 @@ I dispositivi che vogliono ascoltare si mettono in modalità *Observer* ricevend
       // Cerchio di broadcast
       circle((7, 4), radius: 3, stroke: (paint: rgb("#FF6B6B"), thickness: 1.5pt, dash: "dashed"))
 
-      // Observers intorno
+      // Observers intorno (posizioni distribuite per evitare sovrapposizione frecce)
       let observers = (
-        (6, 6, "O1"),
-        (8, 5.9, "O2"),
-        (5.2, 2.5, "O3"),
-        (8.8, 3, "O4"),
+        (5, 6.2, "O1"),
+        (9, 6, "O2"),
+        (4.5, 2.5, "O3"),
+        (9, 2, "O4"),
       )
 
       for (x, y, label) in observers {
         circle((x, y), radius: 0.5, fill: rgb("#4ECDC4"), stroke: 1.2pt + black)
         content((x, y), text(size: 8pt, weight: "bold", fill: white, label))
+      }
 
-        // Frecce dal broadcaster
-        let angle = calc.atan2(y - 4, x - 7)
-        let start-x = 7 + 0.6 * calc.cos(angle)
-        let start-y = 4 + 0.6 * calc.sin(angle)
-        let end-x = x - 0.5 * calc.cos(angle)
-        let end-y = y - 0.5 * calc.sin(angle)
+      // Frecce dal broadcaster agli observers (separate dal loop per evitare sovrapposizioni)
+      for (x, y, label) in observers {
+        let dx = x - 7
+        let dy = y - 4
+        let distance = calc.sqrt(dx * dx + dy * dy)
+
+        // Calcola i punti di inizio e fine sulle circonferenze
+        let start-x = 7 + 0.7 * dx / distance
+        let start-y = 4 + 0.7 * dy / distance
+        let end-x = x - 0.6 * dx / distance
+        let end-y = y - 0.6 * dy / distance
 
         line((start-x, start-y), (end-x, end-y), stroke: 1.2pt + red, mark: (end: ">"))
       }
