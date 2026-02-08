@@ -383,6 +383,175 @@ Rispetta sempre lo standard IEEE $802.15$. Gli obbiettivi che si prefigge questo
 - *Router FFD* (Router Full Function Device): instrada pacchetti tra dispositivi
 - *EndDevice RFD* (Reduced Function Device): dispositivo finale, solo TX/RX
 
+=== Topologie di rete
+
+ZigBee supporta diverse topologie di rete a seconda delle esigenze applicative:
+
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 0.5cm, {
+      import cetz.draw: *
+
+      // === TOPOLOGIA STAR ===
+      let star-x = 2
+      let star-y = 7
+
+      // Coordinatore centrale
+      circle((star-x, star-y), radius: 0.4, fill: red, stroke: 1.2pt + black)
+
+      // Dispositivi intorno (6 nodi)
+      let star-devices = (
+        (star-x - 1.5, star-y + 1.5),
+        (star-x, star-y + 1.8),
+        (star-x + 1.5, star-y + 1.2),
+        (star-x + 1.5, star-y - 0.5),
+        (star-x, star-y - 1.8),
+        (star-x - 1.5, star-y - 0.5),
+      )
+
+      for (x, y) in star-devices {
+        circle((x, y), radius: 0.3, fill: yellow, stroke: 1pt + black)
+        line((star-x, star-y), (x, y), stroke: 1.2pt + black)
+      }
+
+      // Etichetta
+      content((star-x, star-y - 3), text(size: 11pt, weight: "bold", "Star"))
+
+      // === TOPOLOGIA CLUSTER TREE ===
+      let tree-x = 8
+      let tree-y = 4
+
+      // Coordinatore
+      circle((tree-x, tree-y), radius: 0.4, fill: red, stroke: 1.5pt + black)
+
+      // Router livello 1 (2 router)
+      let router1-pos = ((tree-x - 1.5, tree-y - 2), (tree-x + 1.5, tree-y - 2))
+
+      for (rx, ry) in router1-pos {
+        circle((rx, ry), radius: 0.35, fill: blue, stroke: 1.2pt + black)
+        line((tree-x, tree-y), (rx, ry), stroke: 1.2pt + black)
+
+        // Dispositivi per ogni router (3 dispositivi)
+        let devices = (
+          (rx - 1, ry - 1.3),
+          (rx, ry - 1.5),
+          (rx + 1, ry - 1.3),
+        )
+
+        for (dx, dy) in devices {
+          circle((dx, dy), radius: 0.3, fill: yellow, stroke: 1pt + black)
+          line((rx, ry), (dx, dy), stroke: 1.2pt + black)
+        }
+      }
+
+      // Etichetta
+      content((tree-x, tree-y - 5), text(size: 11pt, weight: "bold", "Cluster Tree"))
+
+      // === TOPOLOGIA MESH ===
+      let mesh-x = 16
+      let mesh-y = 7
+
+      // Coordinatore
+      circle((mesh-x, mesh-y), radius: 0.4, fill: red, stroke: 1.5pt + black)
+
+      // Router positions (5 router interconnessi)
+      let routers = (
+        (mesh-x + 1.5, mesh-y + 0.8),
+        (mesh-x + 2.5, mesh-y - 0.5),
+        (mesh-x + 1.8, mesh-y - 2),
+        (mesh-x, mesh-y - 2.5),
+        (mesh-x - 1.2, mesh-y - 1),
+      )
+
+      // Disegna router
+      for (rx, ry) in routers {
+        circle((rx, ry), radius: 0.35, fill: blue, stroke: 1.2pt + black)
+      }
+
+      // Connessioni mesh tra nodi
+      let mesh-connections = (
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (0, 4), // Dal coordinatore
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (1, 3),
+        (2, 4), // Tra router
+      )
+
+      for (i, j) in mesh-connections {
+        if i == 0 {
+          let (rx, ry) = routers.at(j)
+          line((mesh-x, mesh-y), (rx, ry), stroke: 1.2pt + black)
+        } else {
+          let (x1, y1) = routers.at(i - 1)
+          let (x2, y2) = routers.at(j)
+          line((x1, y1), (x2, y2), stroke: 1.2pt + black)
+        }
+      }
+
+      // Dispositivi finali collegati ai router
+      let mesh-devices = (
+        (mesh-x + 1.5, mesh-y + 2),
+        (mesh-x + 3, mesh-y + 0.8),
+        (mesh-x + 3.5, mesh-y - 0.5),
+        (mesh-x, mesh-y - 4),
+        (mesh-x + 2.5, mesh-y - 3),
+        (mesh-x + 3.5, mesh-y - 2),
+        (mesh-x - 2, mesh-y - 1),
+        (mesh-x - 1, mesh-y + 0.5),
+      )
+
+      let device-to-router = (
+        (0, 0),
+        (1, 0),
+        (2, 1),
+        (3, 3),
+        (4, 2),
+        (5, 2),
+        (6, 4),
+        (7, 4),
+      )
+
+      for i in range(mesh-devices.len()) {
+        let (dx, dy) = mesh-devices.at(i)
+        circle((dx, dy), radius: 0.3, fill: yellow, stroke: 1pt + black)
+
+        let router-idx = device-to-router.at(i).at(1)
+        if router-idx < routers.len() {
+          let (rx, ry) = routers.at(router-idx)
+          line((rx, ry), (dx, dy), stroke: 1.2pt + black)
+        }
+      }
+
+      // Etichetta
+      content((mesh-x, mesh-y - 5), text(size: 11pt, weight: "bold", "Mesh"))
+
+      // === LEGENDA ===
+      let legend-x = 10
+      let legend-y = -3
+
+      circle((legend-x, legend-y), radius: 0.3, fill: red, stroke: 1.2pt + black)
+      content((legend-x + 2.5, legend-y), text(size: 9pt, "ZigBee Coordinator"), anchor: "west")
+
+      circle((legend-x, legend-y - 0.8), radius: 0.3, fill: blue, stroke: 1.2pt + black)
+      content((legend-x + 2.5, legend-y - 0.8), text(size: 9pt, "ZigBee Routers"), anchor: "west")
+
+      circle((legend-x, legend-y - 1.6), radius: 0.3, fill: yellow, stroke: 1.2pt + black)
+      content((legend-x + 2.5, legend-y - 1.6), text(size: 9pt, "ZigBee Devices"), anchor: "west")
+    })
+  ]
+  caption: [Topologie di rete ZigBee: Star, Cluster Tree e Mesh]
+]
+
+#informalmente()[
+  - *Star*: La topologia più semplice, tutti i dispositivi comunicano direttamente con il coordinatore
+  - *Cluster Tree*: Estende la copertura usando router che formano una struttura ad albero
+  - *Mesh*: La più flessibile e robusta, i router sono interconnessi e offrono percorsi multipli per i dati
+]
+
 === Tipologie di scambio dati
 
 ZigBee supporta tre pattern di comunicazione:
