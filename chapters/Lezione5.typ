@@ -679,16 +679,16 @@ ciò che passa tra un beacon e l’altro).
         fill: rgb("#4ECDC4").lighten(30%),
         stroke: 1.2pt + black,
       )
-      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2), text(size: 9pt, weight: "bold", "CAP"))
-      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2 - 0.4), text(size: 7pt, "Contention"))
-      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2 - 0.7), text(size: 7pt, "Access Period"))
+      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2 + 0.2), text(size: 9pt, weight: "bold", "CAP"))
+      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2 - 0.2), text(size: 7pt, "Contention"))
+      content((start-x + 0.3 + cap-width / 2, start-y + sf-height / 2 - 0.5), text(size: 7pt, "Access Period"))
 
       // CFP (Contention Free Period)
       let cfp-width = active-width - cap-width
       rect(
         (start-x + 0.3 + cap-width, start-y),
         (start-x + 0.3 + active-width, start-y + sf-height),
-        fill: rgb("#95E1D3"),
+        fill: rgb("#24ee0d"),
         stroke: 1.2pt + black,
       )
       content((start-x + 0.3 + cap-width + cfp-width / 2, start-y + sf-height / 2), text(
@@ -766,7 +766,7 @@ ciò che passa tra un beacon e l’altro).
       )
       content((start-x + 1.5, legend-y + 0.15), text(size: 7pt, "CAP: slot in contesa (CSMA/CA)"), anchor: "west")
 
-      rect((start-x, legend-y - 0.5), (start-x + 0.5, legend-y - 0.2), fill: rgb("#95E1D3"), stroke: 0.8pt + black)
+      rect((start-x, legend-y - 0.5), (start-x + 0.5, legend-y - 0.2), fill: rgb("#24ee0d"), stroke: 0.8pt + black)
       content((start-x + 1.5, legend-y - 0.35), text(size: 7pt, "CFP: slot garantiti (GTS)"), anchor: "west")
 
       rect((start-x, legend-y - 1), (start-x + 0.5, legend-y - 0.7), fill: gray.lighten(60%), stroke: 0.8pt + black)
