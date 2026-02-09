@@ -29,7 +29,9 @@
 )
 
 
-
 #part("Comunicazioni Wireless")
 #include "chapters/Lezione1.typ"
 #include "chapters/Lezione2.typ"
+#part("Bluethoot")
+
+#include "chapters/Lezione5.typ"
