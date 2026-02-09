@@ -1088,12 +1088,12 @@ Ogni dispositivo mantiene internamente *tre variabili* per gestire l'accesso:
 
   + *Prima CCA* (Clear Channel Assessment):
     - Alla fine del backoff, il dispositivo *accende la radio* e ascolta il canale
-    - Canale *libero* $ -> "CW"$ viene decrementato: $"CW" = 2 - 1 = 1$
+    - Canale *libero* $-> "CW"$ viene decrementato: $"CW" = 2 - 1 = 1$
     - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mm("CW" = 1)$
 
   + *Seconda CCA*:
     - Nello slot successivo, il dispositivo esegue una seconda CCA
-    - Canale ancora *libero* $ -> "CW"$ viene decrementato: $"CW" = 1 - 1 = 0$
+    - Canale ancora *libero* $-> "CW"$ viene decrementato: $"CW" = 1 - 1 = 0$
     - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mg("CW" = 0)$
 
   + *Trasmissione*:
@@ -1225,9 +1225,257 @@ Ogni dispositivo mantiene internamente *tre variabili* per gestire l'accesso:
     - Il fallimento viene comunicato al livello superiore (applicazione)
 ]
 
+=== Unslotted Non Beacon Mode
 
+Nella modalità *senza beacon* i dispositivi accedono al canale usando CSMA/CA senza i vincoli di slot. Non c’è sincronizzazione, il tempo è continuo, il controller è più semplice.
 
+Sostanzialmente si ripete la fase di backoff e CSMA/CA finché non il dispositivo non riesce a trasmettere. Senza sincronizzazione, tutto ciò che non è end device deve essere sempre attivo (radio sempre accesa, non è a conoscenza di quando qualcuno trasmetterà).
 
-//aggiungere tempo di Turn around
+== Livello di rete (NWK Layer)
 
-//aggiungere tempo d Turn around
+Il livello di rete ZigBee si occupa della *gestione della topologia* e del *routing* dei pacchetti attraverso la rete. È responsabile della formazione della rete, dell'associazione dei dispositivi e dell'instradamento dei messaggi.
+
+Il livello NWK fornisce i seguenti servizi:
+
+/ *Network Formation*: Il coordinatore PAN crea la rete scegliendo:
+  - Un *PAN ID* univoco (identificatore della rete)
+  - Il *canale radio* da utilizzare (scansione per trovare il canale meno congestionato)
+  - La *topologia* supportata (star, tree, mesh)
+
+/ *Joining e Association*: Gestisce l'ingresso di nuovi dispositivi nella rete
+
+/ *Routing*: Instradamento dei pacchetti attraverso la rete mesh
+  - *AODV* (Ad-hoc On-Demand Distance Vector): routing reattivo, crea percorsi solo quando necessario
+  - *Tree routing*: instradamento gerarchico basato sulla struttura ad albero
+  - *Source routing*: il mittente specifica l'intero percorso nel pacchetto
+
+/ *Route Discovery*: Scoperta dei percorsi nella rete
+  - Invio di *RREQ* (Route Request) in broadcast
+  - Ricezione di *RREP* (Route Reply) dal destinatario
+  - Costruzione della *routing table* con i percorsi ottimali
+
+/ *Network Addressing*: Gestione degli indirizzi di rete
+  - Indirizzi *a 16 bit* per routing efficiente
+  - Allocazione *gerarchica* in topologia tree
+  - Allocazione *distribuita* in topologia mesh
+
+#nota()[
+  L'indirizzo di rete a *16 bit* permette di ridurre l'overhead nei pacchetti rispetto all'indirizzo MAC IEEE a *64 bit*. Il coordinatore mantiene una *tabella di mappatura* tra indirizzi di rete e indirizzi MAC.
+]
+
+== ZigBee Device Object (ZDO)
+
+Il *ZDO* è un livello speciale che risiede *sopra* il livello di rete e fornisce servizi di *gestione* e *configurazione* del dispositivo. Non trasporta dati applicativi, ma si occupa della *gestione della rete* dal punto di vista del singolo dispositivo.
+
+#nota()[
+  Il ZDO è *sempre presente* in ogni dispositivo ZigBee, indipendentemente dall'applicazione. Occupa l'*endpoint 0* (riservato).
+]
+
+=== Funzionalità del ZDO
+
+/ *Device Discovery*: Scoperta di altri dispositivi nella rete
+  - Richiesta di informazioni sui dispositivi vicini
+  - Interrogazione dei *servizi* offerti dai dispositivi
+  - Costruzione della *network map* (mappa della rete)
+
+/ *Service Discovery*: Identificazione dei servizi disponibili
+  - Ogni dispositivo dichiara i propri *cluster* (funzionalità)
+  - Permette l'*interoperabilità* tra dispositivi di vendor diversi
+  - Binding tra dispositivi che offrono/richiedono lo stesso servizio
+
+/ *Binding Management*: Creazione di associazioni tra dispositivi
+  - *Binding diretto*: connessione unicast tra due dispositivi
+  - *Group binding*: connessione multicast verso un gruppo
+  - *Binding table*: tabella mantenuta dal coordinatore
+
+/ *Network Management*: Gestione della rete
+  - *Start network*: avvio della rete (coordinatore)
+  - *Join network*: richiesta di ingresso nella rete
+  - *Leave network*: uscita dalla rete (volontaria o forzata)
+  - *Permit join*: abilita/disabilita l'ingresso di nuovi dispositivi
+
+/ *Security Management*: Gestione della sicurezza
+
+=== Endpoint e Cluster
+
+I dispositivi ZigBee organizzano le funzionalità in *endpoint* e *cluster*:
+
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let start-x = 0
+      let start-y = 0
+
+      // Dispositivo ZigBee
+      rect((start-x, start-y), (start-x + 8, start-y + 6), stroke: 2pt + black)
+      content((start-x + 4, start-y + 6.5), text(size: 10pt, weight: "bold", "Dispositivo ZigBee"))
+
+      // ZDO Endpoint 0
+      rect((start-x + 0.5, start-y + 4.5), (start-x + 3, start-y + 5.5), fill: rgb("#FF6B6B").lighten(30%), stroke: 1.2pt + red)
+      content((start-x + 1.75, start-y + 5), text(size: 8pt, weight: "bold", "ZDO\nEndpoint 0"))
+
+      // Application Endpoints
+      rect((start-x + 3.5, start-y + 4.5), (start-x + 5.5, start-y + 5.5), fill: rgb("#4ECDC4").lighten(40%), stroke: 1.2pt + blue)
+      content((start-x + 4.5, start-y + 5), text(size: 7pt, weight: "bold", "App EP 1"))
+
+      rect((start-x + 5.7, start-y + 4.5), (start-x + 7.7, start-y + 5.5), fill: rgb("#4ECDC4").lighten(40%), stroke: 1.2pt + blue)
+      content((start-x + 6.7, start-y + 5), text(size: 7pt, weight: "bold", "App EP 2"))
+
+      // APS Layer
+      rect((start-x + 0.5, start-y + 3.5), (start-x + 7.5, start-y + 4.3), fill: rgb("#FFD93D").lighten(40%), stroke: 1pt + orange)
+      content((start-x + 4, start-y + 3.9), text(size: 8pt, weight: "bold", "APS Layer"))
+
+      // NWK Layer
+      rect((start-x + 0.5, start-y + 2.7), (start-x + 7.5, start-y + 3.4), fill: rgb("#95E1D3"), stroke: 1pt + blue)
+      content((start-x + 4, start-y + 3.05), text(size: 8pt, weight: "bold", "Network Layer"))
+
+      // MAC Layer
+      rect((start-x + 0.5, start-y + 1.9), (start-x + 7.5, start-y + 2.6), fill: rgb("#C7CEEA"), stroke: 1pt + purple)
+      content((start-x + 4, start-y + 2.25), text(size: 8pt, weight: "bold", "MAC Layer"))
+
+      // PHY Layer
+      rect((start-x + 0.5, start-y + 1.1), (start-x + 7.5, start-y + 1.8), fill: rgb("#FFDAC1"), stroke: 1pt + red)
+      content((start-x + 4, start-y + 1.45), text(size: 8pt, weight: "bold", "Physical Layer"))
+
+      // Radio
+      rect((start-x + 0.5, start-y + 0.2), (start-x + 7.5, start-y + 1), fill: gray.lighten(50%), stroke: 1.2pt + black)
+      content((start-x + 4, start-y + 0.6), text(size: 8pt, weight: "bold", "Radio Hardware (2.4 GHz)"))
+
+      // Frecce
+      line((start-x + 1.75, start-y + 4.5), (start-x + 1.75, start-y + 4.3), stroke: 1pt + black, mark: (end: ">"))
+      line((start-x + 4.5, start-y + 4.5), (start-x + 4.5, start-y + 4.3), stroke: 1pt + black, mark: (end: ">"))
+      line((start-x + 6.7, start-y + 4.5), (start-x + 6.7, start-y + 4.3), stroke: 1pt + black, mark: (end: ">"))
+    })
+  ]
+  caption: [Architettura ZigBee con endpoint e stack protocollare]
+]
+
+/ *Endpoint*: Interfaccia applicativa del dispositivo
+  - Endpoint *0*: riservato al ZDO
+  - Endpoint *1-240*: disponibili per applicazioni
+  - Ogni endpoint può implementare *cluster* diversi
+
+/ *Cluster*: Rappresenta una funzionalità specifica
+  - *Cluster ID*: identificatore univoco della funzionalità
+  - Esempi: On/Off, Level Control, Temperature Measurement, Door Lock
+  - *Input cluster*: servizi che il dispositivo *richiede*
+  - *Output cluster*: servizi che il dispositivo *fornisce*
+
+=== ZigBee Profiles
+
+I *profile* ZigBee definiscono insiemi standard di cluster per specifici domini applicativi.
+
+#attenzione()[
+  I profile garantiscono l'*interoperabilità* tra dispositivi di diversi produttori. Un interruttore ZHA di un vendor A può controllare una lampada ZHA di un vendor B senza configurazione specifica.
+]
+
+== Matter & Thread
+
+*Matter* è un nuovo standard di interoperabilità per dispositivi smart home, mentre *Thread* è il protocollo di rete sottostante basato su IPv6.
+
+=== Thread Protocol
+
+*Thread* è un protocollo di rete *mesh* basato su *IPv6* per dispositivi IoT a basso consumo. È stato progettato per superare alcune limitazioni di ZigBee.
+
+==== Caratteristiche principali di Thread
+
+/ *IPv6 nativo*: Ogni dispositivo ha un indirizzo IPv6
+  - Permette comunicazione *end-to-end* con Internet senza gateway di traduzione
+  - Supporto per *6LoWPAN* (IPv6 over Low-Power Wireless Personal Area Networks)
+  - Compressione degli header IPv6 per ridurre overhead
+
+/ *Mesh auto-organizzante*: La rete si configura e ripara automaticamente
+  - Nessun *single point of failure*
+  - *Self-healing*: percorsi alternativi in caso di guasto
+  - *Self-configuring*: nuovi dispositivi si integrano automaticamente
+
+/ *Sicurezza forte*: Crittografia di default
+
+/ *Basso consumo*: Ottimizzato per batterie
+  - *SED* (Sleepy End Devices): possono dormire per lunghi periodi
+  - *Polling* efficiente per ridurre il consumo
+  - Duty cycle molto bassi
+
+#nota()[
+  Thread utilizza la stessa banda di frequenza di ZigBee (*2.4 GHz*) e lo stesso livello fisico (*IEEE 802.15.4*), ma il resto dello stack è completamente diverso.
+]
+
+==== Tipi di dispositivi Thread
+
+- *Border Router*: gateway tra rete Thread e Internet/rete IP esterna
+- *Router*: instrada pacchetti, sempre attivo, alimentato da rete elettrica
+- *End Device*: dispositivo finale, può dormire per risparmiare energia
+- *Sleepy End Device (SED)*: dispositivo finale con duty cycle molto basso
+- *REED* (Router-Eligible End Device): può diventare router se necessario
+
+==== Routing in Thread
+
+Thread utilizza un algoritmo di routing mesh basato su *mesh-under*:
+
+- Routing gestito dal livello *6LoWPAN* (sotto IPv6)
+- *MLE* (Mesh Link Establishment): protocollo per gestire i link mesh
+- *RPL* (IPv6 Routing Protocol for Low-Power and Lossy Networks): routing ottimizzato per reti IoT
+- Costruzione automatica di *DODAG* (Destination Oriented Directed Acyclic Graph)
+
+=== Matter Protocol
+
+*Matter* (precedentemente *Project CHIP* - Connected Home over IP) è uno standard unificato per la smart home sviluppato dalla *Connectivity Standards Alliance* (ex ZigBee Alliance).
+
+#attenzione()[
+  Matter *non sostituisce* ZigBee o Thread, ma è uno *strato applicativo* che può funzionare su diversi protocolli di rete: Thread, Wi-Fi, Ethernet.
+]
+
+==== Obiettivi di Matter
+
++ *Interoperabilità universale*: dispositivi di diversi vendor comunicano nativamente
++ *Semplicità*: configurazione facile per l'utente finale
++ *Affidabilità*: connessioni stabili e sicure
++ *Sicurezza*: crittografia e autenticazione di default
++ *Local control*: funzionamento anche senza cloud
+
+==== Architettura Matter
+
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let start-x = 0
+      let start-y = 0
+
+      // Application Layer
+      rect((start-x, start-y + 4), (start-x + 10, start-y + 5), fill: rgb("#FF6B6B").lighten(30%), stroke: 1.5pt + red)
+      content((start-x + 5, start-y + 4.5), text(size: 9pt, weight: "bold", "Matter Application Layer"))
+
+      // Matter Protocol
+      rect((start-x, start-y + 3), (start-x + 10, start-y + 3.9), fill: rgb("#4ECDC4").lighten(30%), stroke: 1.5pt + blue)
+      content((start-x + 5, start-y + 3.45), text(size: 9pt, weight: "bold", "Matter Protocol (Data Model, Clusters, Commands)"))
+
+      // Transport Layer
+      rect((start-x, start-y + 2.1), (start-x + 10, start-y + 2.9), fill: rgb("#FFD93D").lighten(30%), stroke: 1.5pt + orange)
+      content((start-x + 5, start-y + 2.5), text(size: 9pt, weight: "bold", "Security + UDP/TCP + IPv6"))
+
+      // Network Layer - Multiple options
+      rect((start-x + 0.2, start-y + 0.5), (start-x + 3.2, start-y + 2), fill: rgb("#95E1D3"), stroke: 1.2pt + blue)
+      content((start-x + 1.7, start-y + 1.5), text(size: 8pt, weight: "bold", "Thread"))
+      content((start-x + 1.7, start-y + 1.1), text(size: 7pt, "802.15.4"))
+      content((start-x + 1.7, start-y + 0.8), text(size: 7pt, "2.4 GHz"))
+
+      rect((start-x + 3.5, start-y + 0.5), (start-x + 6.5, start-y + 2), fill: rgb("#C7CEEA"), stroke: 1.2pt + purple)
+      content((start-x + 5, start-y + 1.5), text(size: 8pt, weight: "bold", "Wi-Fi"))
+      content((start-x + 5, start-y + 1.1), text(size: 7pt, "802.11"))
+      content((start-x + 5, start-y + 0.8), text(size: 7pt, "2.4/5 GHz"))
+
+      rect((start-x + 6.8, start-y + 0.5), (start-x + 9.8, start-y + 2), fill: rgb("#FFDAC1"), stroke: 1.2pt + red)
+      content((start-x + 8.3, start-y + 1.5), text(size: 8pt, weight: "bold", "Ethernet"))
+      content((start-x + 8.3, start-y + 1.1), text(size: 7pt, "802.3"))
+      content((start-x + 8.3, start-y + 0.8), text(size: 7pt, "Wired"))
+
+      // Etichetta
+      content((start-x + 5, start-y + 5.5), text(size: 10pt, weight: "bold", "Matter Stack - Multi-Network Support"))
+    })
+  ]
+  caption: [Stack protocollare Matter con supporto multi-network]
+]
