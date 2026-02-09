@@ -776,45 +776,62 @@ ciò che passa tra un beacon e l’altro).
   caption: [Struttura del Super-Frame in ZigBee 802.15.4]
 ]
 
-#informalmente()[
-  Il super-frame è diviso in due parti principali:
+Il super-frame è diviso in due parti principali:
 
-  *Parte Attiva* (divisa in due):
-  - *CAP* - Contention Access Period: slot condivisi, tutti i dispositivi competono usando CSMA/CA
-  - *CFP* - Contention Free Period: contiene *GTS* (Guaranteed Time Slot), slot già allocati dal coordinatore a specifici dispositivi per comunicazioni con garanzie di latenza
+- *Parte Attiva* (divisa in due):
+  - *Contention Access Period (CAP) *: slot condivisi, tutti i dispositivi competono usando CSMA/CA
+  - *Contention Free Period (CFP)*: contiene *GTS* (Guaranteed Time Slot), slot già allocati dal coordinatore a specifici dispositivi per comunicazioni con garanzie di latenza
 
-  *Parte Inattiva*:
+  #nota()[
+    Il *CAP* è diviso di default in 16 slot temporali di uguale durata. La grandezza di ogni slot dipende da:
+    $
+      "numero totale di simboli nella parte attiva" / 16
+    $
+    Il *CFP* inveve può variare da $0 "a" 7$ slot temporali.
+  ]
+
+
+- *Parte Inattiva*:
   - Nessun messaggio viene comunicato
   - Più è grande la parte inattiva, *più risparmio energia*
   - I dispositivi possono *spegnere la radio* completamente
+
+Per *sincronizzare* il *duty cycle*, all’interno di ogni beacon è presente l’informazione su quando sarà il beacon seguente e questo accenderà la radio
+appena prima. Se un dispositivo non deve inviare/ricevere niente, spegne la radio fino al superframe successivo.
+
+#informalmente()[
+  In dispositivo potrebbe accendere la radio per circa $15 "ms"$ per poi spegnerla fino alla trasmissione successiva, che potrebbe avvenire anche dopo $15$ minuti. In realtà si riaccende un pochino prima del beacon per tenere conto di una possibile deriva del clock.
 ]
 
-=== Parametri del Super-Frame
+In particolare la durata del duty cycle è decisa da due parametri:
 
-La durata delle varie parti del super-frame viene comunicata attraverso il beacon:
-
-#nota()[
-  *Parametri fondamentali*:
-]
-
-/ *aBaseSuperFrameDuration* (*aBSD*): Unità di tempo fondamentale definita dallo standard IEEE 802.15.4
+/ *_aBaseSuperFrameDuration_* (*aBSD*): Unità di tempo fondamentale definita dallo standard IEEE $802.15.4$
   - Corrisponde alla trasmissione di 960 simboli
-  - Unità di base per calcolare tutte le altre durate
+  - Unità di base per calcolare tutte le altre durate. La durata del duty cycle sarà multipla di questa misura
 
-/ *Beacon Order* ($"BO"$): Determina l'intervallo tra beacon consecutivi
+/ *_Beacon Order_* ($"BO"$): Determina l'intervallo tra beacon consecutivi
   $
-    "Beacon Interval" = "aBSD" times 2^("BO")
+    "BI" = "Beacon Interval" = "aBSD" times 2^("BO") "symbols"
   $
-  - Valore: $0 <= "BO" <= 14$ ($2$ byte)
+  Dove il valore è: $0 <= "BO" <= 14$ ($2$ byte)
   - $"BO" = 0$ → beacon molto frequenti
   - $"BO" = 14$ → beacon molto distanziati
 
-/ *Super-frame Order* ($"SO"$): Determina la durata della parte attiva
+/ *_Super-frame Order_* ($"SO"$): Determina la durata della parte attiva
   $
-    "Super-frame Duration" = "aBSD" times 2^("SO")
+    "SD" = "Super-frame Duration" = "aBSD" times 2^("SO") "symbols"
   $
-  - Valore: $0 <= "SO" <= "BO" <= 14$
+  Dove:
+  - $0 <= "SO" <= "BO" <= 14$
   - Deve essere $"SO" <= "BO"$ (la parte attiva non può superare l'intervallo tra beacon)
+  #nota()[
+    Il numero di simboli nella Super-frame Duration può variare da $"aBSD" times 2^0 = 960$ simboli a $"aBSD" times 2^14 = 15.728.640$ simboli.
+
+    Questi simboli vengono divisi in 16 slot uguali nel CAP:
+    $
+      "Slot size" = ("aBSD" times 2^("SO")) / 16
+    $
+  ]
 
 #attenzione()[
   Il *duty-cycle* della rete è determinato dal rapporto tra $"SO"$ e $"BO"$:
@@ -823,35 +840,100 @@ La durata delle varie parti del super-frame viene comunicata attraverso il beaco
   $
 ]
 
+
 #esempio()[
   - $"BO" = 8$, $"SO" = 6$ → duty-cycle $= 2^(-2) = 1/4 = 25%$
   - $"BO" = 10$, $"SO" = 5$ → duty-cycle $= 2^(-5) = 1/32 approx 3%$ (*risparmio energetico elevato*)
   - $"BO" = "SO"$ → duty-cycle $= 100%$ (nessuna parte inattiva)
 ]
 
-=== Super-Frame Specification Field
+=== Beacon Frame
+
+Il *beacon frame* è il messaggio fondamentale inviato dal coordinatore PAN per sincronizzare la rete. La sua struttura è definita dallo standard IEEE $802.15.4$:
+
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let start-y = 0
+      let box-height = 1.5
+
+      // Definizione delle larghezze dei campi (in unità)
+      let fields = (
+        ("Frame\nControl", 1.3, "2 Bytes"),
+        ("Beacon\nSequence\nNumber", 1.3, "1 Byte"),
+        ("Source\nPAN\nId", 1.3, "2 Bytes"),
+        ("Source\naddress", 1.6, "2/8 Bytes"),
+        ("Superframe\nspecification", 1.8, "2 Bytes"),
+        ("GTS Field", 1.4, "Variable"),
+        ("Pending\nAddress\nField", 1.6, "Variable"),
+        ("Beacon\nPayload", 1.6, "Variable"),
+        ("Frame\nCheck\nSequence", 1.3, "2 Bytes"),
+      )
+
+      let current-x = 0
+
+      // Disegna i campi del beacon frame
+      for (label, width, size) in fields {
+        rect(
+          (current-x, start-y),
+          (current-x + width, start-y + box-height),
+          stroke: 1.2pt + black,
+          fill: rgb("#4ECDC4").lighten(60%),
+        )
+
+        // Testo del campo
+        content(
+          (current-x + width / 2, start-y + box-height / 2 + 0.15),
+          text(size: 8pt, weight: "bold", label),
+        )
+
+        // Dimensione del campo
+        content(
+          (current-x + width / 2, start-y - 0.3),
+          text(size: 6.5pt, style: "italic", size),
+        )
+
+        current-x = current-x + width
+      }
+
+      // Etichetta generale
+      content((current-x / 2, start-y + box-height + 0.6), text(
+        size: 9pt,
+        weight: "bold",
+        "IEEE 802.15.4 Beacon Frame",
+      ))
+
+      // Divisione MAC Header
+      let mac-header-end = 1.3 + 1.3 + 1.3 + 1.6
+      line((0, start-y - 0.7), (mac-header-end, start-y - 0.7), stroke: 1pt + blue)
+      line((0, start-y - 0.7), (0, start-y - 0.9), stroke: 1pt + blue)
+      line((mac-header-end, start-y - 0.7), (mac-header-end, start-y - 0.9), stroke: 1pt + blue)
+      content((mac-header-end / 2, start-y - 1.1), text(size: 7pt, fill: blue, "MAC Header"))
+
+      // Divisione MAC Payload
+      let payload-start = mac-header-end
+      let payload-end = mac-header-end + 1.8 + 1.4 + 1.6 + 1.6
+      line((payload-start, start-y - 0.7), (payload-end, start-y - 0.7), stroke: 1pt + rgb("#FF8C00"))
+      line((payload-start, start-y - 0.7), (payload-start, start-y - 0.9), stroke: 1pt + rgb("#FF8C00"))
+      line((payload-end, start-y - 0.7), (payload-end, start-y - 0.9), stroke: 1pt + rgb("#FF8C00"))
+      content(((payload-start + payload-end) / 2, start-y - 1.1), text(size: 7pt, fill: rgb("#FF8C00"), "MAC Payload"))
+    })
+  ]
+]
 
 Il campo *Super-frame Specification* nel beacon contiene tutte le informazioni sulla struttura del super-frame:
 
-- *Beacon Order* (BO): determina *ogni quanto* aspettarsi un beacon
-- *Super-frame Order* (SO): determina quanto è *grande* la parte attiva
+- *Beacon Order* (BO) (4 bit): determina *ogni quanto* aspettarsi un beacon. La frequenza con cui vengono trasmessi i beacon
+- *Super-frame Order* (SO) (4 bit): determina quanto è *grande* la parte attiva
 - *Final CAP Slot*: indica in che punto *termina* il CAP (non può sforare nel CFP)
 - *Reserved*: bit riservati per uso futuro
 - *PAN Coordinator*: flag che indica se il dispositivo è un coordinatore PAN
 - *Association Permit*: flag che indica se sono permesse nuove associazioni alla rete
 
-#nota()[
-  Il CAP è diviso in 16 slot temporali di uguale durata. La grandezza di ogni slot dipende dal numero totale di simboli nella parte attiva diviso 16.
-]
 
-#informalmente()[
-  Il numero di simboli nella Super-frame Duration può variare da $"aBSD" times 2^0 = 960$ simboli a $"aBSD" times 2^14 = 15.728.640$ simboli.
 
-  Questi simboli vengono divisi in 16 slot uguali nel CAP:
-  $
-    "Slot size" = ("aBSD" times 2^("SO")) / 16
-  $
-]
 
 === Guaranteed Time Slots (GTS)
 
