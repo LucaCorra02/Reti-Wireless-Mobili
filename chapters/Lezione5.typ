@@ -619,7 +619,7 @@ $
   - End device: duty-cycle *molto basso* (acceso solo per TX/RX brevi)
 ]
 
-=== Modalità di accesso al mezzo
+== Modalità di accesso al mezzo (MAC)
 
 C'è sempre un *coordinatore* che gestisce la rete, attraverso due modalità principali:
 
@@ -933,205 +933,46 @@ Il campo *Super-frame Specification* nel beacon contiene tutte le informazioni s
 - *Association Permit*: flag che indica se sono permesse nuove associazioni alla rete
 
 
+=== Slotted CAP CSMA/CA
 
+Durante il _periodo_ CAP il canale è conteso: ci sono più slot temporali condivisi. Tutti i dispositivi competono usando CSMA/CA.
 
-=== Guaranteed Time Slots (GTS)
+Per permettere la _contesa_, il livello fisico mette a disposizione la *CCA* (#[*Clear Channel Assessment*]) per capire se il canale è *libero*. Tale servizio ascolta per intervalli brevi il canale (costa energia), usando la primitva *CS* (#[*Carrier Sense*]): il livello fisico ascolta la portante e rileva se qualcuno sta trasmettendo.
 
 #attenzione()[
-  Il *GTS* è un *contratto* che il coordinatore ha fatto con specifici dispositivi, per garantire di comunicare *senza interferenze* in determinati slot temporali.
+  Clear Channel Assessment (*CCA*) è una funzione di livello fisico che viene invocata dal livello MAC. Restituisce _vero_ se il canale è libero, _falso_ altrimenti.
 ]
 
-#nota()[
-  La durata degli slot condivisi nel CAP dipende da quanti simboli ho diviso 16. I GTS nel CFP hanno durate che possono essere multiple degli slot base.
-]
+==== Variabili di stato dell'algoritmo
 
-=== Accesso al CAP: Algoritmo CSMA/CA
+Ogni dispositivo mantiene internamente *tre variabili* per gestire l'accesso:
 
-Il livello fisico offre il servizio *CS* (#[*Carrier Sense*]): ascolta la portante e rileva se qualcuno sta trasmettendo.
+/ `NB (Number of Backoffs)`: Conta i *tentativi* di *accesso falliti*
+  - Valore iniziale: $"NB" = 0$ (siamo ottimisti)
+  - Valore massimo: $"NB"_"max" = 4$
+  - Se $"NB" > 4$ → l'accesso fallisce definitivamente e viene comunicato al livello superiore
 
-#nota()[
-  Il livello fisico mette a disposizione la *CCA* (#[*Clear Channel Assessment*]) per capire se il canale è *libero*. Ascolta per intervalli brevi (costa energia!).
-]
-
-=== Variabili di stato (per ogni dispositivo)
-
-Ogni dispositivo mantiene internamente tre variabili per gestire l'accesso:
-
-- *NB* (Number of Backoffs): iniziale $= 0$, max $= 4$ - Numero di backoff tentati (ottimista!)
-- *BE* (Backoff Exponent): iniziale $= 3$, max $= 5$ - Periodo di attesa
-- *CW* (Contention Window): iniziale $= 2$, max $= 2$ - CCA consecutive richieste
-
-/ *NB* (#[*Number of Backoffs*]): Conta i tentativi di accesso falliti
-  - Inizialmente è $0$ (siamo ottimisti!)
-  - Massimo 4 tentativi
-  - Se dopo 4 tentativi non va a buon fine, viene comunicato al livello superiore il *fallimento*
-
-/ *BE* (#[*Backoff Exponent*]): Determina il numero di slot da attendere prima di riprovare
-  - Periodo di backoff $= "random"[0, 2^("BE") - 1] times 20$ simboli
+/ `BE (Backoff Exponent)`: Determina l'*ampiezza* dell'intervallo di backoff casuale
+  - Valore iniziale: $"BE" = 3$
+  - Valore massimo: $"BE"_"max" = 5$
+  - *Periodo di backoff* $= "random"[0, 2^("BE") - 1]$ slot, dove ogni slot è formato da $20$ simboli
   - Aumenta ad ogni fallimento per *differenziare* i dispositivi (exponential backoff)
   - Serve per *disallinearsi*: tutti i dispositivi sono allineati alla ricezione del beacon
 
-/ *CW* (#[*Contention Window*]): Numero di CCA *consecutive* con esito positivo necessarie prima di trasmettere
-  - Devono essere 2 CCA consecutive con canale libero
-  - Riduce la probabilità di collisioni
-
-=== Algoritmo CSMA/CA: Esempio dettagliato
-
-#esempio()[
-  *Scenario*: Un dispositivo vuole trasmettere un pacchetto usando slotted CSMA/CA nel CAP.
-
-  #figure[
-    #align(center)[
-      #cetz.canvas(length: 1cm, {
-        import cetz.draw: *
-
-        let slot-width = 0.8
-        let slot-height = 1.2
-        let start-x = 0
-        let y-beacon = 5
-        let y-backoff = 3.5
-        let y-cca = 2
-        let y-tx = 0.5
-
-        // Beacon
-        rect((start-x, y-beacon), (start-x + 0.5, y-beacon + 0.8), fill: rgb("#FF6B6B"), stroke: 1.2pt + black)
-        content((start-x + 0.25, y-beacon + 0.4), text(size: 8pt, weight: "bold", fill: white, "B"))
-        content((start-x + 0.25, y-beacon + 1.2), text(size: 7pt, "Beacon"))
-
-        // Timeline
-        line((start-x + 0.5, y-beacon + 0.4), (start-x + 14, y-beacon + 0.4), stroke: 1pt + gray, mark: (end: ">"))
-
-        // Slot del CAP
-        for i in range(16) {
-          let x = start-x + 0.5 + i * slot-width
-          rect((x, y-beacon + 0.1), (x + slot-width - 0.05, y-beacon + 0.7), stroke: 0.5pt + gray, fill: none)
-          if i < 3 {
-            content((x + slot-width / 2, y-beacon - 0.3), text(size: 6pt, str(i)))
-          }
-        }
-
-        // Random backoff (esempio: 3 slot)
-        let backoff-start = start-x + 0.5
-        let backoff-slots = 3
-        for i in range(backoff-slots) {
-          let x = backoff-start + i * slot-width
-          rect(
-            (x, y-backoff),
-            (x + slot-width - 0.05, y-backoff + slot-height),
-            fill: rgb("#FFD93D").lighten(30%),
-            stroke: 1pt + black,
-          )
-        }
-        content((backoff-start + backoff-slots * slot-width / 2, y-backoff + slot-height / 2), text(size: 7pt, "Wait"))
-        content((backoff-start + backoff-slots * slot-width / 2, y-backoff - 0.5), text(
-          size: 7pt,
-          fill: orange,
-          "Random backoff",
-        ))
-        content((backoff-start + backoff-slots * slot-width / 2, y-backoff - 0.8), text(
-          size: 6pt,
-          fill: orange,
-          "[0, 2^BE - 1] × 20 simboli",
-        ))
-
-        // Prima CCA (successo)
-        let cca1-x = backoff-start + backoff-slots * slot-width
-        rect(
-          (cca1-x, y-cca),
-          (cca1-x + slot-width - 0.05, y-cca + slot-height),
-          fill: rgb("#6BCB77").lighten(30%),
-          stroke: 1.2pt + green.darken(20%),
-        )
-        content((cca1-x + slot-width / 2, y-cca + slot-height / 2), text(size: 7pt, weight: "bold", "CCA1"))
-        content((cca1-x + slot-width / 2, y-cca + slot-height / 2 - 0.3), text(size: 6pt, "✓ OK"))
-        content((cca1-x + slot-width / 2, y-cca - 0.5), text(size: 7pt, fill: green.darken(20%), "CW = 1"))
-
-        // Seconda CCA (successo)
-        let cca2-x = cca1-x + slot-width
-        rect(
-          (cca2-x, y-cca),
-          (cca2-x + slot-width - 0.05, y-cca + slot-height),
-          fill: rgb("#6BCB77").lighten(30%),
-          stroke: 1.2pt + green.darken(20%),
-        )
-        content((cca2-x + slot-width / 2, y-cca + slot-height / 2), text(size: 7pt, weight: "bold", "CCA2"))
-        content((cca2-x + slot-width / 2, y-cca + slot-height / 2 - 0.3), text(size: 6pt, "✓ OK"))
-        content((cca2-x + slot-width / 2, y-cca - 0.5), text(size: 7pt, fill: green.darken(20%), "CW = 0"))
-
-        // Trasmissione
-        let tx-x = cca2-x + slot-width
-        rect(
-          (tx-x, y-tx),
-          (tx-x + 2 * slot-width - 0.05, y-tx + slot-height),
-          fill: rgb("#4ECDC4"),
-          stroke: 1.5pt + blue,
-        )
-        content((tx-x + slot-width, y-tx + slot-height / 2), text(size: 8pt, weight: "bold", fill: white, "TX"))
-        content((tx-x + slot-width, y-tx - 0.5), text(size: 7pt, fill: blue, "Trasmissione!"))
-
-        // Frecce di flusso
-        line(
-          (backoff-start + backoff-slots * slot-width / 2, y-backoff - 0.3),
-          (cca1-x + slot-width / 2, y-cca + slot-height + 0.2),
-          stroke: 1pt + gray,
-          mark: (end: ">"),
-        )
-        line((cca1-x + slot-width / 2, y-cca - 0.3), (cca2-x + slot-width / 2, y-cca - 0.3), stroke: 1pt + gray)
-        line(
-          (cca2-x + slot-width / 2, y-cca - 0.7),
-          (tx-x + slot-width, y-tx + slot-height + 0.2),
-          stroke: 1pt + blue,
-          mark: (end: ">"),
-        )
-      })
-    ]
-    caption: [Accesso con successo al CAP usando CSMA/CA]
-  ]
-
-  *Passi dell'algoritmo (caso successo)*:
-
-  + *Ricezione beacon*: tutti i dispositivi si sincronizzano
-
-  + *Random backoff*: attendo un numero casuale $[0, 2^("BE") - 1]$ slot
-    - Con $"BE" = 3$ iniziale → attendo tra $[0, 7]$ slot
-    - Nel nostro caso: 3 slot di backoff
-    - La radio può essere *spenta* durante l'attesa (risparmio energia)
-
-  + *Prima CCA*: ascolto il canale
-    - Canale *libero* ✓ → $"CW" = 1$
-
-  + *Seconda CCA*: riascolto nel slot successivo
-    - Canale ancora *libero* ✓ → $"CW" = 0$
-
-  + *Trasmissione*: posso finalmente trasmettere il pacchetto!
-]
-
-#esempio()[
-  *Scenario con collisione*:
-
-  Se durante una delle CCA il canale risulta *occupato*:
-
-  + La *CW* viene *reimpostata* a $2$
-
-  + *NB* viene incrementato: $"NB" = "NB" + 1$
-
-  + *BE* viene incrementato: $"BE" = min("BE" + 1, 5)$
-    - Aumenta l'intervallo di backoff per *differenziare* i dispositivi
-    - Con $"BE" = 4$ → backoff casuale tra $[0, 15]$ slot
-
-  + Si *riparte* dal random backoff con i nuovi parametri
-
-  + Se $"NB" > 4$ → *fallimento*, comunicato al livello superiore
-]
+/ `CW (Contention Window)`: Numero di *CCA consecutive* con esito positivo necessarie *prima* di *trasmettere*
+  - Valore iniziale: $"CW" = 2$
+  - Si decrementa ad ogni CCA con esito positivo
+  - Quando $"CW" = 0$ → il dispositivo può trasmettere
+  - Se una CCA fallisce → $"CW"$ viene reimpostato a $2$
 
 #nota()[
-  Durante il backoff la radio può essere *spenta* per risparmiare energia. Si *perde* l'opportunità di trasmettere prima, ma in ZigBee *non ci sono requisiti di bassa latenza* o real-time.
+  Durante il *backoff* la radio può essere *spenta* per risparmiare energia. Si perde l'opportunità di trasmettere prima, ma *non ci sono requisiti di bassa latenza* o real-time.
 ]
 
 #attenzione()[
   *Gestione del tempo limite del CAP*:
 
-  Se mentre aspetto il random backoff o faccio le CCA il tempo *sconfina* oltre la fine del CAP (inizio del CFP), l'algoritmo:
+  Se mentre durante il random backoff o durante le CCA il tempo *sconfina* oltre la fine del *CAP* (inizio del CFP), l'algoritmo:
 
   + *Blocca* il timer al valore corrente
 
@@ -1141,6 +982,251 @@ Ogni dispositivo mantiene internamente tre variabili per gestire l'accesso:
 
   Questo meccanismo *previene la starvation* del dispositivo: se ripartisse sempre da $"BE" = 3$ potrebbe non riuscire mai a trasmettere.
 ]
+
+
+#esempio()[
+  *Scenario*: Sender 1 vuole trasmettere un pacchetto. Il canale è libero e la trasmissione avviene con successo.
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
+
+        let slot-width = 0.6
+        let slot-height = 0.8
+        let start-x = 0
+        let start-y = 3
+
+        // Beacon
+        rect((start-x, start-y + 2), (start-x + 0.8, start-y + 3), fill: rgb("#FF6B6B"), stroke: 1.5pt + black)
+        content((start-x + 0.4, start-y + 2.5), text(size: 9pt, weight: "bold", fill: white, "Beacon"))
+
+        // Etichetta Contention Slot
+        content((start-x + 0.4, start-y + 3.5), text(size: 8pt, "Contention Slot\n20 sym"))
+
+        // CAP - disegno tutti gli slot
+        let cap-start = start-x + 1
+        content((cap-start + 5 * slot-width, start-y + 3.5), text(
+          size: 8pt,
+          weight: "bold",
+          "Contention Access Period",
+        ))
+
+        for i in range(9) {
+          let x = cap-start + i * slot-width
+          // Disegno lo slot singolo
+          rect(
+            (x, start-y + 2),
+            (x + slot-width - 0.05, start-y + 3),
+            stroke: 0.8pt + gray,
+            fill: rgb("#E8E8E8").lighten(20%),
+          )
+
+          // Etichetta "Slot" su alcuni slot
+          if i < 9 {
+            content((x + slot-width / 2, start-y + 2.5), text(size: 6pt, fill: gray, "Slot"))
+          }
+        }
+
+        // Etichetta Sender 1 con parametri iniziali
+        content((cap-start - 0.3, start-y + 1), text(size: 8pt, weight: "bold", "Sender 1"), anchor: "east")
+        content((cap-start + 2.8, start-y + 1.7), text(size: 7pt, [NB=0  BE=3  CW=0]))
+
+        // Random Backoff (5 slot nel nostro esempio)
+        let backoff-slots = 5
+        for i in range(backoff-slots) {
+          let x = cap-start + i * slot-width
+          rect(
+            (x, start-y),
+            (x + slot-width - 0.05, start-y + 1.5),
+            fill: rgb("#FFD93D").lighten(20%),
+            stroke: 1pt + orange,
+          )
+        }
+
+        // Etichetta backoff
+        content((cap-start + backoff-slots * slot-width / 2, start-y + 0.75), text(size: 7pt, "Backoff"))
+        content((cap-start + backoff-slots * slot-width / 2, start-y - 0.3), text(
+          size: 6.5pt,
+          fill: orange,
+          [random$[0, 2^3-1] = 5$],
+        ))
+
+        // Prima CCA
+        let cca1-x = cap-start + backoff-slots * slot-width
+        rect((cca1-x, start-y), (cca1-x + slot-width - 0.05, start-y + 1.5), fill: rgb("#95E1D3"), stroke: 1.2pt + blue)
+        content((cca1-x + slot-width / 2, start-y + 0.75), text(size: 7pt, weight: "bold", "CCA"))
+
+        // Seconda CCA
+        let cca2-x = cca1-x + slot-width
+        rect((cca2-x, start-y), (cca2-x + slot-width - 0.05, start-y + 1.5), fill: rgb("#95E1D3"), stroke: 1.2pt + blue)
+        content((cca2-x + slot-width / 2, start-y + 0.75), text(size: 7pt, weight: "bold", "CCA"))
+
+        // Trasmissione dati
+        let tx-x = cca2-x + slot-width
+        rect((tx-x, start-y), (tx-x + 1.8, start-y + 1.5), fill: rgb("#6BCF7C"), stroke: 1.5pt + green.darken(20%))
+        content((tx-x + 0.9, start-y + 0.75), text(size: 8pt, weight: "bold", fill: white, "data"))
+
+        // Etichetta sotto
+        content((tx-x + 0.9, start-y - 0.3), text(size: 7pt, fill: green.darken(20%), "Trasmissione"))
+      })
+    ]
+    caption: [CSMA/CA: Trasmissione con successo]
+  ]
+
+  *Evoluzione dell'algoritmo*:
+
+  + *All'arrivo del beacon*:
+    - Il dispositivo riceve il beacon e si sincronizza
+    - Inizializza le variabili: $"NB" = 0$, $"BE" = 3$, $"CW" = 2$
+
+  + *Random Backoff*:
+    - Estrae un numero casuale: $"random"[0, 2^3 - 1] = "random"[0, 7]$
+    - Supponiamo estragga $5$ → attende $5$ slot di contention ($5 times 20 = 100$ simboli)
+    - Durante l'attesa la radio può essere *spenta* (risparmio energetico)
+    - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mo("CW" = 2)$
+
+  + *Prima CCA* (Clear Channel Assessment):
+    - Alla fine del backoff, il dispositivo *accende la radio* e ascolta il canale
+    - Canale *libero* $ -> "CW"$ viene decrementato: $"CW" = 2 - 1 = 1$
+    - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mm("CW" = 1)$
+
+  + *Seconda CCA*:
+    - Nello slot successivo, il dispositivo esegue una seconda CCA
+    - Canale ancora *libero* $ -> "CW"$ viene decrementato: $"CW" = 1 - 1 = 0$
+    - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mg("CW" = 0)$
+
+  + *Trasmissione*:
+    - Con $"CW" = 0$, il dispositivo *trasmette immediatamente* il pacchetto dati
+]
+
+#esempio()[
+  *Scenario*: Sender 1 tenta di accedere al canale, ma rileva che è occupato durante la prima CCA. Deve quindi riprovare.
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
+
+        let slot-width = 0.6
+        let slot-height = 0.8
+        let start-x = 0
+        let start-y = 5
+
+        // Beacon
+        rect((start-x, start-y + 2), (start-x + 0.8, start-y + 3), fill: rgb("#FF6B6B"), stroke: 1.5pt + black)
+        content((start-x + 0.4, start-y + 2.5), text(size: 9pt, weight: "bold", fill: white, "Beacon"))
+
+        // CAP
+        let cap-start = start-x + 1
+        content((cap-start + 5 * slot-width, start-y + 3.5), text(
+          size: 8pt,
+          weight: "bold",
+          "Contention Access Period",
+        ))
+
+        for i in range(12) {
+          let x = cap-start + i * slot-width
+          rect(
+            (x, start-y + 2),
+            (x + slot-width - 0.05, start-y + 3),
+            stroke: 0.8pt + gray,
+            fill: rgb("#E8E8E8").lighten(20%),
+          )
+        }
+
+        // Sender 1 - Primo tentativo
+        content((cap-start - 0.3, start-y + 1), text(size: 8pt, weight: "bold", "Sender 1"), anchor: "east")
+        content((cap-start + 1.5, start-y + 1.8), text(size: 9pt, [Tentativo 1: NB=0  BE=3]))
+
+        // Backoff iniziale (3 slot)
+        let backoff1 = 3
+        for i in range(backoff1) {
+          let x = cap-start + i * slot-width
+          rect(
+            (x, start-y),
+            (x + slot-width - 0.05, start-y + 1.5),
+            fill: rgb("#FFD93D").lighten(20%),
+            stroke: 1pt + orange,
+          )
+        }
+        content((cap-start + backoff1 * slot-width / 2, start-y + 0.75), text(size: 7pt, "Backoff"))
+
+        // CCA fallita
+        let cca-fail-x = cap-start + backoff1 * slot-width
+        rect(
+          (cca-fail-x, start-y),
+          (cca-fail-x + slot-width - 0.05, start-y + 1.5),
+          fill: rgb("#FF6B6B").lighten(30%),
+          stroke: 1.5pt + red,
+        )
+        content((cca-fail-x + slot-width / 2, start-y + 0.75), text(size: 7pt, weight: "bold", "CCA"))
+        content((cca-fail-x + slot-width / 2, start-y + 0.4), text(size: 6pt, fill: red, "✗"))
+        content((cca-fail-x + slot-width / 2, start-y - 0.3), text(size: 6.5pt, fill: red, "Occupato!"))
+
+        // Linea di separazione tra tentativi
+        line((cap-start, start-y - 0.7), (cap-start + 12 * slot-width, start-y - 0.7), stroke: (
+          paint: gray,
+          dash: "dashed",
+        ))
+
+        // Sender 1 - Secondo tentativo
+        let retry-y = start-y - 1.5
+        content((cap-start + 5.5, retry-y + 1), text(size: 9pt, [Tentativo 2: NB=1  BE=4]))
+
+        // Nuovo backoff più lungo (7 slot)
+        let backoff2-start = cca-fail-x + slot-width
+        let backoff2 = 7
+        for i in range(backoff2) {
+          let x = backoff2-start + i * slot-width
+          if x < cap-start + 12 * slot-width {
+            rect(
+              (x, retry-y - 1),
+              (x + slot-width - 0.05, retry-y + 0.5),
+              fill: rgb("#FFD93D").lighten(20%),
+              stroke: 1pt + orange,
+            )
+          }
+        }
+        content((backoff2-start + 3.5 * slot-width, retry-y - 0.25), text(size: 7pt, "Backoff più lungo"))
+        content((backoff2-start + 3.5 * slot-width, retry-y - 1.5), text(
+          size: 6.5pt,
+          fill: orange,
+          [random$[0, 2^4-1] = 7$],
+        ))
+      })
+    ]
+    caption: [CSMA/CA: Collisione e gestione del backoff exponenziale]
+  ]
+
+  *Evoluzione dell'algoritmo in caso di collisione*:
+
+  + *Tentativo 1* - Inizializzazione:
+    - Variabili: $mo("NB" = 0)$, $mo("BE" = 3)$, $mo("CW" = 2)$
+    - Random backoff: $"random"[0, 7] = 3$ → attende $3$ slot
+
+  + *Prima CCA fallisce*:
+    - Il dispositivo rileva che il canale è *occupato*
+
+  + *Aggiornamento variabili*:
+    - $"NB" = "NB" + 1 = 1$ (incremento numero di tentativi)
+    - $"BE" = min("BE" + 1, 5) = min(3 + 1, 5) = 4$ (aumento esponenziale)
+    - $"CW" = 2$ (reimpostato al valore iniziale)
+    - Variabili aggiornate: $mr("NB" = 1)$, $mr("BE" = 4)$, $mr("CW" = 2)$
+
+  + *Tentativo 2* - Nuovo backoff:
+    - Random backoff: $"random"[0, 2^4 - 1] = "random"[0, 15] = 7$ → attende $7$ slot
+    - Intervallo *più ampio* → maggiore probabilità di evitare collisioni
+    - Si ripete l'algoritmo con le nuove variabili
+
+  + *Casi limite*:
+    - Se continua a fallire, $"BE"$ aumenta fino a $"BE"_"max" = 5$
+    - Se $"NB" > 4$ → *fallimento definitivo* del MAC layer
+    - Il fallimento viene comunicato al livello superiore (applicazione)
+]
+
+
+
 
 //aggiungere tempo di Turn around
 
