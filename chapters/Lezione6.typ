@@ -223,3 +223,16 @@ Possiamo immaginare la frammentazione così:
 Chiaramente, per ogni frammento, è necessario aggiungere informazioni riguardo al *NAV*, per i dispotivi che non sono direttamente coinvolti nella comunicazione.
 
 Inoltre, la frammentazione e la correzione degli errori viene sempre effettuata a livello *MAC*, tra dispositivo e *Access Point*: lasciare la correzione dei dati a livelli superiori (come ad esempio il _TCP_), porterebbe inevitabilmente a ritardi e tempi di trasmissione allungati, poiché sarebbe il destinatario ad accorgersi dell'errore e a chiedere una nuova trasmissione.
+
+=== 802.11 con infrastruttura
+
+#figure(
+  image("../assets/802.11_infrastruttura.png", width: 70%)
+)
+
+Dallo schema di questa infrastruttura è possibile distinguere tra:
+- *Basic Service Set (BSS)*: Insieme di stazioni controllate da un singolo coordinatore/Access Point.
+- *Extended Service Set (ESS)*: Insieme di più *BSS* interconnessi tramite un *sistema distribuito* (*DS*).
+
+Il *sistema distribuito* è collegato alla _LAN_ tramite un router/bridge e l'*Extended Service Set* viene visto esternamente come un unico *Basic Service Set* per il *Logical Link Layer* (livello 2 _data link_), per funzionalità di roaming fra *AP* diversi.
+
