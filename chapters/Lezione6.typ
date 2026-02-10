@@ -149,7 +149,7 @@ Lo schema è il seguente:
       let w-sifs1 = 40pt
       place(dx: x-sifs1, dy: y-a - 22pt, block(width: w-sifs1, align(center, text(size: 10pt)[SIFS]))) 
 
-      let x-sense2 = x-sifs1 + w-sifs1 + 50pt 
+      let x-sense2 = x-sifs1 + w-sifs1 + 85pt 
       let w-sense2 = 40pt
       place(dx: x-sense2, dy: y-a - 10pt, rect(width: w-sense2, height: bar-h, fill: c-sense, stroke: none))
       place(dx: x-sense2, dy: y-a - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
@@ -165,7 +165,7 @@ Lo schema è il seguente:
 
       draw-timeline(y-b, "B")
 
-      let x-sense-b = x-rts + 15pt
+      let x-sense-b = x-rts + 50pt
       let w-sense-b = 40pt
       place(dx: x-sense-b, dy: y-b - 10pt, rect(width: w-sense-b, height: bar-h, fill: c-sense, stroke: none))
       place(dx: x-sense-b, dy: y-b - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
