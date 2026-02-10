@@ -99,7 +99,9 @@ Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send
 
 Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve a far sapere a tutti che un altro nodo, all'esterno, vuole comunicare con il terminale destinatario.
 
-Lo schema è il seguente:
+#pagebreak()
+
+Lo schema appena descritto è il seguente:
 
 #figure(
   align(center)[
@@ -201,3 +203,23 @@ Lo schema è il seguente:
   ]
 )
 
+=== 802.11 Frammentazione
+Il canale radio è molto sensibile alle interferenze e al rumore, di conseguenza è ragionevole ridurre la dimensione della _frame MAC_ (_frame LLC_ suddivisa in frammenti più piccoli, la cui dimensione cambia in base alle condizioni del canale).
+
+#nota[
+  Un altro motivo per cui si riduce la dimensione della _frame_, riguarda anche quanto sia grande quest'ultima: dallo standard *Ethernet*, infatti, è di 1522 byte.
+
+  #esempio[
+    Per capire informalmente questo concetto, supponiamo che la pioggia che cade a terra casualmente sia il rumore, mentre una persona che deve correre sotto la pioggia è il pacchetto che deve viaggiare lungo il canale radio. Avere un _frame_ piccolo, equivale a correre sotto la pioggia per 1 secondo, con meno probabilità di bagnarsi; al contrario, un _frame_ grande corrisponde a una corsa più duratura, con più gocce/rumore che colpiscono.
+  ]
+]
+
+Possiamo immaginare la frammentazione così:
+
+#figure(
+  image("../assets/frammentazione.png")
+)
+
+Chiaramente, per ogni frammento, è necessario aggiungere informazioni riguardo al *NAV*, per i dispotivi che non sono direttamente coinvolti nella comunicazione.
+
+Inoltre, la frammentazione e la correzione degli errori viene sempre effettuata a livello *MAC*, tra dispositivo e *Access Point*: lasciare la correzione dei dati a livelli superiori (come ad esempio il _TCP_), porterebbe inevitabilmente a ritardi e tempi di trasmissione allungati, poiché sarebbe il destinatario ad accorgersi dell'errore e a chiedere una nuova trasmissione.
