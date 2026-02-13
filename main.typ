@@ -28,13 +28,9 @@
   figure-supplement: "Figure",
 )
 
-// ============================================================================
-// YOUR CONTENT STARTS HERE
-// ============================================================================
 
-#part("Introduzione")
+
+#part("Comunicazioni Wireless")
 #include "chapters/Lezione1.typ"
-
 #include "chapters/Lezione2.typ"
 #include "chapters/Lezione3.typ"
-
