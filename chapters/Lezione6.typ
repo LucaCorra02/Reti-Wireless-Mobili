@@ -475,4 +475,93 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
   ]
 )
 
+=== Formato frame MAC
+
+#figure(
+  align(center)[
+    #scale(x: 90%, y: 90%)[
+      #box(width: 510pt, height: 240pt, {
+        let d-red = rgb("#9E353B")
+        let d-blue = rgb("#2A5092")
+        let l-blue = rgb("#A9CDE3")
+        let txt-col = black
+        
+        let c-col(w, lbl, bg, txt, f-size: 7.5pt) = stack(dir: ttb,
+          box(width: w, height: 14pt, align(center + bottom, pad(bottom: 3pt, text(size: 8pt)[#lbl]))),
+          box(width: w, height: 26pt, rect(width: 100%, height: 100%, fill: bg, stroke: 0.8pt + black, inset: 0pt, align(center + horizon, text(size: f-size, fill: if bg == l-blue { black } else { white })[#txt])))
+        )
+
+        let s-arr(w, lbl) = box(width: w, height: 15pt, {
+          place(left + horizon, dx: -1pt, polygon(fill: black, (0pt, 0pt), (3pt, 2.5pt), (3pt, -2.5pt)))
+          place(right + horizon, dx: 1pt, polygon(fill: black, (0pt, 0pt), (-3pt, 2.5pt), (-3pt, -2.5pt)))
+          place(center + horizon, line(length: 100%, stroke: 0.6pt + black))
+          place(center + horizon, rect(fill: white, stroke: none, inset: 2pt, text(size: 8pt)[#lbl]))
+        })
+
+        place(dx: 0pt, dy: 0pt, stack(dir: ltr,
+          stack(dir: ttb, 
+            box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bytes#h(4pt)])),
+            box(width: 32pt, height: 26pt)
+          ),
+          c-col(18pt, "2", d-red, "FC"),
+          c-col(18pt, "2", d-red, "D/I"),
+          c-col(54pt, "6", d-red, "Address"),
+          c-col(54pt, "6", d-blue, "Address"),
+          c-col(54pt, "6", d-blue, "Address"),
+          c-col(18pt, "2", d-blue, "SC"),
+          c-col(54pt, "6", d-blue, "Address"),
+          c-col(18pt, "2", d-blue, "QoS"),
+          c-col(36pt, "4", d-blue, "HT"),
+          c-col(108pt, "0 to 11,426", l-blue, "Data"),
+          c-col(36pt, "4", d-red, "FCS")
+        ))
+
+        place(dx: 32pt, dy: 45pt, s-arr(324pt, "Header"))
+        place(dx: 356pt, dy: 45pt, s-arr(108pt, "Frame body"))
+        place(dx: 464pt, dy: 45pt, s-arr(36pt, "Trailer"))
+
+        place(dx: 32pt, dy: 75pt, grid(
+          columns: (130pt, 140pt, 200pt),
+          row-gutter: 8pt,
+          text(size: 8pt)[FC = frame control], 
+          text(size: 8pt)[SC = sequence control],
+          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-red, stroke: none), h(6pt), text(size: 8pt)[Always present]),
+          text(size: 8pt)[D/I = duration/connection ID], 
+          text(size: 8pt)[FCS = frame check sequence],
+          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-blue, stroke: none), h(6pt), text(size: 8pt)[Present only in certain frame types\ and sub-types]),
+          text(size: 8pt)[QoS = QoS control], 
+          text(size: 8pt)[HT = high throughput control], 
+          []
+        ))
+
+        place(dx: 202pt, dy: 125pt, text(size: 8pt)[*High Throughput Control:* specifico per 802.11n, 802.11ac,\ and 802.11ad.])
+
+        place(dx: 0pt, dy: 165pt, stack(dir: ltr,
+          stack(dir: ttb, 
+            box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bits#h(4pt)])),
+            box(width: 32pt, height: 26pt)
+          ),
+          c-col(42pt, "2", d-red, [Protocol\ version], f-size: 6.5pt),
+          c-col(42pt, "2", d-red, "Type"),
+          c-col(84pt, "4", d-red, "Subtype"),
+          c-col(21pt, "1", d-red, [To\ DS], f-size: 6.5pt),
+          c-col(21pt, "1", d-red, [From\ DS], f-size: 6pt),
+          c-col(21pt, "1", d-red, "MF"),
+          c-col(21pt, "1", d-red, "RT"),
+          c-col(21pt, "1", d-red, "PM"),
+          c-col(21pt, "1", d-red, "MD"),
+          c-col(21pt, "1", d-red, "W"),
+          c-col(21pt, "1", d-red, "O")
+        ))
+
+        place(dx: 195pt, dy: 215pt, text(size: 9pt, weight: "bold")[Frame Control])
+
+        place(path(stroke: 1.5pt + black, (32pt, 27pt), (10pt, 27pt), (10pt, 192pt), (32pt, 192pt)))
+        place(dx: 32pt, dy: 192pt, polygon(fill: black, (0pt, 0pt), (-6pt, 3.5pt), (-6pt, -3.5pt)))
+      })
+    ]
+  ]
+)
+
+I campi di colore #text(fill: red)[rosso] sono quelli sempre presenti in qualsiasi frame 802.11, mentre i rimanenti sono presenti solo se necessari.
 
