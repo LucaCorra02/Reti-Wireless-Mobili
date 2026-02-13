@@ -2,3 +2,4 @@
 
 = Lezione 7
 
+//Lezione saltata, no appunti
