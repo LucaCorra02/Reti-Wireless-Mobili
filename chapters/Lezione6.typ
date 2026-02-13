@@ -236,3 +236,23 @@ Dallo schema di questa infrastruttura è possibile distinguere tra:
 
 Il *sistema distribuito* è collegato alla _LAN_ tramite un router/bridge e l'*Extended Service Set* viene visto esternamente come un unico *Basic Service Set* per il *Logical Link Layer* (livello 2 _data link_), per funzionalità di roaming fra *AP* diversi.
 
+=== 802.11 Point Coordination Function (PCF)
+La modalità *Point Coordination Function* permette ad un *AP* di essere il "_dittatore_" della rete per garantire qualità del servizio: tutti i frame passano per l'*AP* e questo garantisce un servizio *time-bounded* (particolarmente utile per i _delay_).
+
+#nota[
+  Nella modalità *CDF*, tutti i dispositivi sono uguali: se c'è silezio, aspettano un tempo casuale e provano a trasmettere. Il difetto di questo sistema è che è imprevedibile.
+  #esempio[
+    Se voglio guardare un video in straming, non posso permettermi ritardi casuali. Serve invece garanzia che il pacchetto arrivi quando serve e non "forse tra 100 millisecondi se nessuno parla".
+  ]
+
+  Far prendere all'*AP* il comando di tutto risolve il problema: i dispositivi non si occupano di quando "prendere" il canale, ma è l'*AP* stesso che assegna i turni.
+]
+
+==== Beacon Frame
+Per garantire il funzionamento corretto del *PCF*, l'*AP* necessita di prendere il controllo del canale radio prima delle stazioni in attesa. A questo proposito, l'*Access Point* invia periodicamente (ogni 10-100s) dei *beacon frame*, che contengono:
+- Parametri operativi *PHY*: _bit rate_ e _Modulation Coding Scheme_, ovvero tutte le capacità fisiche dell'*AP*;
+- Sincronizzazione: qualsiasi dispositivo voglia scambiare messaggi con l'*Access Point*, deve opportunamente sincronizzare il proprio clock;
+- Supporto a *PCF*: informazioni utili per garantire il funzionamento di questa modalità;
+- Invito per nuove stazioni non ancora associate.
+
+
