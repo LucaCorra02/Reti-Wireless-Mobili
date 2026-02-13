@@ -255,4 +255,224 @@ Per garantire il funzionamento corretto del *PCF*, l'*AP* necessita di prendere 
 - Supporto a *PCF*: informazioni utili per garantire il funzionamento di questa modalità;
 - Invito per nuove stazioni non ancora associate.
 
+==== Divisione del tempo
+Ogni blocco temporale che compone un *superframe* è composto da 2 blocchi distinti:
+- Parte con accesso *senza contesa*: necessaria per servizi _time-bounded_ (es. servizi in streaming in cui i dati devono viaggiare sicuri e senza ritardi);
+- Parte con accesso *con contesa*: necessaria per lo "smaltimento" del traffico normale (es. download di documenti e file multimediali, in cui un minimo ritardo o una collisione occasionale non è particolarmente grave).
+
+Sostanzialmente, questa divisione è fondamentale perché l'*AP* si preoccupa di interrogare chi ha urgenza e lascia poi liberi tutti gli altri per i propri servizi.
+
+#pagebreak()
+
+Lo schema di divione del tempo è rappresentabile così:
+
+#figure(
+  align(center)[
+    #box(width: 520pt, height: 240pt, {
+      let dark-red = rgb("#842A35")
+      let blue-c = rgb("#4A72B2")
+      let line-col = rgb("#333333")
+      let t-size = 8.5pt
+
+      let draw-dbl-arrow(x1, x2, y, label: none, label-dy: 0pt) = {
+        place(dx: x1, dy: y, line(start: (0pt, 0pt), end: (x2 - x1, 0pt), stroke: 1pt + blue-c))
+        place(dx: x1, dy: y, polygon(fill: blue-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
+        place(dx: x2, dy: y, polygon(fill: blue-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+        if label != none {
+          let cx = (x1 + x2) / 2
+          let w = 220pt
+          place(dx: cx - w/2, dy: y + label-dy, block(width: w, align(center, text(size: t-size, fill: line-col)[#label])))
+        }
+      }
+
+      let draw-box(x, y, w, h, col, content) = {
+        place(dx: x, dy: y, rect(width: w, height: h, fill: col, stroke: 1.5pt + black))
+        place(dx: x, dy: y, block(width: w, height: h, align(center + horizon, text(fill: white, size: 8.5pt)[#content])))
+      }
+
+      let centered-text(cx, y, w, content) = {
+        place(dx: cx - w/2, dy: y, block(width: w, align(center, text(size: t-size, fill: line-col)[#content])))
+      }
+
+      place(dx: 10pt, dy: 120pt, line(start: (0pt, 0pt), end: (490pt, 0pt), stroke: 1pt + black))
+      place(dx: 500pt, dy: 120pt, polygon(fill: black, (0pt, 0pt), (-6pt, 3pt), (-6pt, -3pt)))
+
+      place(dx: 40pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
+      place(dx: 260pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
+      place(dx: 480pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
+      
+      place(dx: 300pt, dy: 50pt, line(start: (0pt, 0pt), end: (0pt, 140pt), stroke: 0.5pt + black))
+
+      place(dx: 270pt, dy: 135pt, line(start: (0pt, 0pt), end: (0pt, 50pt), stroke: 0.5pt + black))
+      place(dx: 400pt, dy: 135pt, line(start: (0pt, 0pt), end: (0pt, 50pt), stroke: 0.5pt + black))
+
+      draw-dbl-arrow(40pt, 260pt, 40pt, label: [Superframe (fixed nominal length)], label-dy: -14pt)
+      draw-dbl-arrow(260pt, 480pt, 40pt, label: [Superframe (fixed nominal length)], label-dy: -14pt)
+      draw-dbl-arrow(300pt, 480pt, 65pt, label: [Foreshortened actual superframe period], label-dy: -14pt)
+
+      draw-dbl-arrow(270pt, 300pt, 175pt)
+      draw-dbl-arrow(300pt, 400pt, 175pt)
+
+      draw-box(40pt, 105pt, 100pt, 30pt, dark-red, [PCF (optional)])
+      draw-box(210pt, 105pt, 60pt, 30pt, dark-red, [Busy medium])
+      draw-box(300pt, 105pt, 100pt, 30pt, dark-red, [PCF (optional)])
+
+      centered-text(90pt, 73pt, 120pt, [Contention-free\ period])
+      centered-text(90pt, 140pt, 140pt, [Variable length\ (per superframe)])
+      
+      centered-text(175pt, 82pt, 100pt, [Contention period])
+      centered-text(175pt, 106pt, 100pt, [DCF])
+
+      centered-text(285pt, 183pt, 80pt, [PCF\ defers])
+      centered-text(350pt, 183pt, 140pt, [CF-Burst;\ asynchronous\ traffic defers])
+    })
+  ]
+)
+
+Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
+
+#figure(
+  align(center)[
+    #scale(80%)[
+      #box(width: 560pt, height: 280pt, {
+        let cyan-c = rgb("#00AEEF")
+        let line-c = rgb("#333333")
+        let t-size = 8pt
+
+        let nav-pat = pattern(size: (5pt, 5pt))[
+          #place(line(start: (0pt, 5pt), end: (5pt, 0pt), stroke: 0.5pt + cyan-c))
+        ]
+
+        let draw-box(x, y, w, content) = {
+          let h = 20pt
+          place(dx: x, dy: y - h/2, rect(width: w, height: h, fill: white, stroke: 1.2pt + cyan-c))
+          place(dx: x, dy: y - h/2, block(width: w, height: h, align(center + horizon, text(size: t-size, fill: cyan-c)[#content])))
+        }
+
+        let delay-arrow(x1, x2, y, label, label-dy: -8pt) = {
+          place(dx: x1, dy: y, line(start: (0pt, 0pt), end: (x2 - x1, 0pt), stroke: 0.7pt + line-c))
+          place(dx: x2, dy: y, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+          place(dx: x1 + (x2 - x1)/2 - 12pt, dy: y + label-dy, block(width: 24pt, align(center, text(size: 7.5pt, fill: line-c)[#label])))
+        }
+
+        let draw-break(x, y, h: 20pt) = {
+          place(dx: x - 4pt, dy: y - h/2, rect(width: 8pt, height: h, fill: white, stroke: none))
+          place(dx: x - 2pt, dy: y - h/2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
+          place(dx: x + 2pt, dy: y - h/2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
+        }
+
+        let y-pc = 70pt
+        let y-st = 140pt
+        let y-os = 200pt
+        let y-top = 20pt
+        let y-bot = 240pt
+
+        let x0 = 85pt
+        let w-pifs = 22pt
+        let w-sifs = 18pt
+        let w-box = 20pt
+        let w-cfend = 24pt
+
+        let x-dd1 = x0 + w-pifs
+        let x-ud1 = x-dd1 + w-box + w-sifs
+        let x-dd2 = x-ud1 + w-box + w-sifs
+        let x-ud2 = x-dd2 + w-box + w-sifs
+        let x-tick = x-ud2 + w-box + w-sifs
+        let x-dd3 = x-tick + w-pifs
+        let x-dd4 = x-dd3 + w-box + w-pifs
+        let x-ud4 = x-dd4 + w-box + w-sifs
+        let x-cfend = x-ud4 + w-box + w-sifs
+
+        let x-break = 470pt
+        let x-cfp-end = 500pt
+        let x-sf-end = 540pt
+
+        place(dx: x0, dy: y-top, line(start: (0pt, -5pt), end: (0pt, y-bot - y-top), stroke: 0.5pt + line-c))
+        place(dx: x-sf-end, dy: y-top, line(start: (0pt, -5pt), end: (0pt, y-bot - y-top), stroke: 0.5pt + line-c))
+
+        place(dx: x0, dy: y-top, line(start: (0pt, 0pt), end: (x-sf-end - x0, 0pt), stroke: 0.5pt + line-c))
+        place(dx: x0, dy: y-top, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
+        place(dx: x-sf-end, dy: y-top, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+        place(dx: x0 + (x-sf-end - x0)/2 - 30pt, dy: y-top - 6pt, rect(fill: white, stroke: none)[#text(size: t-size)[Superframe]])
+        draw-break(x-break, y-top, h: 12pt)
+
+        place(dx: x-cfp-end, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-bot - (y-pc - 15pt) + 5pt), stroke: 0.5pt + line-c))
+
+        place(dx: x0, dy: y-bot, line(start: (0pt, 0pt), end: (x-cfp-end - x0, 0pt), stroke: 0.5pt + line-c))
+        place(dx: x0, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
+        place(dx: x-cfp-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+        place(dx: x0 + (x-cfp-end - x0)/2 - 50pt, dy: y-bot - 6pt, rect(fill: white, stroke: none)[#text(size: t-size)[Contention-free period]])
+        draw-break(x-break, y-bot, h: 12pt)
+
+        place(dx: x-cfp-end, dy: y-bot, line(start: (0pt, 0pt), end: (x-sf-end - x-cfp-end, 0pt), stroke: 0.5pt + line-c))
+        place(dx: x-cfp-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
+        place(dx: x-sf-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2 - 25pt, dy: y-bot + 12pt, block(align(center, text(size: 7.5pt)[Contention\ period])))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2, dy: y-bot + 10pt, line(start: (0pt, 0pt), end: (0pt, -5pt), stroke: 0.5pt + line-c))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2, dy: y-bot + 5pt, polygon(fill: line-c, (0pt, 0pt), (-2.5pt, 4pt), (2.5pt, 4pt)))
+
+        for y in (y-pc, y-st, y-os) {
+          place(dx: x0 - 10pt, dy: y, line(start: (0pt, 0pt), end: (x-sf-end - x0 + 35pt, 0pt), stroke: 0.5pt + line-c))
+          draw-break(x-break, y)
+          place(dx: x-sf-end + 25pt, dy: y, polygon(fill: line-c, (0pt, 0pt), (-4pt, 3pt), (-4pt, -3pt)))
+          place(dx: x-sf-end + 30pt, dy: y - 4pt, text(size: t-size)[Time])
+        }
+
+        let x-nav-end = x-cfend + w-cfend
+        place(dx: x0, dy: y-os - 12pt, rect(width: x-nav-end - x0, height: 24pt, fill: nav-pat, stroke: 1.2pt + cyan-c))
+        place(dx: x0 + (x-nav-end - x0)/2 - 15pt, dy: y-os - 6pt, rect(width: 30pt, height: 12pt, fill: white, stroke: none))
+        place(dx: x0 + (x-nav-end - x0)/2 - 15pt, dy: y-os - 6pt, block(width: 30pt, height: 12pt, align(center + horizon, text(size: t-size, fill: cyan-c)[NAV])))
+        draw-break(x-break, y-os, h: 26pt)
+
+        place(dx: 10pt, dy: y-pc - 4pt, text(size: t-size)[Point coordinator])
+        place(dx: 10pt, dy: y-st - 4pt, text(size: t-size)[Stations 1, 2, 3, 4])
+        place(dx: 10pt, dy: y-os - 4pt, text(size: t-size)[Other stations])
+
+        place(dx: x0 - 62pt, dy: y-pc - 20pt, text(size: 7.5pt)[Medium busy])
+        place(dx: x0 - 15pt, dy: y-pc - 16pt, line(start: (0pt, 0pt), end: (15pt, 0pt), stroke: 0.5pt + line-c))
+        place(dx: x0, dy: y-pc - 16pt, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
+
+        place(dx: x0, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x0, x-dd1, y-pc - 10pt, "PIFS")
+        draw-box(x-dd1, y-pc, w-box, "DD1")
+
+        place(dx: x-dd1 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-dd1 + w-box, x-ud1, y-st - 10pt, "SIFS")
+        draw-box(x-ud1, y-st, w-box, "UD1")
+
+        place(dx: x-ud1 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-ud1 + w-box, x-dd2, y-pc - 10pt, "SIFS")
+        draw-box(x-dd2, y-pc, w-box, "DD2")
+
+        place(dx: x-dd2 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-dd2 + w-box, x-ud2, y-st - 10pt, "SIFS")
+        draw-box(x-ud2, y-st, w-box, "UD2")
+
+        place(dx: x-ud2 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-ud2 + w-box, x-tick, y-pc - 10pt, "SIFS")
+
+        place(dx: x-tick, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-tick, x-dd3, y-pc - 10pt, "PIFS")
+        draw-box(x-dd3, y-pc, w-box, "DD3")
+
+        place(dx: x-dd3 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-dd3 + w-box, x-dd4, y-pc - 10pt, "PIFS")
+        draw-box(x-dd4, y-pc, w-box, "DD4")
+
+        place(dx: x-dd4 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-dd4 + w-box, x-ud4, y-st - 10pt, "SIFS")
+        draw-box(x-ud4, y-st, w-box, "UD4")
+
+        place(dx: x-ud4 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        delay-arrow(x-ud4 + w-box, x-cfend, y-pc - 10pt, "SIFS")
+        draw-box(x-cfend, y-pc, w-cfend, [CF\ end])
+
+        place(dx: 15pt, dy: 265pt, text(size: t-size)[DDx = Downstream data/poll])
+        place(dx: 165pt, dy: 265pt, text(size: t-size)[UDx = Upstream data])
+        place(dx: 275pt, dy: 265pt, text(size: t-size)[CFend = Contention-free (period) end])
+      })
+    ]
+  ]
+)
+
 
