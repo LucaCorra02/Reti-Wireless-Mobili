@@ -147,7 +147,7 @@ Ogni segnale è rappresentabile come una funzione del tempo $s(t)$, dove $t$ è 
 $ s(t) = A dot sin(2 pi f t + Phi) $
 
 Dove:
-- $A ->$ è l'ampiezza del segnale (massimo valore raggiungibile sull'asse `X`, misurato in `Volt`);
+- $A ->$ è l'ampiezza del segnale (massimo valore raggiungibile sull'asse `Y`, misurato in `Volt`);
 - $f ->$ è la frequenza del segnale (numero di cicli al secondo, misurata in `Hz`);
 - $Phi ->$ è la fase del segnale (spostamento orizzontale della sinusoide);
 - $T ->$ è il periodo del segnale (il tempo impiegato per un ciclo, corrispondente a $1/f$);
@@ -406,7 +406,7 @@ Questo schema riassume i passaggi fondamentali che avvengono durante la trasmiss
 
 == Spettro, Bandwidth e Data Rate
 Tra i concetti fondamentali per comprendere le prestazioni di un sistema di comunicazione vi sono lo *spettro*, la *larghezza di banda* (o _Bandwidth_) e la *velocità di trasmissione dati* (o _Data Rate_):
-- *Spettro* $->$ Rappresenta l'insieme (o il range) di tutte le frequenze elettromagnetiche possibili, suddivise in bande (es. banda AM, banda FM, banda Wi-Fi, ecc.);
+- *Spettro* $->$ Rappresenta l'insieme ordinato (o il range) di tutte le frequenze elettromagnetiche possibili, suddivise in bande (es. banda AM, banda FM, banda Wi-Fi, ecc.);
 - *Bandwidth* $->$ Indica una misura fisica, espressa in `Hz`, che rappresenta la "larghezza del tubo" o lo spazio/ampiezza dello *spettro* delle frequenze che occupa il segnale;
 - *Data Rate* $->$ Indica la quantità di dati che possono essere trasmessi in un certo intervallo di tempo, espressa in `bps` (bit per secondo). Rappresenta la velocità effettiva con cui le informazioni vengono trasferite attraverso il canale di comunicazione.
 
@@ -620,7 +620,7 @@ Dove $M$ è il numero di livelli di voltaggio e $log_2(M)$ indica quanti bit cor
 Come già detto precedentemente, il *rumore* (chiamato spesso anche _noise_), è un segnale non voluto che si combina al segnale trasmesso, distorcendolo. Questo può portare a errori nella ricezione dei dati, poiché il ricevitore potrebbe interpretare erroneamente i bit trasmessi.
 
 Possiamo inoltre categorizzare il *rumore*:
-- *_Thernmal Noise_* $->$ Rumore di fondo *inevitabile e non eliminabile*. Deriva dall'agitazione termica delle particelle nei materiali conduttori e si manifesta come un segnale casuale che si somma al segnale utile (informalmente, è il fruscio che si può sentire, ad esempio, nelle radio non sintonizzate);
+- *_Thermal Noise_* $->$ Rumore di fondo *inevitabile e non eliminabile*. Deriva dall'agitazione termica delle particelle nei materiali conduttori e si manifesta come un segnale casuale che si somma al segnale utile (informalmente, è il fruscio che si può sentire, ad esempio, nelle radio non sintonizzate);
 - *_Intermodulation Noise_* $->$ Rumore *non naturale*. È tipicamente causato da un malfunzionamento del sistema di trasmissione. Si verifica quando 2 frequenze viaggiano nello stesso mezzo (ad esempio, un cavo condiviso) e passano attraverso un componente non lineare (es. un amplificatore difettoso), generando nuove frequenze che interferiscono con il segnale originale;
 - *_Crosstalk_* $->$ Rumore causato da *interferenze tra canali* di comunicazione vicini. Si verifica quando, ad esempio, 2 cavi in rame corrono paralleli lungo un tratto.
 - *Impulse Noise* $->$ Rumore *improvviso e di breve durata*. È causato da eventi esterni come fulmini, interruzioni di corrente o interferenze elettromagnetiche. Può causare errori significativi nella trasmissione dei dati, specialmente in sistemi digitali. È particolarmente importante come tipo di rumore, poiché ha la capacità di cancellare o invertire un intero gruppo di bit, rendendo tutto il pacchetto illeggibile.
@@ -655,9 +655,15 @@ Dove $P$ è la potenza misurata.
 ]
 
 ==== Rapporto Segnale-Rumore (SNR)
-Misura quanto il segnale utile è più forte rispetto al rumore di fondo. Si esprime in *Decibel*:
-$ S N R = 10 dot log_10(P_s/P_n) $
-Dove $P_s$ è la potenza del segnale e $P_n$ è la potenza del rumore.
+Misura quanto il segnale utile è più forte rispetto al rumore. 
+
+Può essere espresso sia in scala logaritmica (decibel)
+$ S N R_(d b) = 10 dot log_10(P_s/P_r) $
+che lineare 
+$ S N R = P_s/P_r $
+$ S N R = 10^((S N R_(d b))/10) $
+
+Dove $P_s$ è la potenza del segnale e $P_r$ è la potenza del rumore.
 
 Tanto più è alto, maggiore sarà la distinzione del segnale rispetto al rumore (e viceversa).
 
@@ -679,7 +685,7 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
   - Calcoliamo la *Bandwidth*:
     $ B = 4 M H z - 3 M H z = 1 M H z $
   - Convertiamo il *SNR* da *Decibel* a rapporto di potenze:
-    $ S N R = 10 log_10(S N R) = 10 log_10(24) = 251 $
+    $ S N R = 10^((S N R_(d b))/10) = 10^((24)/10) = 251 $
     Significa che il segnale è circa 251 volte più potente del rumore.
   - Applichiamo la *formula di Shannon*:
     $ C = B dot log_2(1 + S N R) = 1 M H z dot log_2(1 + 251) = 1 M H z dot 8.0 = 8.0 M b p s $
