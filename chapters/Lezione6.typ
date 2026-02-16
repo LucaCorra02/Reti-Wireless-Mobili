@@ -565,3 +565,12 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
 
 I campi di colore #text(fill: red)[rosso] sono quelli sempre presenti in qualsiasi frame 802.11, mentre i rimanenti sono presenti solo se necessari.
 
+Dalla freccia dall'alto verso il basso, è possibile notare il contenuto dei 2 byte di *Frame Control (FC)*. Tra i bit più importanti al suo interno, troviamo quelli riguardanti il *tipo* di frame:
+- *00* $->$ *Management*: pacchetti che servono per gestire la rete e creare collegamenti;
+- *01* $->$ *Controllo*: frame con lo scopo di aiutare la consegna dei dati, contenendo bit che servono a prenotare il canale o a confermare l'arrivo di un pacchetto;
+- *10* $->$ *Data*: frame che contengono il *payload* vero e proprio.
+
+Per quanto riguarda invece il secondo gruppo di byte, possiamo notare i contenuti relativi alla duranta rimanente, in $mu s$, della trasmissione e particolarmente utile per la gestione dei *NAV*.
+
+Troviamo poi i byte sull'indirizzo di *destinazione* (possono esserci fino a 4 indirizzi). Al termine della frame vi è una parte preoposta al controllo e la correzione degli errori.
+
