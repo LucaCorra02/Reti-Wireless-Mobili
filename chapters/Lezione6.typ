@@ -574,3 +574,49 @@ Per quanto riguarda invece il secondo gruppo di byte, possiamo notare i contenut
 
 Troviamo poi i byte sull'indirizzo di *destinazione* (possono esserci fino a 4 indirizzi). Al termine della frame vi è una parte preoposta al controllo e la correzione degli errori.
 
+==== Porzione di ADDRESS
+Nello schema precedente, abbiamo citato i possibili 4 indirizzi che possono essere presenti all'interno della frame MAC. Questa tabella riassume esaustivamente il contenuto di questi campi:
+
+#pagebreak()
+
+#align(center)[
+  #text(size: 8pt)[
+    #table(
+      columns: (auto, auto, 1fr, 1fr, 1fr, 1fr, 1.3fr),
+      align: center + horizon,
+      inset: 6pt,
+      stroke: 0.5pt + black,
+
+      [*To*\ *DS*], [*From*\ *DS*], [*Address 1*], [*Address 2*], [*Address 3*], [*Address 4*], [*Caso di*\ *utilizzo*],
+
+      [0], [0], 
+      [*DA*\ Indirizzo MAC\ destinazione], 
+      [*SA*\ Indirizzo MAC\ sorgente], 
+      [*BSSID*\ della cella/\ random se ad\ hoc], 
+      [-], 
+      [Rete ad hoc\ Rete con\ infrastruttura\ singola cella],
+
+      [0], [1], 
+      [*DA*\ Indirizzo MAC\ destinazione\ all'interno di\ BSSID], 
+      [*BSSID*\ della cella a\ cui la frame è\ destinata], 
+      [*SA*\ Indirizzo MAC\ sorgente], 
+      [-], 
+      [Frame inviata\ attraverso DS\ ad un AP\ all'interno\ della cella che\ possiede\ BSSID\ dell'address 2],
+
+      [1], [0], 
+      [*BSSID*\ della cella\ destinazione], 
+      [*SA*\ Indirizzo MAC\ sorgente], 
+      [*DA*\ Indirizzo MAC\ stazione che\ sta ricevendo], 
+      [-], 
+      [Frame inviata\ attraverso DS\ ad un AP di\ una cella\ diversa BSSID\ dell'address 1],
+
+      [1], [1], 
+      [*RA*\ Indirizzo AP\ destinazione\ all'interno di\ DS], 
+      [*TA*\ Indirizzo AP\ sorgente\ all'interno di\ DS], 
+      [*DA*\ Indirizzo della\ stazione che\ sta ricevendo], 
+      [*SA*\ indirizzo della\ stazione che\ sta inviando], 
+      [Frame tra AP\ di celle\ differenti\ usando DS]
+    )
+  ]
+]
+
