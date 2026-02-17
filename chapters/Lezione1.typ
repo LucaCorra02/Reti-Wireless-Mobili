@@ -679,21 +679,47 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
 - Migliorando il *SNR* (ad esempio, aumentando la potenza del segnale trasmesso), con il rischio di far aumentare *Intermodulation* e *Cross Talk Noise*.
 
 #esempio[
-  Supponiamo di avere uno spettro tra $3$ `MHz` e $4$ `MHz`. Abbiamo inoltre un rapporto segnale-rumore $S N R = 24$ `dB`.
+  *Possibile esercizio d'esame*
+  
+  Dati:
+  - Uno spettro che va da $3"Mhz"$ a $4"Mhz" => "Bandwidth"$ = $4"Mhz"-3"Mhz"$ = $1"Mhz"$
+  - Un rapporto segnale rumore $"SNR"_("dB") = 24"db"$
 
-  A questo punto, è possibile calcolare la *Capacità* secondo Shannon:
-  - Calcoliamo la *Bandwidth*:
-    $ B = 4 M H z - 3 M H z = 1 M H z $
-  - Convertiamo il *SNR* da *Decibel* a rapporto di potenze:
-    $ S N R = 10^((S N R_(d b))/10) = 10^((24)/10) = 251 $
+  Vogliamo: 
+  - Trovare la capacità del canale $C$;
+  - Calcolare il numero di livelli di segnale che devo avere per avere quella capacità del canale.
+
+  Per la _Shannon Capacity Formula_ la massima capacità del canale è data dal prodotto fra la _Bandwidth_ e logaritmo in base 2 di (1 + $"SNR"$).
+  $
+    C = B dot log_2(1+"SNR")
+  $
+
+  *NB:* Si usa $"SNR"$ (*rapporto lineare*) e non $"SNR"_("dB")$ (*rapporto in Decibel*) nella formula. 
+
+  Per il _ Teorema di Nyquist sulla banda_, la capacità del canale in assenza di rumore è data dal prodotto fra due volte la _Bandwidth_ e logaritmo in base 2 del numero di livelli di segnale $M$:
+  $
+    C = 2B dot log_2(M)
+  $
+  Trovando $C$, utilizzando la formula di Shannon, prima richiesta del problema, è possibile sfruttare il _Teorema di Nyquist sulla banda_ per isolare $M$ e soddisfare anche la seconda richiesta.\
+  
+  - $C$:
+    
+  Per prima cosa dobbiamo passare da $"SNR"_"dB"$ a SNR "_puro_" o _lineare_. Per farlo, l'equazione è la seguente:
+    $ "SNR" = 10^((S N R_(d b))/10) = 10^((24)/10) = 251 $
     Significa che il segnale è circa 251 volte più potente del rumore.
-  - Applichiamo la *formula di Shannon*:
+
+  Applichiamo la *formula di Shannon*:
     $ C = B dot log_2(1 + S N R) = 1 M H z dot log_2(1 + 251) = 1 M H z dot 8.0 = 8.0 M b p s $
-  - Ora è possibile applicare anche la *formula di Nyquist* per sapere quanti livelli di voltaggio sono necessari per raggiungere questa capacità ($M$ è l'incognita):
+
+  - $M$:
+
+  Ora è possibile applicare anche la *formula di Nyquist* per sapere quanti livelli di voltaggio sono necessari per raggiungere questa capacità ($M$ è l'incognita):
     $ C = 2 B log_2(M)  => $
     $ => 8.0 M b p s = 2 dot 1 M H z dot log_2(M) => $
     $ => log_2(M) = 4.0 => $
     $ => M = 2^4 = 16 $
+
+  *CONCLUSIONE:* Il nostro livello fisico deve almeno usare $16$ livelli di segnale, $4$ bit.
 ]
 
 == Multiplexing
