@@ -351,6 +351,7 @@ L'*OFDMA (Orthogonal Frequency Division Multiple Access)* è una tecnologia di a
 
 Lo standard 802.11a/g aveva introdotto *OFDM (Orthogonal Frequency Division Multiplexing)*, una tecnica di modulazione che divide il canale in multiple sottoportanti ortogonali. Tuttavia, in OFDM tradizionale, tutte le sottoportanti sono assegnate a un singolo utente per ogni trasmissione.
 
+/*
 #align(center)[
   #figure(
     cetz.canvas(length: 0.7cm, {
@@ -381,7 +382,7 @@ Lo standard 802.11a/g aveva introdotto *OFDM (Orthogonal Frequency Division Mult
         let col = if i == 0 { rgb("#4472C4") } else if i == 1 { rgb("#70AD47") } else if i == 2 { rgb("#FFC000") } else { rgb("#C55A11") }
         rect((x-offset + i*subcarrier-width, 0), (x-offset + (i+1)*subcarrier-width, 3.5), fill: col, stroke: black)
         content((x-offset + i*subcarrier-width + subcarrier-width/2, 1.75), 
-                text(fill: white, weight: "bold", size: 0.85em, angle: 90deg)[User #(i+1)])
+                text(fill: white, weight: "bold", size: 0.85em, angle: 90deg))[User #(i+1)])
       }
 
       line((x-offset + w + 1, 2), (x-offset + w + 2, 2), mark: (end: ">"), stroke: (thickness: 2pt))
@@ -394,6 +395,7 @@ Lo standard 802.11a/g aveva introdotto *OFDM (Orthogonal Frequency Division Mult
     caption: [Confronto tra OFDM tradizionale e OFDMA]
   )
 ]
+*/
 
 L'*OFDMA* estende questo concetto permettendo di assegnare *gruppi di sottoportanti a utenti diversi simultaneamente*, migliorando drasticamente l'efficienza spettrale e riducendo la latenza.
 
@@ -1072,7 +1074,7 @@ Scenari applicativi di 802.11p:
 
 / *Nessuna associazione*: Eliminazione della fase di associazione/autenticazione
   - I frame vengono scambiati immediatamente senza handshake preliminare
-  - Latenze ridotte a <50 ms dalla ricezione del segnale
+  - Latenze ridotte a < 50 ms dalla ricezione del segnale
 
 / *Outside Context of BSS (OCB)*: Modalità di operazione ad-hoc migliorata
   - Non richiede formazione di una BSS
@@ -1252,7 +1254,7 @@ Negli ultimi anni, *C-V2X (Cellular V2X)* basato su 3GPP Release 14/15/16 ha eme
         text(fill: white, weight: "bold")[Caratteristica],
         text(fill: white, weight: "bold")[802.11p\ (DSRC)],
         text(fill: white, weight: "bold")[C-V2X\ (PC5)],
-        [Latenza], [<50 ms], [<20 ms],
+        [Latenza], [< 50 ms], [< 20 ms],
         [Range tipico], [300-500 m], [500-1000 m],
         [Mobilità], [Fino a 250 km/h], [Fino a 500 km/h],
         [Infrastruttura], [Non necessaria], [Opzionale],
