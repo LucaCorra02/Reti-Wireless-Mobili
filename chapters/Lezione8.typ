@@ -52,30 +52,28 @@ EDCA definisce *quattro categorie di accesso* (Access Categories) che mappano di
   )
 ]
 
-=== Parametri EDCA
+I quattro parametri che definiscono il comportamento di ciascuna *Access Category* sono:
 
-I quattro parametri che definiscono il comportamento di ciascuna Access Category sono:
-
-/ *CW_min (Contention Window Minimum)*: Valore minimo della finestra di contesa. Determina il limite inferiore del random backoff. Valori più bassi significano tempi di attesa minori e quindi maggiore priorità.
+/ *CW_min (Contention Window Minimum)*: Valore minimo della finestra di contesa. Determina il *limite inferiore* del *random backoff*. Valori più bassi significano tempi di attesa minori e quindi maggiore priorità.
 
 / *CW_max (Contention Window Maximum)*: Valore massimo della finestra di contesa dopo collisioni multiple. Ad ogni collisione, la CW viene raddoppiata fino a raggiungere CW_max. 
 
 / *AIFSN (Arbitration Inter-Frame Space Number)*: Numero di slot time da attendere dopo SIFS prima di poter accedere al canale. La formula è:
-  $ "AIFS" = "SIFS" + "AIFSN" times "SlotTime" $
-  Valori più alti di AIFSN significano priorità più bassa.
+  $ "AIFSN" = "SIFS" + "N" "SlotTime" $
+  *Valori* più *alti* di AIFSN significano *priorità più bassa*.
 
-/ *TXOP Limit (Transmission Opportunity)*: Tempo massimo (in microsecondi) per cui una stazione può mantenere il controllo del canale dopo averlo ottenuto. Un valore di 0 significa che si può trasmettere un solo frame.
+/ *TXOP Limit (Transmission Opportunity)*: Tempo massimo (in microsecondi) per cui una stazione può mantenere il *controllo del canale* dopo averlo ottenuto. Un valore di 0 significa che si può trasmettere un solo frame.
 
 #esempio[
 *Traffico Voice (AC_VO)*: 
-- CW_min = 3, CW_max = 7: finestre molto piccole per accesso rapido
-- AIFSN = 2: attesa minima dopo SIFS
-- TXOP = 1.5 ms: può trasmettere multiple frame voce consecutive
+- CW_min = $3$, CW_max = $7$: finestre molto piccole per accesso rapido
+- AIFSN = $2$: attesa minima dopo SIFS
+- TXOP = $1.5 "ms"$: può trasmettere più frame voce consecutivi
 
 *Traffico Background (AC_BK)*:
-- CW_min = 15, CW_max = 1023: finestre grandi, attesa più lunga
-- AIFSN = 7: deve attendere più a lungo prima di tentare l'accesso
-- TXOP = 0: trasmette un solo frame alla volta
+- CW_min = $15$, CW_max = $1023$: finestre grandi, attesa più lunga
+- AIFSN = $7$: deve attendere più a lungo prima di tentare l'accesso
+- TXOP = $0$: trasmette un solo frame alla volta
 ]
 
 === Meccanismo di Contesa Interno ed Esterno
@@ -122,7 +120,7 @@ Quando una stazione ha traffico appartenente a diverse Access Categories, EDCA i
       content((x-ext + 1, 2), text(weight: "bold", size: 0.8em)[Contesa\ Esterna])
 
       line((x-int + 2, 2), (x-ext, 2), mark: (end: ">"), stroke: (thickness: 1.5pt))
-      content((x-int + 2.75, 2.5), text(size: 0.7em)[Vincitore])
+      content((x-int + 2.70, 2.7), text(size: 0.7em)[Vincitore])
 
       // To channel
       let x-ch = x-ext + 3
@@ -135,21 +133,19 @@ Quando una stazione ha traffico appartenente a diverse Access Categories, EDCA i
       content((x-int + 1, 0.5), text(size: 0.7em)[AIFSN e CW\ per AC])
       content((x-ext + 1, 0.5), text(size: 0.7em)[CSMA/CA\ Standard])
     }),
-    caption: [Meccanismo di contesa interno ed esterno in EDCA]
+    caption: [Meccanismo di contesa in EDCA]
   )
 ]
 
-1. *Contesa Interna*: All'interno della stazione, le diverse AC competono tra loro utilizzando i rispettivi parametri EDCA (AIFSN, CW_min, CW_max). La AC con priorità più alta (AIFSN più basso) vince tipicamente la contesa interna.
+1. *Contesa Interna* (Contesa intra-stazione): All'interno della stazione, le diverse AC competono tra loro utilizzando i rispettivi parametri _EDCA_ (AIFSN, CW_min, CW_max). La *AC con priorità più alta* (_AIFSN_ più basso) vince tipicamente la contesa interna.
 
-2. *Contesa Esterna*: La AC vincente della contesa interna compete poi con le trasmissioni di altre stazioni sul canale fisico utilizzando CSMA/CA standard.
+2. *Contesa Esterna* (Contesa tra stazioni): La AC vincente della contesa interna compete poi con le trasmissioni di altre stazioni sul *canale fisico* utilizzando CSMA/CA standard.
 
 #nota[
-In caso di collisione interna (due AC pronte simultaneamente), vince sempre la AC con priorità più alta. La AC con priorità più bassa deve comportarsi come se avesse subito una collisione esterna (raddoppia la CW).
+  In caso di collisione interna (due AC pronte simultaneamente), vince sempre la AC (acces category) con priorità più alta. La AC con priorità più bassa deve comportarsi come se avesse subito una collisione esterna (raddoppia la *CW*).
 ]
 
-=== Differenziazione del Servizio
-
-La combinazione intelligente dei parametri EDCA permette una differenziazione efficace:
+La combinazione intelligente dei parametri EDCA permette una *differenziazione efficace* del traffico, garantendo certi livelli di QoS:
 
 #align(center)[
   #figure(
@@ -212,8 +208,8 @@ La combinazione intelligente dei parametri EDCA permette una differenziazione ef
   )
 ]
 
-#informalmente[
-Il sistema EDCA garantisce che non ci sia *starvation*: anche il traffico Background (AC_BK) prima o poi accederà al canale. Tuttavia, in condizioni di carico elevato, le AC a bassa priorità subiranno ritardi significativi, come desiderato per garantire QoS ai servizi real-time.
+#attenzione()[
+  Il sistema EDCA garantisce che *non* ci sia *starvation*: anche il traffico _Background_ (AC_BK) prima o poi accederà al canale. Tuttavia, in condizioni di carico elevato, le AC a bassa priorità subiranno ritardi significativi, per garantire QoS ai servizi real-time.
 ]
 
 === Configurazione a Livello MAC
@@ -226,23 +222,21 @@ I servizi QoS vengono richiesti a *livello MAC* in base alla configurazione dell
 - *Download, backup* → AC_BK (priorità minima)
 
 #attenzione[
-La configurazione EDCA deve essere coordinata tra AP e stazioni. L'AP comunica i parametri EDCA nei beacon frame. Configurazioni errate o aggressive (es. tutti i client che usano AC_VO) possono degradare le performance complessive della rete.
+  La configurazione EDCA deve essere coordinata tra Access Point e stazioni. L'AP comunica i parametri EDCA nei beacon frame. Configurazioni errate o aggressive (es. tutti i client che usano AC_VO) possono degradare le performance  complessive della rete.
 ]
 
 == Applicazioni Veicolari con 802.11p
 
-=== Caratteristiche del WiFi Veicolare
+*IEEE 802.11p* è progettato per comunicazioni veicolari *V2V* (Vehicle-to-Vehicle) e *V2I* (Vehicle-to-Infrastructure). Le caratteristiche operative principali sono:
 
-Come discusso nella Lezione 7, *IEEE 802.11p* è progettato per comunicazioni veicolari V2V (Vehicle-to-Vehicle) e V2I (Vehicle-to-Infrastructure). Le caratteristiche operative principali sono:
-
-- *Assenza di Access Point*: Le reti sono completamente ad-hoc, i veicoli comunicano direttamente
+- *Assenza di Access Point*: Le reti sono completamente ad-hoc, i *veicoli comunicano direttamente*
 - *Topologia dinamica*: I vicini cambiano continuamente (velocità relativa fino a 200+ km/h)
 - *Nessuna associazione*: Eliminato il processo di beacon/associazione per ridurre la latenza
-- *Comunicazione asincrona*: Eventi imprevedibili richiedono radio sempre in ascolto
+- *Comunicazione asincrona*: *Eventi imprevedibili* richiedono radio sempre in ascolto
 - *Messaggi di notifica*: Focus su BSM (Basic Safety Messages) periodici piuttosto che flussi dati continui
 
-#nota[
-In 802.11p non vengono utilizzati ACK per i messaggi broadcast (BSM). Questo riduce l'overhead ma richiede ripetizione periodica dei messaggi (tipicamente 10 Hz) per garantire la consegna.
+#attenzione[
+In 802.11p *non* vengono *utilizzati ACK* per i messaggi broadcast (BSM). Questo riduce l'overhead ma richiede ripetizione periodica dei messaggi (tipicamente 10 Hz) per garantire la consegna.
 ]
 
 === Gestione Multi-Canale in 802.11p
@@ -264,7 +258,7 @@ Ogni stazione implementa *contesa EDCA* sia per il CCH che per gli SCH, con code
       let h = 0.8
       
       // Left side - Internal queuing
-      content((1, 5.5), text(weight: "bold", size: 0.9em)[Code Interne])
+      content((1, 5.8), text(weight: "bold", size: 0.9em)[Code Interne])
       
       rect((0, 4.5), (w, 4.5 + h), ..box-style, fill: rgb("#C00000"))
       content((w/2, 4.5 + h/2), text(fill: white, size: 0.75em, weight: "bold")[Safety])
@@ -281,7 +275,7 @@ Ogni stazione implementa *contesa EDCA* sia per il CCH che per gli SCH, con code
       // Internal contention
       let x-cont = 3.5
       rect((x-cont, 3), (x-cont + 1.8, 4.2), ..box-style, fill: rgb("#D9E2F3"))
-      content((x-cont + 0.9, 3.6), text(size: 0.75em, weight: "bold")[Contesa\ Interna\ EDCA])
+      content((x-cont + 0.9, 3.6), text(size: 0.75em, weight: "bold")[Contesa\ Interna])
 
       for i in range(4) {
         let y-from = 4.5 - i + h/2
@@ -291,29 +285,29 @@ Ogni stazione implementa *contesa EDCA* sia per il CCH che per gli SCH, con code
       // Channel selection
       let x-sel = x-cont + 3
       rect((x-sel, 4.5), (x-sel + 1.5, 5 + h), ..box-style, fill: rgb("#E74C3C"))
-      content((x-sel + 0.75, 4.5 + h/2), text(fill: white, size: 0.75em, weight: "bold")[CCH\ (178)])
+      content((x-sel + 0.75, 4.7 + h/2), text(fill: white, size: 0.75em, weight: "bold")[CCH\ (178)])
       
-      rect((x-sel, 2.5), (x-sel + 1.5, 2.5 + h), ..box-style, fill: rgb("#3498DB"))
-      content((x-sel + 0.75, 2.5 + h/2), text(fill: white, size: 0.75em, weight: "bold")[SCH\ (172-184)])
+      rect((x-sel, 2.5), (x-sel + 1.5, 3.2 + h), ..box-style, fill: rgb("#3498DB"))
+      content((x-sel + 0.7, 2.9 + h/2), text(fill: white, size: 0.75em, weight: "bold")[SCH])
 
-      line((x-cont + 1.8, 3.6), (x-sel, 4.9), mark: (end: ">"), stroke: (thickness: 1pt))
-      content((x-cont + 2.5, 4.3), anchor: "south", text(size: 0.65em)[Alta\ priorità])
+      line((x-cont + 1.8, 3.6), (x-sel, 4.9), mark: (end: ">"), stroke: (thickness: 1pt), fill: rgb("#df1212"))
+      content((x-cont + 1.8, 4.6), anchor: "south", text(size: 0.65em)[Alta\ priorità])
       
-      line((x-cont + 1.8, 3.6), (x-sel, 2.9), mark: (end: ">"), stroke: (thickness: 1pt))
-      content((x-cont + 2.5, 3.2), anchor: "north", text(size: 0.65em)[Bassa\ priorità])
+      line((x-cont + 1.8, 3.6), (x-sel, 2.9), mark: (end: ">"), stroke: (thickness: 1pt), fill: rgb("#473ce7"))
+      content((x-cont + 2.0, 2.7), anchor: "north", text(size: 0.65em)[Bassa\ priorità])
 
       // External contention
       let x-ext = x-sel + 2.5
-      rect((x-ext, 3), (x-ext + 2, 4.2), ..box-style, fill: rgb("#E7E6E6"))
-      content((x-ext + 1, 3.6), text(size: 0.75em, weight: "bold")[Contesa\ Esterna\ (CSMA/CA)])
+      rect((x-ext, 2), (x-ext + 2.2, 5.2), ..box-style, fill: rgb("#E7E6E6"))
+      content((x-ext + 1.1, 3.6), text(size: 0.70em, weight: "bold")[Contesa\ Esterna\ CSMA/CA])
 
       line((x-sel + 1.5, 4.9), (x-ext, 3.6), mark: (end: ">"), stroke: (thickness: 1pt))
       line((x-sel + 1.5, 2.9), (x-ext, 3.6), mark: (end: ">"), stroke: (thickness: 1pt))
 
       // Physical channel
       let x-phy = x-ext + 3
-      rect((x-phy, 3), (x-phy + 1.5, 4.2), ..box-style, fill: rgb("#4472C4"))
-      content((x-phy + 0.75, 3.6), text(fill: white, size: 0.75em, weight: "bold")[Canale\ Wireless])
+      rect((x-phy, 2.5), (x-phy + 1.8, 4.5), ..box-style, fill: rgb("#4472C4"))
+      content((x-phy + 0.95, 3.6), text(fill: white, size: 0.75em, weight: "bold")[Canale\ Wireless])
 
       line((x-ext + 2, 3.6), (x-phy, 3.6), mark: (end: ">"), stroke: (thickness: 1.2pt))
     }),
