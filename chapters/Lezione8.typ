@@ -545,16 +545,42 @@ Mentre la RREQ si propaga, ogni nodo intermedio costruisce il *percorso inverso*
 
 == Formato RREP (Route Reply)
 
+Il messaggio RREP contiene i seguenti campi:
+
+#align(center)[
+  #figure(
+    table(
+      columns: (2fr, 1fr, 4fr),
+      align: center + horizon,
+      [*Campo*], [*Bit*], [*Significato*],
+      [_Type_], [8], [Tipo di messaggio (2 = RREP)],
+      [_Flags_], [5], [R, A (Repair, Acknowledgment Required)],
+      [_Reserved_], [9], [Riservato],
+      [_Prefix Size_], [5], [Lunghezza prefisso di rete (per subnet routing)],
+      [_Hop Count_], [8], [Numero di hop dalla destinazione (incrementato ad ogni inoltro)],
+      [_Destination IP_], [32], [Indirizzo IP della destinazione originale della RREQ],
+      [_Destination Seq_ \#], [32], [Sequence number della destinazione],
+      [_Originator IP_], [32], [Indirizzo IP del nodo che ha iniziato la RREQ],
+      [_Lifetime_], [32], [Tempo di validità della route (millisecondi)],
+    ),
+    caption: [Formato del messaggio RREP]
+  )
+]
+
+*Differenze chiave rispetto a RREQ*:
+- Non contiene RREQ ID (non necessario per la risposta essendo unicast)
+- Include *Lifetime*: indica per quanto tempo la route è valida
+- Hop Count parte da 0 e viene incrementato ad ogni nodo intermedio
+- Flag A: se settato, richiede ACK per confermare la ricezione della RREP
+
+La RREP viene trasmessa in *unicast lungo il percorso inverso* creato dalla RREQ.
+
 === Generazione RREP (Route Reply)
 
 Una RREP viene generata quando:
 1. La RREQ raggiunge la destinazione finale
-2. Un nodo intermedio ha una route valida e sufficientemente fresca verso la destinazione (se flag D=0)
-
-*Condizione di freschezza* per risposta intermedia:
+2. Un nodo intermedio ha una route valida e sufficientemente fresca verso la destinazione (se flag $D=0$). *Condizione di freschezza* per risposta intermedia:
 $ "Destination_SN"_"table" >= "Destination_SN"_"RREQ" $
-
-La RREP viene trasmessa in *unicast lungo il percorso inverso* creato dalla RREQ.
 
 #align(center)[
   #figure(
@@ -601,6 +627,16 @@ La RREP viene trasmessa in *unicast lungo il percorso inverso* creato dalla RREQ
   )
 ]
 
+\ *Rep generata dalla destinazione*
+
+
+
+\ *Rep generata da nodo intermedio*
+
+
+
+
+
 Ogni nodo intermedio che inoltra la RREP:
 - Crea/aggiorna la route forward verso la destinazione
 - Incrementa Hop Count nella RREP
@@ -614,7 +650,7 @@ Ogni nodo intermedio che inoltra la RREP:
 Solo la "migliore" RREQ viene inoltrata e utilizzata per costruire il percorso inverso.
 ]
 
-=== Route Error (RERR)
+== Route Error (RERR)
 
 Quando un link si rompe (es. un nodo si muove fuori range), i nodi adiacenti rilevano il fallimento e inviano RERR per invalidare tutte le route che utilizzavano quel link.
 
