@@ -12,42 +12,15 @@ EDCA definisce *quattro categorie di accesso* (Access Categories) che mappano di
 
 #align(center)[
   #figure(
-    {
-      set text(size: 0.75em)
-      table(
-        columns: (2fr, 1fr, 1fr, 1fr, 1.5fr, 2fr),
-        align: center + horizon,
-        fill: (col, row) => if row == 0 { 
-          rgb("#4472C4") 
-        } else if row == 1 {
-          rgb("#C00000")
-        } else if row == 2 {
-          rgb("#FFC000")
-        } else if row == 3 {
-          rgb("#70AD47")
-        } else {
-          rgb("#A6A6A6")
-        },
-        text(fill: white, weight: "bold")[Access\ Category],
-        text(fill: white, weight: "bold")[CW_min],
-        text(fill: white, weight: "bold")[CW_max],
-        text(fill: white, weight: "bold")[AIFSN],
-        text(fill: white, weight: "bold")[TXOP\ Limit],
-        text(fill: white, weight: "bold")[Tipo di\ Traffico],
-        
-        text(fill: white, weight: "bold")[AC_VO\ (Voice)], 
-        [3], [7], [2], [1.5 ms], [VoIP, telefonia],
-        
-        text(fill: white, weight: "bold")[AC_VI\ (Video)], 
-        [7], [15], [2], [3.0 ms], [Streaming video],
-        
-        text(fill: white, weight: "bold")[AC_BE\ (Best Effort)], 
-        [15], [1023], [3], [0], [Web, email],
-        
-        text(fill: white, weight: "bold")[AC_BK\ (Background)], 
-        [15], [1023], [7], [0], [Trasferimenti file],
-      )
-    },
+    table(
+      columns: (2fr, 1fr, 1fr, 1fr, 1.5fr, 2fr),
+      align: center + horizon,
+      [*Access Category*], [*CW_min*], [*CW_max*], [*AIFSN*], [*TXOP Limit*], [*Tipo di Traffico*],
+      [AC_VO (Voice)], [3], [7], [2], [1.5 ms], [VoIP, telefonia],
+      [AC_VI (Video)], [7], [15], [2], [3.0 ms], [Streaming video],
+      [AC_BE (Best Effort)], [15], [1023], [3], [0], [Web, email],
+      [AC_BK (Background)], [15], [1023], [7], [0], [Trasferimenti file],
+    ),
     caption: [Parametri EDCA per le quattro Access Categories]
   )
 ]
@@ -225,7 +198,7 @@ I servizi QoS vengono richiesti a *livello MAC* in base alla configurazione dell
   La configurazione EDCA deve essere coordinata tra Access Point e stazioni. L'AP comunica i parametri EDCA nei beacon frame. Configurazioni errate o aggressive (es. tutti i client che usano AC_VO) possono degradare le performance  complessive della rete.
 ]
 
-== Applicazioni Veicolari con 802.11p
+== Applicazioni Veicolari con 802.11p (Non in esame)
 
 *IEEE 802.11p* è progettato per comunicazioni veicolari *V2V* (Vehicle-to-Vehicle) e *V2I* (Vehicle-to-Infrastructure). Le caratteristiche operative principali sono:
 
@@ -334,190 +307,168 @@ L'obbiettivo principlae è favorire il *platooning*. Tecnica di guida cooperativ
 
 = AODV - Ad hoc On-Demand Distance Vector Routing
 
-Il protocollo *AODV* (RFC 3561) è un protocollo di routing reattivo progettato per *reti wireless ad-hoc*, dove ogni nodo può agire come router senza infrastruttura centralizzata.
+Il protocollo *AODV* (RFC 3561) è un protocollo di routing reattivo progettato per *reti wireless ad-hoc*, dove ogni nodo può agire come router senza infrastruttura centralizzata. 
+Principali caratteristiche:
+/ *Reti ad-hoc*: Ogni nodo può instradare pacchetti per altri nodi (non sono presenti router dedicati o Access Point), creando una *topologia mesh* dinamica. I nodi vicini sono quelli situati entro raggio di trasmissione wireless. Inoltre, i nodi possono essere mobili, causando frequenti *cambiamenti nella topologia di rete*.
 
-=== Caratteristiche Generali
+/ *On-demand (Reattivo)*: Le rotte vengono create solo quando necessario, riducendo l'overhead in reti con traffico sporadico
 
-/ *Reti ad-hoc*: Ogni nodo può instradare pacchetti per altri nodi, creando una topologia mesh dinamica
-
-/ *On-demand (Reattivo)*: Le route vengono create solo quando necessario, riducendo l'overhead in reti con traffico sporadico
-
-/ *Stateless*: Lo stato delle route è effimero, mantenuto solo finché necessario (con timeout)
+/ *Stateless*: Lo stato delle rotte è effimero. Esso viene mantenuto solo finché necessario (con timeout)
 
 / *Distance Vector*: Ogni nodo mantiene tabelle di routing indicando la direzione (next hop) e la distanza (hop count) verso le destinazioni
 
-=== Obiettivi di Progettazione
+== Obiettivi di Progettazione
 
 - *Gestire la dinamicità*: Adattarsi a topologie che cambiano frequentemente
-- *Auto-inizializzazione*: Nessuna configurazione manuale, scoperta automatica delle route
+- *Auto-inizializzazione*: Nessuna configurazione manuale, scoperta automatica delle rotte
 - *Loop-free*: Prevenire cicli di routing attraverso numeri di sequenza
-- *Convergenza rapida*: Creare route velocemente quando richiesto
+- *Convergenza rapida*: Creare rotte velocemente quando richiesto
 - *Robustezza*: Rilevare e reagire rapidamente a rotture di link
 
-=== Architettura e Messaggi di Controllo
+== Architettura e Messaggi di Controllo
 
-AODV definisce tre tipi principali di messaggi di controllo, trasmessi come pacchetti UDP sulla porta 654:
+AODV definisce tre tipi principali di *messaggi di controllo*, trasmessi come pacchetti *UDP* sulla porta 654:
 
-#align(center)[
-  #figure(
-    cetz.canvas(length: 0.7cm, {
-      import cetz.draw: *
+/ *RREQ (Route Request)*: Trasmesso in *broadcast* (_controllato_, per evitare loop) quando un nodo cerca un percorso verso una destinazione. Ogni nodo intermedio registra il *percorso inverso* per permettere la risposta.
 
-      let box-style = (stroke: black, radius: 0.2)
-      let w = 3
-      let h = 1.2
+/ *RREP (Route Reply)*: Trasmesso in *unicast* dalla destinazione (o da un nodo intermedio con informazioni _fresche_) verso l'originator, sfruttando il percorso inverso creato dalla RREQ.
 
-      // RREQ
-      rect((0, 4), (w, 4 + h), ..box-style, fill: rgb("#4472C4"))
-      content((w/2, 4 + h/2), text(fill: white, weight: "bold", size: 0.85em)[RREQ\ Route Request])
-      content((w/2, 3.3), text(size: 0.7em)[Broadcast\ Ricerca percorso])
-
-      // RREP
-      rect((4.5, 4), (4.5 + w, 4 + h), ..box-style, fill: rgb("#70AD47"))
-      content((4.5 + w/2, 4 + h/2), text(fill: white, weight: "bold", size: 0.85em)[RREP\ Route Reply])
-      content((4.5 + w/2, 3.3), text(size: 0.7em)[Unicast\ Conferma percorso])
-
-      // RERR
-      rect((9, 4), (9 + w, 4 + h), ..box-style, fill: rgb("#E74C3C"))
-      content((9 + w/2, 4 + h/2), text(fill: white, weight: "bold", size: 0.85em)[RERR\ Route Error])
-      content((9 + w/2, 3.3), text(size: 0.7em)[Unicast/Broadcast\ Errore link])
-
-      // Data packets
-      rect((4.5, 1), (4.5 + w, 1 + h), ..box-style, fill: rgb("#FFC000"))
-      content((4.5 + w/2, 1 + h/2), text(fill: white, weight: "bold", size: 0.85em)[DATA\ Pacchetti Dati])
-      content((4.5 + w/2, 0.3), text(size: 0.7em)[Protocollo applicazione])
-
-      // Legend
-      content((6, 6.5), text(weight: "bold")[Livello di trasporto])
-      content((2, 6), text(size: 0.7em)[Messaggi controllo: UDP porta 654])
-      content((7.5, 6), text(size: 0.7em)[Dati: protocollo applicativo])
-    }),
-    caption: [Messaggi di controllo AODV e pacchetti dati]
-  )
-]
-
-/ *RREQ (Route Request)*: Trasmesso in broadcast (IP 255.255.255.255) quando un nodo cerca un percorso verso una destinazione. Ogni nodo intermedio registra il percorso inverso per permettere la risposta.
-
-/ *RREP (Route Reply)*: Trasmesso in unicast dalla destinazione (o da un nodo intermedio con informazioni fresche) verso l'originator lungo il percorso inverso creato dalla RREQ.
-
-/ *RERR (Route Error)*: Trasmesso quando un link si rompe, invalidando le route che lo utilizzano.
+/ *RERR (Route Error)*: Trasmesso quando un *link* si *guasta*, invalidando le rotte che lo utilizzano.
 
 #nota[
-I messaggi di controllo AODV viaggiano a livello IP come pacchetti UDP porta 654. I pacchetti dati invece seguono il normale stack protocollare dell'applicazione. Entrambi utilizzano come base i pacchetti IP con indirizzi sorgente e destinazione.
+  I *messaggi di controllo* AODV viaggiano a livello Trasporto come pacchetti *UDP* porta 654.
+  
+  I pacchetti dati invece seguono il normale stack protocollare dell'applicazione. Entrambi utilizzano come base i pacchetti IP con indirizzi sorgente e destinazione.
 ]
 
-=== Tabella di Routing
+== Tabella di Routing
 
-Ogni nodo AODV mantiene una tabella di routing con le seguenti informazioni per ogni destinazione:
-/*
+Ogni nodo AODV mantiene una *tabella di routing* con le seguenti informazioni per ogni destinazione:
+
 #align(center)[
   #figure(
-    {
-      set text(size: 0.75em)
-      table(
-        columns: (2.5fr, 4fr),
-        align: (left, left),
-        fill: (col, row) => if row == 0 { rgb("#4472C4") } else if calc.rem(row, 2) == 1 { rgb("#D9E2F3") } else { white },
-        stroke: (x, y) => (
-          left: 0.5pt,
-          right: 0.5pt,
-          top: if y == 0 { 1pt } else { 0.5pt },
-          bottom: 1pt,
-        ),
-        text(fill: white, weight: "bold")[Campo], 
-        text(fill: white, weight: "bold")[Descrizione],
-        
-        [Destination IP], [Indirizzo IP della destinazione],
-        [Destination Sequence #], [Numero di sequenza della destinazione (freschezza)],
-        [Valid Dest Seq Flag], [Indica se il sequence number è valido],
-        [Route Status], [Valido, Invalido, Sospeso (in riparazione)],
-        [Network Interface], [Interfaccia di rete da utilizzare],
-        [Hop Count], [Numero di hop verso la destinazione],
-        [Next Hop], [Prossimo nodo nel percorso],
-        [Lifetime], [Tempo di scadenza della entry (timeout)],
-      )
-    },
+    table(
+      columns: (2.5fr, 4fr),
+      align: (left, left),
+      [*Campo*], [*Descrizione*],
+      [_Destination IP_], [Indirizzo IP della destinazione],
+      [_Destination Sequence_ \#], [Numero di sequenza della destinazione (freschezza)],
+      [_Valid Dest Seq Flag_], [Indica se il sequence number è valido],
+      [_Route Status_], [Valido, Invalido, Sospeso (in riparazione)],
+      [_Network Interface_], [Interfaccia di rete da utilizzare],
+      [_Hop Count_], [Numero di hop verso la destinazione],
+      [_Next Hop_], [Prossimo nodo nel percorso],
+      [_Lifetime_], [Tempo di scadenza della entry (timeout)],
+      [_Precursor List_], [Lista di vicini che utilizzano questo nodo come next hop per raggiungere la destinazione],
+    ),
     caption: [Struttura della entry nella tabella di routing AODV]
   )
-]*/
+]
 
-=== Sequence Number
+== Sequence Number
 
-Il *Sequence Number* è il meccanismo fondamentale di AODV per garantire loop-freedom e freschezza delle informazioni:
+Il *Sequence Number* è il meccanismo fondamentale di AODV per *garantire loop-freedom* e _freschezza_ della entry:
 
-/ *Incremento*: Il sequence number di un nodo viene incrementato solo dal nodo stesso in due casi:
+/ *Incremento*: Il sequence number di un nodo viene *incrementato solo dal nodo stesso* in due casi:
   1. Quando inizia una nuova ricerca di percorso (RREQ)
   2. Quando risponde a una RREQ come destinazione (RREP)
 
-/ *Aggiornamento*: Un nodo può aggiornare il sequence number di una entry nella sua tabella solo se:
-  - Riceve informazioni più fresche (SN maggiore) per quella destinazione
-  - È il nodo stesso (destinazione)
-  - La entry scade (timeout)
+  #nota()[
+    L'incrimento del Sequence Number prima di eseguire una RREQ serve per prevenire conflitti con i percorsi inversi, stabiliti dalla RREQ precedente.
+  ]
 
-/ *Confronto*: Quando si confrontano due route per la stessa destinazione:
+/ *Aggiornamento*: Un nodo può aggiornare il sequence number di una entry nella sua tabella solo se:
+  - Riceve *informazioni più fresche* (SN maggiore) per quella destinazione
+  - È il *nodo stesso* (aggiorna la propria entry nella sua tabella di routing) e offre una nuovo percorso per se stesso)
+  - La entry scade (*timeout*)
+
+#attenzione()[
+  L'*incremento* avviene trattando il sequence number come un *unsigned integer* a $32 "bit"$, quindi dopo $2^32-1$ ritorna a $0$. 
+
+  Il *confronto* tra sequence number avviene come se fossero *unsigned* (per gestrire overflow $2^31$), quindi se:
+  $
+    "entry_SN" - "altro_SN" > 0 -> "entry_SN è l'informazione più fresca" 
+  $
+  #esempio()[
+    - Se $"entry_SN" = 10$ e $"altro_SN" = 5$, allora $"entry_SN"$ è più fresco.
+
+    - Se $"entry_SN" = 2$ e $"altro_SN" = 2^31$, allora si verifica un underflow:  $2 - (2^32-1) = 3 > 0$, quindi anche in questo caso "entry_SN" è più fresco.
+  ]
+]
+
+Quando si confrontano due rotte per la stessa destinazione, se:
   $ "SN"_1 > "SN"_2 => "Route"_1 "è più fresca" $
   $ "SN"_1 = "SN"_2 => "confronta hop count" ("minore è meglio") $
 
 #nota[
-Il sequence number cresce monotonicamente e garantisce che route loops non si formino, poiché solo informazioni più fresche (SN maggiore) vengono accettate.
+  Il sequence number *cresce monotonicamente* e garantisce che non si formino loop, poiché solo informazioni più fresche (SN maggiore) vengono accettate.
 ]
 
-=== Formato RREQ (Route Request)
+== Formato RREQ (Route Request)
 
 Il messaggio RREQ contiene i seguenti campi principali:
-/*
+
 #align(center)[
   #figure(
-    {
-      set text(size: 0.75em)
-      table(
-        columns: (2fr, 1fr, 4fr),
-        align: center + horizon,
-        fill: (col, row) => if row == 0 { rgb("#4472C4") } else if calc.rem(row, 2) == 1 { rgb("#D9E2F3") } else { white },
-        text(fill: white, weight: "bold")[Campo],
-        text(fill: white, weight: "bold")[Bit],
-        text(fill: white, weight: "bold")[Significato],
-        
-        [Type], [8], [Tipo di messaggio (1 = RREQ)],
-        [Flags], [5], [J, R, *G*, *D*, *U*],
-        [Reserved], [11], [Riservato],
-        [Hop Count], [8], [Numero di hop dalla origine],
-        [RREQ ID], [32], [Identificatore univoco della richiesta],
-        [Destination IP], [32], [Indirizzo IP della destinazione cercata],
-        [Destination Seq #], [32], [Ultimo SN noto della destinazione],
-        [Originator IP], [32], [Indirizzo IP del nodo origine],
-        [Originator Seq #], [32], [Sequence number del nodo origine],
-      )
-    },
+    table(
+      columns: (2fr, 1fr, 4fr),
+      align: center + horizon,
+      [*Campo*], [*Bit*], [*Significato*],
+      [_Type_], [8], [Tipo di messaggio (1 = RREQ)],
+      [_Flags_], [5], [J, R, G, D, U],
+      [_Reserved_], [11], [Riservato],
+      [_Hop Count_], [8], [Numero di hop dall'originator],
+      [_RREQ ID_], [32], [Identificatore univoco della richiesta],
+      [_Destination IP_], [32], [Indirizzo IP della destinazione cercata (broadcast per RREQ)],
+      [_Destination Seq_ \#], [32], [Ultimo SN noto della destinazione],
+      [_Originator IP_], [32], [Indirizzo IP del nodo origine],
+      [_Originator Seq_ \#], [32], [Sequence number del nodo origine],
+    ),
     caption: [Formato del messaggio RREQ]
   )
-]*/
-
+]
 *Flag importanti*:
-- *G (Gratuitous RREP)*: Se settato, la destinazione invia anche una RREP all'indietro per creare una route bidirezionale
+- *G (Gratuitous RREP)*: Se settato, il nodo che risponde con una RREP all'origine, invia anche una *RREP gratuita alla destinazione*, informandola della creazione del percorso inverso verso l'origine (utile per la scoperta bidirezionale)
+
 - *D (Destination Only)*: Solo la destinazione può rispondere, i nodi intermedi non possono inviare RREP anche se conoscono la route
+
 - *U (Unknown Sequence Number)*: L'origine non conosce il SN della destinazione
 
 === Creazione e Propagazione RREQ
 
-==== Quando Creare una RREQ
+Un nodo crea una RREQ in due casi:
+- *Destinazione sconosciuta*: Non ha una route valida verso la destinazione 
+- Destinazione conosciuta, ma *rotta scaduta* (lifetime = 0)
+- La *rotta* è stata marcata come *invalida* (RERR ricevuto)
 
-Un nodo crea una RREQ quando:
-- Non ha una route valida verso la destinazione
-- La route esistente è scaduta (lifetime = 0)
-- La route è stata marcata come invalida (RERR ricevuto)
+Gli step per creare una RREQ sono:
+1. L'originator incrementa il proprio SN: $"Originator_SN"++$ e il numero della RREQ: $"RREQ_ID"++$
 
-==== Step di Creazione
+2. Se la destinazione è sconosciuta, imposta flag $U = 1$
 
-1. Incrementa il proprio SN: $"Originator_SN"++$
-2. Incrementa RREQ_ID: $"RREQ_ID"++$
-3. Se la destinazione è sconosciuta, imposta flag $U = 1$
-4. Memorizza la coppia $("Originator_IP", "RREQ_ID")$ per rilevare duplicati
-5. Imposta il TTL in base alla strategia di ricerca
+3. Viene memorizzata la coppia $("Originator_IP", "RREQ_ID")$ per *rilevare duplicati*. L'informazione viene mantenuta per un tempo detto *"PATH_DISCOVERY_TIME"*
 
-==== Expanding Ring Search
+4. Imposta il TTL in base alla strategia di ricerca
 
-Per ridurre l'overhead, AODV utilizza la tecnica *Expanding Ring Search*:
+I *parametri di rete* (impostati dal protocolo) sono:
+- *PATH_DISCOVERY_TIME* $= 2 * "NET_TRAVERSAL_TIME"$: Tempo per cui la coppia $("Originator_IP", "RREQ_ID")$ è considerata valida (es. 3000 ms)
+
+- *NET_TRAVERSAL_TIME* $=2*"NODE_TRAVERSAL_TIME" * "DIAMETER"$: Tempo massimo per la RREQ di attraversare la rete. Al massimo è $2$ volte il diametro della rete (andata e ritorno)
+
+- *NODE_TRAVERSAL_TIME*: Tempo stimato per attraversare un nodo
+
+=== Expanding Ring Search
+
+Per ridurre l'overhead (evitare di diffondere RREQ in tutta la rete), _AODV_ utilizza la tecnica *Expanding Ring Search*.
+
+I Vantaggi offerti sono:
+  - *Riduce overhead* se la destinazione è vicina (caso comune)
+  - *Evita flooding* completo se non necessario
+
+#informalmente()[
+  L'originator inizia con un TTL basso (es. 2) per cercare la destinazione nei nodi vicini. Se non riceve risposta entro un *timeout*, incrementa il TTL e ritrasmette la RREQ, *espandendo progressivamente l'area di ricerca* fino a raggiungere un TTL massimo.
+]
+
 
 #align(center)[
   #figure(
@@ -537,14 +488,9 @@ Per ridurre l'overhead, AODV utilizza la tecnica *Expanding Ring Search*:
       }
 
       // Timer indicators
-      line((8, 5), (10, 5), mark: (end: ">"), stroke: (thickness: 1pt))
+      line((6, 5), (10, 5), mark: (end: ">"), stroke: (thickness: 1pt))
       content((9, 5.4), text(size: 0.7em)[Tempo])
       
-      content((9, 4.5), text(size: 0.65em)[1° tentativo])
-      content((9, 3.8), text(size: 0.65em)[Se fallisce...])
-      content((9, 3.1), text(size: 0.65em)[2° tentativo])
-      content((9, 2.4), text(size: 0.65em)[Se fallisce...])
-      content((9, 1.7), text(size: 0.65em)[3° tentativo])
     }),
     caption: [Expanding Ring Search: ricerca progressiva con TTL crescente]
   )
@@ -552,18 +498,19 @@ Per ridurre l'overhead, AODV utilizza la tecnica *Expanding Ring Search*:
 
 *Parametri*:
 - $"TTL"_"start"$: TTL iniziale basso (es. 2), assumendo destinazione vicina
-- $"TTL"_"increment"$: Incremento ad ogni fallimento (es. +2)
-- $"TTL"_"net_diameter"$: TTL massimo (es. 35), diametro massimo della rete
+- $"TTL"_"increment"$: Incremento ad ogni fallimento (dopo timeout)
+- $"TTL"_"net_diameter"$: *TTL massimo*, diametro massimo della rete
 
-*Vantaggi*:
-- Riduce overhead se la destinazione è vicina (caso comune)
-- Evita flooding completo se non necessario
+#nota()[  
+  Esiste un *caso speciale* per cui la ricerca parte con un TTL più alto: Se esiste una entry invalida per la destinazione (o un percorso interrotto) con *hop count noto* (es. 10), la ricerca parte con $"TTL_noto"$ invece di $"TTL"_"start"$.
+]
 
-*Caso speciale*: Se esiste una entry invalida per la destinazione con hop count noto (es. 10), la ricerca parte con $"TTL" = 10$ invece di $"TTL"_"start"$.
+L'originator continua ad espandere il TTL fino a ricevere una RREP o raggiungere il TTL massimo. Ogni tentativo fallito viene memorizzato e ogni volta si incrementano $"RREQ_ID"$ e $"Originator_SN"$ per garantire unicità. Il numero di tentativi è limitato dal parametro *"RREQ_RETRIES"*, dopo il quale si considera la destinazione irraggiungibile.
 
-==== Gestione Ricezione RREQ - Scarto
 
-Quando un nodo riceve una RREQ, verifica se ha già visto la coppia $("Originator_IP", "RREQ_ID")$:
+=== Gestione Ricezione RREQ
+
+Quando un nodo riceve una RREQ, verifica se ha già visto la coppia $<"Originator_IP", "RREQ_ID">$:
 
 *Se già vista* (duplicato):
 1. Scarta la RREQ (non inoltra)
@@ -574,16 +521,6 @@ Quando un nodo riceve una RREQ, verifica se ha già visto la coppia $("Originato
    - Hop Count = Hop Count della RREQ + 1
    - Destination SN = Originator SN dalla RREQ
 
-#esempio[
-Nodo D riceve una RREQ duplicata da A via B:
-- RREQ contiene: Originator IP = A, Originator SN = 200
-- Tabella di D contiene: $angle.l A, E, 4, 199 angle.r$
-- Azione: Scarta RREQ, ma aggiorna entry: $angle.l A, B, 2, 200 angle.r$
-  (percorso più fresco via B in 2 hop invece che via E in 4 hop)
-]
-
-==== Gestione Ricezione RREQ - Inoltro
-
 *Se non ancora vista*:
 1. Memorizza $("Originator_IP", "RREQ_ID")$
 2. Crea/aggiorna percorso inverso verso originator (come sopra)
@@ -592,59 +529,21 @@ Nodo D riceve una RREQ duplicata da A via B:
 5. Decrementa TTL: $"TTL"--$
 6. Se $"TTL" > 0$: ritrasmette RREQ in broadcast
 
-#align(center)[
-  #figure(
-    cetz.canvas(length: 0.6cm, {
-      import cetz.draw: *
-
-      // Network topology
-      let nodes = (
-        ("A", (2, 4)),
-        ("B", (5, 5)),
-        ("C", (8, 4)),
-        ("D", (5, 2.5)),
-        ("E", (2, 1)),
-        ("F", (8, 1)),
-        ("G", (11, 2.5)),
-        ("H", (14, 3)),
-      )
-
-      // Draw nodes
-      for (name, pos) in nodes {
-        let col = if name == "A" { rgb("#C00000") } else if name == "H" { rgb("#70AD47") } else { rgb("#4472C4") }
-        circle(pos, radius: 0.4, fill: col, stroke: black)
-        content(pos, text(fill: white, weight: "bold")[#name])
-      }
-
-      // RREQ propagation arrows
-      let arrows = (
-        ((2, 4), (5, 5)),
-        ((2, 4), (5, 2.5)),
-        ((5, 5), (8, 4)),
-        ((5, 2.5), (8, 4)),
-        ((5, 2.5), (8, 1)),
-        ((8, 4), (11, 2.5)),
-        ((8, 1), (11, 2.5)),
-        ((11, 2.5), (14, 3)),
-      )
-
-      for (start, end) in arrows {
-        line(start, end, mark: (end: ">"), stroke: (paint: blue, thickness: 1.2pt, dash: "dashed"))
-      }
-
-      // Labels
-      content((2, 5), anchor: "south", text(size: 0.75em, fill: rgb("#C00000"), weight: "bold")[Originator])
-      content((14, 3.8), anchor: "south", text(size: 0.75em, fill: rgb("#70AD47"), weight: "bold")[Destination])
-      
-      content((4, 6), text(size: 0.7em, fill: blue)[RREQ\ Broadcast])
-    }),
-    caption: [Propagazione RREQ da A a H attraverso la rete]
-  )
-]
-
-#nota[
 Mentre la RREQ si propaga, ogni nodo intermedio costruisce il *percorso inverso* verso l'originator. Questo percorso sarà utilizzato dalla RREP per tornare indietro in unicast.
+
+#nota()[
+  Se il flag $"destination_only" == 0$, allora un *nodo intermedio può rispondere* con una RREP se ha una route valida e fresca verso la destinazione, evitando di propagare ulteriormente la RREQ.
+
+  Formalmente le condizioni di risposta sono:
+  - $"SN_destination_tabella" >= "SN_destination_RREQ"$
+  - Route Status = Valida
 ]
+
+#align(center)[
+  #image("/assets/RREQ.png", width: 75%)
+]
+
+== Formato RREP (Route Reply)
 
 === Generazione RREP (Route Reply)
 
@@ -730,39 +629,160 @@ AODV è sensibile alla mobilità: link breaks frequenti causano overhead signifi
 === Esempio Completo di Route Discovery
 
 #esempio[
-*Scenario*: Nodo A cerca una route verso H
+*Scenario*: Nodo A cerca una route verso H senza RREP intermedi
 
-*Stato iniziale*:
-- Nodo F conosce: $angle.l H, G, 2, 139 angle.r$
-- Nodo D conosce: $angle.l A, E, 4, 199 angle.r$
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.55cm, {
+      import cetz.draw: *
 
-*RREQ da A*:
-- Destination: H
-- Dest SN: 140
-- Originator: A
-- Orig SN: 200
-- Hop Count: 0
+      // Network topology - posizionamento nodi come nell'immagine
+      let nodes = (
+        ("A", (0, 3), rgb("#70AD47")),
+        ("B", (3, 4.5), rgb("#4472C4")),
+        ("C", (3, 1.5), rgb("#4472C4")),
+        ("D", (6, 4.5), rgb("#4472C4")),
+        ("E", (6, 3), rgb("#E7E6E6")),
+        ("F", (6, 1.5), rgb("#4472C4")),
+        ("G", (9, 3), rgb("#4472C4")),
+        ("H", (12, 3), rgb("#C00000")),
+      )
 
-*Propagazione*:
-1. A trasmette RREQ in broadcast
-2. B riceve RREQ:
-   - Non conosce A → crea entry: $angle.l A, A, 1, 200 angle.r$
-   - Incrementa Hop Count → 1
-   - Ritrasmette RREQ
-3. D riceve RREQ da B:
-   - Aveva entry: $angle.l A, E, 4, 199 angle.r$
-   - RREQ ha SN = 200 > 199 → aggiorna: $angle.l A, B, 2, 200 angle.r$
-   - Percorso più fresco e più corto!
-4. RREQ raggiunge H attraverso il percorso A → B → C → H
+      // Draw nodes
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.4, fill: col, stroke: black)
+        content(pos, text(fill: white, weight: "bold", size: 0.9em)[#name])
+        
+        // Labels con informazioni
+        if name == "A" {
+          content((pos.at(0), pos.at(1) - 0.9), text(size: 0.6em)[A SN\ 200])
+        } else if name == "B" {
+          content((pos.at(0), pos.at(1) + 0.9), text(size: 0.55em)[< A, A, 1, 200>])
+        } else if name == "D" {
+          content((pos.at(0), pos.at(1) + 0.9), text(size: 0.55em)[< A, B, 2, 200>])
+        } else if name == "E" {
+          // X rossa su E
+          line((pos.at(0) - 0.3, pos.at(1) - 0.3), (pos.at(0) + 0.3, pos.at(1) + 0.3), stroke: (paint: red, thickness: 2pt))
+          line((pos.at(0) - 0.3, pos.at(1) + 0.3), (pos.at(0) + 0.3, pos.at(1) - 0.3), stroke: (paint: red, thickness: 2pt))
+          content((pos.at(0), pos.at(1) - 1.1), text(size: 0.55em)[< A, D, 3, 200>\ SN 199])
+        } else if name == "F" {
+          content((pos.at(0), pos.at(1) - 1.1), text(size: 0.55em)[< H, G, 2, 139>\  A, C, 2, 200>])
+        } else if name == "C" {
+          content((pos.at(0), pos.at(1) - 0.9), text(size: 0.55em)[< A, A, 1, 200>])
+        } else if name == "G" {
+          content((pos.at(0), pos.at(1) + 0.9), text(size: 0.55em)[< A, F, 3, 200>])
+        } else if name == "H" {
+          content((pos.at(0), pos.at(1) + 0.9), text(size: 0.55em)[< A, D, 3, 200>])
+          content((pos.at(0), pos.at(1) - 0.9), text(size: 0.6em)[H SN\ 150])
+        }
+      }
 
-*RREP da H*:
-- H genera RREP e la invia in unicast verso A
-- Ogni nodo intermedio (C, B) crea la forward route verso H
-- A riceve RREP e può iniziare a trasmettere dati
+      // RREQ propagation arrows (dashed blue)
+      let rreq-paths = (
+        ((0, 3), (3, 4.5)),
+        ((0, 3), (3, 1.5)),
+        ((3, 4.5), (6, 4.5)),
+        ((3, 1.5), (6, 1.5)),
+        ((6, 4.5), (9, 3)),
+        ((6, 1.5), (9, 3)),
+        ((9, 3), (12, 3)),
+      )
 
-*Percorso finale stabilito*: A ↔ B ↔ C ↔ H
+      for (start, end) in rreq-paths {
+        line(start, end, stroke: (paint: blue, thickness: 1.2pt, dash: "dashed"))
+      }
+
+      // RREQ labels
+      content((1.5, 4.2), text(size: 0.6em, fill: blue)[RREQ])
+      content((7.5, 3.7), text(size: 0.6em, fill: red, weight: "bold")[RREQ])
+      content((10.5, 3.3), text(size: 0.6em, fill: red, weight: "bold")[RREQ])
+    }),
+    caption: [Propagazione RREQ da A verso H - Esempio senza RREP intermedio]
+  )
+]
+
+*Stato iniziale della rete*:
+- Nodo A (sorgente): Sequence Number = 200
+- Nodo H (destinazione): Sequence Number = 150
+- Nodo F conosce: $angle.l H, G, 2, 139 angle.r$ (route verso H via G, vecchia)
+- Nodo D conosce: $angle.l A, E, 4, 199 angle.r$ (route verso A via E, vecchia)
+- Nodo E ha entry con SN 199 per A (non aggiornata)
+
+*RREQ generata da A*:
+#align(center)[
+  #table(
+    columns: (auto, auto),
+    [*Campo*], [*Valore*],
+    [Destination IP], [H],
+    [Destination SN], [—],
+    [Originator IP], [A],
+    [Originator SN], [200],
+    [Hop Count], [0],
+  )
+]
+
+*Propagazione step-by-step*:
+
+*Step 1 - A trasmette RREQ*:
+- A incrementa il proprio SN → 200
+- A non conosce il SN di H → flag U = 1
+- RREQ trasmessa in broadcast
+
+*Step 2 - B e C ricevono RREQ*:
+- Entrambi non conoscono A → creano nuova entry:
+  - B: $angle.l A, A, 1, 200 angle.r$ (A raggiungibile via A in 1 hop)
+  - C: $angle.l A, A, 1, 200 angle.r$
+- Incrementano Hop Count → 1
+- Ritrasmettono RREQ in broadcast
+
+*Step 3 - D riceve RREQ da B*:
+- D possedeva: $angle.l A, E, 4, 199 angle.r$ (vecchia route via E)
+- RREQ contiene Originator SN = 200 > 199 (più fresca!)
+- D aggiorna entry: $angle.l A, B, 2, 200 angle.r$
+  - Route più fresca E più corta (2 hop invece che 4)
+- Incrementa Hop Count → 2
+- Ritrasmette RREQ
+
+*Step 4 - E riceve RREQ*:
+- E aveva SN vecchio (199) per A
+- RREQ ha SN = 200 > 199 → *E aggiorna la sua entry*
+- Anche se E scarta la RREQ (duplicato), aggiorna il percorso inverso
+
+*Step 5 - F riceve RREQ da C*:
+- F crea entry per A: $angle.l A, C, 2, 200 angle.r$
+- F conosce H (ha $angle.l H, G, 2, 139 angle.r$)
+- Ma SN di F per H è 139 < 150 richiesto (non sufficientemente fresco)
+- Oppure flag D = 1 (Destination Only) → F *non può rispondere*
+- F inoltra RREQ
+
+*Step 6 - G riceve RREQ da D e F*:
+- Crea entry: $angle.l A, F, 3, 200 angle.r$ (o via D)
+- Inoltra verso H
+
+*Step 7 - H riceve RREQ*:
+- H è la destinazione finale
+- H crea entry reverse: $angle.l A, D, 3, 200 angle.r$ (o via G)
+- *RREQ arrivata alla destinazione che deve rispondere*
+- H genera RREP da inviare in unicast ad A
+
+*Osservazioni chiave*:
+
+1. *Nessun RREP intermedio*: Anche se F conosceva H, non può rispondere perché:
+   - Il suo SN per H (139) è troppo vecchio
+   - Oppure il flag D (Destination Only) impone che solo H risponda
+
+2. *Aggiornamento dinamico*: Il nodo D aggiorna la sua route verso A quando riceve informazioni più fresche (SN 200 > 199), anche se aveva già una route
+
+3. *Percorso inverso costruito*: Mentre la RREQ si propaga, ogni nodo costruisce il percorso inverso verso A, che sarà usato dalla RREP
+
+4. *Multiple RREQ scartate*: Ogni nodo riceve probabilmente multiple copie della stessa RREQ (es. G riceve da D e da F), ma inoltra solo la prima o la migliore
+
+*Percorso finale stabilito*: A ↔ B ↔ D ↔ G ↔ H (oppure A ↔ C ↔ F ↔ G ↔ H)
 ]
 
 #nota[
-In caso di route multiple con stesso SN, vince quella con hop count minore. A parità di hop count, può essere selezionata quella ricevuta per prima (dipendente dall'implementazione).
+*Criterio di selezione*: 
+- Sequence Number più alto vince sempre (frescrezza)
+- A parità di SN, Hop Count minore vince (percorso più corto)
+- D aveva SN 199 per A, la RREQ porta SN 200 → aggiornamento obbligatorio anche se la route via E esisteva
 ]
