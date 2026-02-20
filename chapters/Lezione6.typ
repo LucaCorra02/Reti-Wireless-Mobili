@@ -620,3 +620,75 @@ Nello schema precedente, abbiamo citato i possibili 4 indirizzi che possono esse
   ]
 ]
 
+=== Orthogonal Frequency-Division Multiple Access in Wi-Fi 6
+Wi-Fi 6 utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5): i router non gestiscono più il traffico tramite sistema "uno alla volta", ma grazie ad uno "tutti insieme".
+
+Dal punto di vista grafico, possiamo visualizzare l'utilizzo di *OFDM (Orthogonal Frequency-Division Multiplexing)* con *TDMA (Time Division Multiple Access)* così:
+
+#align(center)[
+  #text(size: 8pt)[
+    #let b-dark = rgb("#3BA2F9")
+    #let b-light = rgb("#CDE5FD")
+    #let g-dark = rgb("#87C74C")
+    #let g-light = rgb("#DDF0D1")
+    #let y-dark = rgb("#FFBF00")
+    #let y-light = rgb("#FCEFCB")
+    #let r-dark = rgb("#CC0000")
+    #let p-dark = rgb("#9966CC")
+    #let p-light = rgb("#E2D1F0")
+    
+    #table(
+      columns: (auto, 70pt, 70pt, 70pt, 70pt, 70pt),
+      align: center + horizon,
+      stroke: 0.5pt + black,
+      
+      [], [T1], [T2], [T3], [T4], [T5],
+      
+      [F1], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(fill: y-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[],
+      
+      [F2], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(rowspan: 4, fill: y-light)[Non necessario], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[],
+      
+      [F3], table.cell(rowspan: 3, fill: b-light)[Non necessario], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(rowspan: 3, fill: p-light)[Non necessario],
+      
+      [F4], table.cell(rowspan: 2, fill: g-light)[Non necessario], table.cell(fill: r-dark)[],
+      
+      [F5], table.cell(fill: r-dark)[]
+    )
+  ]
+]
+
+Con *OFDMA*, la situazione sarebbe leggermente diversa:
+
+#align(center)[
+  #text(size: 8pt)[
+    #let b-dark = rgb("#3BA2F9")
+    #let g-dark = rgb("#87C74C")
+    #let y-dark = rgb("#FFBF00")
+    #let r-dark = rgb("#CC0000")
+    #let p-dark = rgb("#9966CC")
+    
+    #table(
+      columns: (auto, 70pt, 70pt, 70pt, 70pt, 70pt),
+      align: center + horizon,
+      stroke: 0.5pt + black,
+      
+      [], [T1], [T2], [T3], [T4], [T5],
+      
+      [F1], table.cell(fill: b-dark)[], table.cell(fill: r-dark)[], table.cell(fill: y-dark)[], [], table.cell(fill: r-dark)[],
+      
+      [F2], table.cell(fill: b-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
+      
+      [F3], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
+      
+      [F4], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
+      
+      [F5], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: b-dark)[], [], table.cell(fill: r-dark)[]
+    )
+  ]
+]
+
+#nota[
+  Come si può notare dalle 2 figure, la seconda ha vari quadretti colorati mischiati; di fatti, nello stesso lasso di tempo, in *OFDMA* vediamo colori diversi, ovvero utenti/dispositivi diversi. Tutto questo incrementa drasticamente l'efficienza della trasmissione.
+]
+
+==== Resource Unit (RU)
