@@ -627,28 +627,398 @@ $ "Destination_SN"_"table" >= "Destination_SN"_"RREQ" $
   )
 ]
 
-\ *Rep generata dalla destinazione*
+\ *Rep generata dalla destinazione*: I passi che vengono eseguit dalla destinazione quando riceve una RREQ sono:
+1. Incrementa il proprio SN: $"Destination_SN"++$
+2. Crea una RREP con:
+    - _Destination IP_ = se stessa
+    - _Destination SN_ = il nuovo SN incrementato
+    - _Originator IP_ = IP dell'originator dalla RREQ
+    - _Lifetime_ = Parametro $"MY-ROUTE-TIMEOUT"$
+    - _Hop Count_ = 0
+3. Invia la RREP in unicast lungo il percorso inverso verso l'originator
 
+\ *Rep generata da nodo intermedio*: Un nodo può generare in risposta una RREP se e solo se valgono le seguenti condizioni (in and):
+1. Il nodo ha una rotta valida verso la destinazione (entry valida nella tabella di routing)
+2. Il flag $"destination_only" == 0$ nella RREQ
+3. $"DST SN"_"ENTRY" >= "DST SN"_"RREQ"$
 
+Se le condizioni sono soddisfatte, il nodo intermedio crea una RREP con:
+- _Destination IP_ = IP della destinazione dalla RREQ
+- _Destination SN_ = SN della destinazione dalla tabella di routing
+- _Originator IP_ = IP dell'originator dalla RREQ
+- _Lifetime_ = In base al valore presente nella entry
+- _Hop Count_ = Valore presente nella entry
 
-\ *Rep generata da nodo intermedio*
+Succesivamente invia la RREP in unicast lungo il percorso inverso verso l'originator, senza propagare ulteriormente la RREQ.
 
-
-
-
+#nota()[
+  Se il flag *$"gratuitous_rrep" == 1$*, il nodo intermedio, invia anche una RREP gratuita alla destinazione, informandola della creazione del percorso inverso verso l'origine. 
+  
+  Utile per la *scoperta bidirezionale*.
+]
 
 Ogni nodo intermedio che inoltra la RREP:
 - Crea/aggiorna la route forward verso la destinazione
 - Incrementa Hop Count nella RREP
 - Imposta il lifetime della route
 
-#nota[
-*Criterio di selezione della route*: Se un nodo riceve multiple RREQ per la stessa ricerca:
-1. Sequence Number maggiore vince (route più fresca)
-2. A parità di SN, Hop Count minore vince (route più corta)
+=== Esempio: RREP Intermedio vs RREP dalla Destinazione
 
-Solo la "migliore" RREQ viene inoltrata e utilizzata per costruire il percorso inverso.
+#esempio[
+*Scenario*: Il nodo $A$ ha inviato una RREQ per trovare $H$ con i seguenti parametri:
+- _DEST_: $H$
+- _DST_SN_: $140$
+- _Orig_: $A$  
+- _Orig SN_: $200$
+- _Hop_: $0$
+
+*Topologia della rete:*
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      // Nodes positioning
+      let nodes = (
+        ("A", (0, 3), rgb("#70AD47")),
+        ("B", (3, 5), rgb("#4472C4")),
+        ("C", (3, 1), rgb("#4472C4")),
+        ("D", (6, 5), rgb("#4472C4")),
+        ("E", (7.5, 6.5), rgb("#D9D9D9")),
+        ("F", (6, 1), rgb("#C00000")),
+        ("G", (9, 1), rgb("#4472C4")),
+        ("H", (12, 3), rgb("#FFC000")),
+      )
+
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.5, fill: col, stroke: black + 1.5pt)
+        content(pos, text(fill: white, weight: "bold", size: 1.1em)[#name])
+      }
+
+      // Wireless links (dashed gray)
+      let links = (
+        ((0, 3), (3, 5)),    // A-B
+        ((0, 3), (3, 1)),    // A-C
+        ((3, 5), (6, 5)),    // B-D
+        ((3, 1), (6, 1)),    // C-F
+        ((6, 5), (7.5, 6.5)), // D-E
+        ((6, 5), (12, 3)),   // D-H
+        ((6, 1), (9, 1)),    // F-G
+        ((9, 1), (12, 3)),   // G-H
+      )
+
+      for (start, end) in links {
+        line(start, end, stroke: (paint: gray, thickness: 0.8pt, dash: "dashed"))
+      }
+      
+      // Legend
+      content((6, -0.5), anchor: "north", text(size: 0.85em)[#text(fill: rgb("#70AD47"), weight: "bold")[A:] Origine | #text(fill: rgb("#FFC000"), weight: "bold")[H:] Destinazione | #text(fill: rgb("#C00000"), weight: "bold")[F:] Nodo con cache])
+    }),
+    caption: [Topologia della rete]
+  )
 ]
+
+\ *Fase Iniziale*: I nodi $B$ e $C$ hanno ricevuto la RREQ da A. Entrambi inoltrano la richiesta ai propri vicini:
+- *$B -> C$*
+- *$C -> F$* 
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      // Nodes
+      let nodes = (
+        ("A", (0, 3), rgb("#D9D9D9")),
+        ("B", (3, 5), rgb("#4472C4")),
+        ("C", (3, 1), rgb("#4472C4")),
+        ("D", (6, 5), rgb("#4472C4")),
+        ("E", (7.5, 6.5), rgb("#D9D9D9")),
+        ("F", (6, 1), rgb("#C00000")),
+        ("G", (9, 1), rgb("#D9D9D9")),
+        ("H", (12, 3), rgb("#FFC000")),
+      )
+
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.5, fill: col, stroke: black + 1.5pt)
+        content(pos, text(fill: white, weight: "bold", size: 1.1em)[#name])
+      }
+
+      // Links
+      let links = (
+        ((0, 3), (3, 5)), ((0, 3), (3, 1)), ((3, 5), (6, 5)), ((3, 1), (6, 1)),
+        ((6, 5), (7.5, 6.5)), ((6, 5), (12, 3)), ((6, 1), (9, 1)), ((9, 1), (12, 3)),
+      )
+      for (start, end) in links {
+        line(start, end, stroke: (paint: gray, thickness: 0.8pt, dash: "dashed"))
+      }
+
+      // RREQ propagation from B to D
+      line((3, 5), (6, 5), mark: (end: ">"), stroke: (paint: blue, thickness: 1.3pt, dash: "dashed"))
+      content((4.5, 5.5), text(size: 0.8em, fill: blue, weight: "bold")[RREQ])
+      
+      // RREQ propagation from C to F
+      line((3, 1), (6, 1), mark: (end: ">"), stroke: (paint: blue, thickness: 1.3pt, dash: "dashed"))
+      content((4.5, 0.5), text(size: 0.8em, fill: blue, weight: "bold")[RREQ])
+      
+      // RREQ info box
+      content((10, 6), anchor: "west", text(size: 0.75em)[
+        *RREQ ricevuta da D e F:*\
+        DEST: H | DST_SN: 140\
+        Orig: A | Orig_SN: 200\
+        \#Hop: 1
+      ])
+    }),
+    caption: [B inoltra la RREQ verso D, C inoltra la RREQ verso F]
+  )
+]
+
+\ * $F$ risponde*: Avvengono due azioni in parallelo:
+- *$D$ inoltra la RREQ verso $H$:*
+  - $D$ non ha una rotta valida verso $H$
+  - Incrementa l'Hop Count: $1 -> 2$
+  - Inoltra la RREQ verso i suoi vicini ($E$ e $H$)
+
+- *F risponde con RREP:*
+  #align(center)[
+    #table(
+      columns: (auto, auto, auto, auto),
+      align: center + horizon,
+      [*Dest*], [*Next Hop*], [*Hop Count*], [*DST SN*],
+      [H], [G], [2], [149],
+    )
+  ] 
+  - $F$ ha una entry valida nella sua tabella con $"DST_SN" = 149$ ($> 140$ RREQ)
+  - $F$ genera una RREP con:
+    - _Destination IP_: $H$
+    - _Destination SN_: $149$
+    - _Hop Count_: $2$ (dalla sua entry verso $H: F -> G -> H$)
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      // Nodes
+      let nodes = (
+        ("A", (0, 3), rgb("#D9D9D9")),
+        ("B", (3, 5), rgb("#D9D9D9")),
+        ("C", (3, 1), rgb("#4472C4")),
+        ("D", (6, 5), rgb("#4472C4")),
+        ("E", (7.5, 6.5), rgb("#D9D9D9")),
+        ("F", (6, 1), rgb("#C00000")),
+        ("G", (9, 1), rgb("#D9D9D9")),
+        ("H", (12, 3), rgb("#FFC000")),
+      )
+
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.5, fill: col, stroke: black + 1.5pt)
+        content(pos, text(fill: white, weight: "bold", size: 1.1em)[#name])
+      }
+
+      // Links
+      let links = (
+        ((0, 3), (3, 5)), ((0, 3), (3, 1)), ((3, 5), (6, 5)), ((3, 1), (6, 1)),
+        ((6, 5), (7.5, 6.5)), ((6, 5), (12, 3)), ((6, 1), (9, 1)), ((9, 1), (12, 3)),
+      )
+      for (start, end) in links {
+        line(start, end, stroke: (paint: gray, thickness: 0.8pt, dash: "dashed"))
+      }
+
+      // RREQ D to H (blue dashed)
+      line((6, 5), (12, 3), mark: (end: ">"), stroke: (paint: blue, thickness: 1.3pt, dash: "dashed"))
+      content((9, 4.5), text(size: 0.8em, fill: blue, weight: "bold")[RREQ])
+      // RREP from F to C (red solid)
+      line((6, 1), (3, 1), mark: (end: ">"), stroke: (paint: red, thickness: 1.5pt))
+      content((4.5, 1.5), text(size: 0.8em, fill: red, weight: "bold")[RREP])
+      content((4.5, 0.3), text(size: 0.7em, fill: red)[DST_SN: 149, Hop: 2])
+    }),
+    caption: [D inoltra RREQ a H; F risponde con RREP verso C]
+  )
+]
+
+
+\ *Ricezione RREP da $F$*: La RREP generata da $F$ arriva ad $A$ passando per $C$. $A$ aggiorna la sua tabella di routing.
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      // Nodes
+      let nodes = (
+        ("A", (0, 3), rgb("#70AD47")),
+        ("B", (3, 5), rgb("#D9D9D9")),
+        ("C", (3, 1), rgb("#4472C4")),
+        ("D", (6, 5), rgb("#D9D9D9")),
+        ("E", (7.5, 6.5), rgb("#D9D9D9")),
+        ("F", (6, 1), rgb("#C00000")),
+        ("G", (9, 1), rgb("#D9D9D9")),
+        ("H", (12, 3), rgb("#FFC000")),
+      )
+
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.5, fill: col, stroke: black + 1.5pt)
+        content(pos, text(fill: white, weight: "bold", size: 1.1em)[#name])
+      }
+
+      // Links
+      let links = (
+        ((0, 3), (3, 5)), ((0, 3), (3, 1)), ((3, 5), (6, 5)), ((3, 1), (6, 1)),
+        ((6, 5), (7.5, 6.5)), ((6, 5), (12, 3)), ((6, 1), (9, 1)), ((9, 1), (12, 3)),
+      )
+      for (start, end) in links {
+        line(start, end, stroke: (paint: gray, thickness: 0.8pt, dash: "dashed"))
+      }
+
+      // Path F -> C -> A (red)
+      line((6, 1), (3, 1), mark: (end: ">"), stroke: (paint: red, thickness: 1.5pt))
+      line((3, 1), (0, 3), mark: (end: ">"), stroke: (paint: red, thickness: 1.5pt))
+      
+      content((4.5, 1.5), text(size: 0.8em, fill: red, weight: "bold")[RREP])
+      content((1.5, 1.8), text(size: 0.8em, fill: red, weight: "bold")[RREP])
+    }),
+    caption: [RREP da F arriva ad A attraverso C]
+  )
+]
+
+*Tabella routing di A dopo aver ricevuto RREP da F:*
+#align(center)[
+  #table(
+    columns: (auto, auto, auto, auto),
+    align: center + horizon,
+    [*Dest*], [*Next Hop*], [*Hop Count*], [*DST SN*],
+    [H], [C], [3], [149],
+  )
+]
+
+A registra il percorso: $mono("A -> C -> F -> G -> H")$ con 3 hop e DST_SN = 149.
+
+#nota()[
+  *Mancanza di bidirezionalità*: In questo momento, $A$ ha un percorso verso $H$ (passando per $C-F-G$), ma questo percorso *non è bidirezionale*. $H$ non ha ancora ricevuto informazioni su questa rotta e non può usarla per comunicare con $A$. Questo perché:
+  - La RREP di $F$ è stata generata dalla cache di $F$, non da $H$
+  - $H$ non ha ricevuto alcuna informazione su questo percorso
+  - La comunicazione in questa fase è *unidirezionale*: $A$ può raggiungere $H$, ma $H$ non può ancora rispondere usando la stessa rotta.
+]
+
+\ *RREQ Raggiunge $H$, generazione RREP*
+
+La RREQ inoltrata da $D$ raggiunge la destinazione $H$. Il nodo $H$ possiede già in cache un percorso verso $A$:
+#align(center)[
+  #table(
+    columns: (auto, auto, auto, auto),
+    align: center + horizon,
+    [*Dest*], [*Next Hop*], [*Hop Count*], [*Orig SN*],
+    [A], [D], [3], [200],
+  )
+]
+Di conseguenza il nodo $H$ esegue i seguenti passi per generare la RREP:
+1. *Incrementa il proprio Sequence Number*: $149 -> 150$
+2. *Genera una RREP* con:
+  - _Originator IP_: $A$ 
+  - _Destination IP_: $H$ (se stesso)
+  - _Destination SN_: $150$ (nuovo SN incrementato)
+  - _Hop Count_: $0$
+3. *Invia la RREP in unicast* utilizzando il *percorso in cache* verso A: $H -> D ->  B -> A$. $H$ può inviare la RREP direttamente usando il percorso che già conosce verso $A$ (_Next Hop_: D, con _Orig_SN_ = 200 dalla RREQ ricevuta)
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      // Nodes
+      let nodes = (
+        ("A", (0, 3), rgb("#70AD47")),
+        ("B", (3, 5), rgb("#4472C4")),
+        ("C", (3, 1), rgb("#D9D9D9")),
+        ("D", (6, 5), rgb("#4472C4")),
+        ("E", (7.5, 6.5), rgb("#D9D9D9")),
+        ("F", (6, 1), rgb("#D9D9D9")),
+        ("G", (9, 1), rgb("#D9D9D9")),
+        ("H", (12, 3), rgb("#FFC000")),
+      )
+
+      for (name, pos, col) in nodes {
+        circle(pos, radius: 0.5, fill: col, stroke: black + 1.5pt)
+        content(pos, text(fill: white, weight: "bold", size: 1.1em)[#name])
+      }
+
+      // Links
+      let links = (
+        ((0, 3), (3, 5)), ((0, 3), (3, 1)), ((3, 5), (6, 5)), ((3, 1), (6, 1)),
+        ((6, 5), (7.5, 6.5)), ((6, 5), (12, 3)), ((6, 1), (9, 1)), ((9, 1), (12, 3)),
+      )
+      for (start, end) in links {
+        line(start, end, stroke: (paint: gray, thickness: 0.8pt, dash: "dashed"))
+      }
+
+      // Path H -> D -> B -> A (green)
+      line((12, 3), (6, 5), mark: (end: ">"), stroke: (paint: rgb("#70AD47"), thickness: 1.5pt))
+      line((6, 5), (3, 5), mark: (end: ">"), stroke: (paint: rgb("#70AD47"), thickness: 1.5pt))
+      line((3, 5), (0, 3), mark: (end: ">"), stroke: (paint: rgb("#70AD47"), thickness: 1.5pt))
+      
+      content((9, 4.5), text(size: 0.8em, fill: rgb("#70AD47"), weight: "bold")[RREP])
+      content((4.5, 5.5), text(size: 0.8em, fill: rgb("#70AD47"), weight: "bold")[RREP])
+      content((1.5, 4.2), text(size: 0.8em, fill: rgb("#70AD47"), weight: "bold")[RREP])
+      content((11, 4.45), text(size: 0.7em, fill: rgb("#70AD47"))[DST_SN: 150, Hop: 0])
+    }),
+    caption: [RREP da H arriva ad A attraverso D e B]
+  )
+]
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 1em,
+  
+  [
+    *H incrementa il proprio SN:*
+    #align(center)[
+      #table(
+        columns: (auto, auto),
+        align: center + horizon,
+        [*Campo*], [*Valore*],
+        [SN precedente], [149],
+        [*SN nuovo*], [*150*],
+      )
+    ]
+  ],
+  
+  [
+    *Tabella routing di D (dopo RREP):*
+    #align(center)[
+      #table(
+        columns: (auto, auto, auto, auto),
+        align: center + horizon,
+        [*Dest*], [*Next Hop*], [*Hop*], [*DST SN*],
+        [H], [H], [1], [150],
+      )
+    ]
+  ]
+)
+
+\ *Aggiornamento con la Rotta Migliore*: La RREP da $H$ arriva ad $A$. Il nodo $A$ confronta questa nuova informazione con quella già in memoria.
+
+*A confronta le due RREP ricevute:*
+
+#align(center)[
+  #table(
+    columns: (auto, auto, auto, auto, auto),
+    align: center + horizon,
+    [*Fonte*], [*Next Hop*], [*Hop Count*], [*DST SN*], [*Decisione*],
+    [F (vecchia)], [C], [4], [149], [❌ Scartata],
+    [H (nuova)], [B], [3], [150], [✓ Accettata],
+  )
+]
+In questo modo, il nodo $A$ salva definitivamente il percorso: $mono("A -> B -> D -> H")$ con $3$ hop e $"DST_SN" = 150$.
+]
+
+
+
+
+=== RREP con flag Gratuitous
+
+
+
 
 == Route Error (RERR)
 
@@ -662,7 +1032,7 @@ Il RERR viene propagato a monte verso tutti i nodi che utilizzavano la route rot
 AODV è sensibile alla mobilità: link breaks frequenti causano overhead significativo di RERR e nuove RREQ. In reti altamente dinamiche, protocolli proattivi o ibridi potrebbero essere più efficienti.
 ]
 
-=== Esempio Completo di Route Discovery
+=== Esempio Completo di Route Discovery //TODO modificare con tema esame
 
 #esempio[
 *Scenario*: Nodo A cerca una route verso H senza RREP intermedi
