@@ -1012,10 +1012,9 @@ Di conseguenza il nodo $H$ esegue i seguenti passi per generare la RREP:
 In questo modo, il nodo $A$ salva definitivamente il percorso: $mono("A -> B -> D -> H")$ con $3$ hop e $"DST_SN" = 150$.
 ]
 
-
-
-
 === RREP con flag Gratuitous
+
+Il flag $"gratuitous_rrep" == 1$ serve per ottenere un *cammino biderezionale* più rapidamente (a differenza dell'esempio precedente). Quando un nodo intermedio risponde con una RREP, se questo flag è settato, il nodo invia anche una RREP gratuita alla destinazione, informandola della creazione del percorso inverso verso l'origine.
 
 
 
