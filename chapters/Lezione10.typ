@@ -440,12 +440,13 @@ Il parametro principale per la decisione del cambiamento di cella è la *potenza
 
 ]
 
+//fix path
 #align(center)[
-  #image("\assets\handoff-graph.png", width: 55%)
+  #image("..\assets\handoff-graph.png", width: 55%) 
 ]
 
 #informalmente()[
-  L'obiettivo è sempre connettersi alla base station con la potenza massima offerta.
+  L'obiettivo è sempre connettersi alla base station con la potenza massima offerta (dove la potenza del segnale è più alta).
 ]
 
 
