@@ -1,91 +1,246 @@
 #import "../template.typ": *
 
+= Mobile Network
+
+Il problema delle reti cellulari di prima generazione era fornire un servizio competitivo con la telefonia fissa, ma con la mobilità. Questo era l'obiettivo principale.
+
+== Linee guida progettuali
+
+- Utilizzare molti ripetitori con una potenza minore di $100$ W
+- Meno potenza significa minore raggio di copertura. La stessa area veniva quindi divisa in tante piccole celle, ognuna coperta da una propria antenna
+
+#attenzione()[
+  Ogni cella è servita da una base station che svolge tre funzioni fondamentali:
+  - Trasmettitore
+  - Ricevitore
+  - Unità di controllo
+]
+
+#nota()[
+  Netta separazione tra traffico di controllo e traffico dati (anche a livello architetturale).
+]
+
+Molto spesso le base station operano con lo spettro licenziato (licenza privata).
+
+== Base station
+
+La base station ha una parte di antenne (remote radio head) staccabile dalla parte di controllo.
+
+I componenti principali sono:
+- Cablatura in fibra ottica per il collegamento
+- Base band unit (gestisce i dati in banda base)
+
+I dati vengono modulati e trasmessi sulla portante in base alle frequenze licenziate. Le licenze si pagano sulla banda di frequenze utilizzata nelle telecomunicazioni.
+
+== Rete cellulare
+
+#import "@preview/cetz:0.3.2": canvas, draw
+
+#figure(
+  canvas({
+    import draw: *
+    
+    // Funzione per disegnare un esagono
+    let hex(x, y, label, color) = {
+      let r = 1.2
+      let points = ()
+      for i in range(6) {
+        let angle = 60deg * i
+        points.push((x + r * calc.cos(angle), y + r * calc.sin(angle)))
+      }
+      line(..points, close: true, stroke: 2pt + black, fill: color.transparentize(70%))
+      content((x, y), text(size: 14pt, weight: "bold", label))
+    }
+    
+    // Celle centrali con frequenze diverse
+    hex(0, 0, "F1", blue)
+    hex(2.1, 0, "F2", red)
+    hex(1.05, 1.8, "F3", green)
+    hex(-1.05, 1.8, "F1", blue)
+    hex(-2.1, 0, "F2", red)
+    hex(-1.05, -1.8, "F3", green)
+    hex(1.05, -1.8, "F1", blue)
+  }),
+  caption: [Struttura esagonale delle celle con riuso delle frequenze]
+)
+
+Le celle sono progettate teoricamente per avere equidistanza da un qualsiasi punto della cella rispetto alla base station, senza considerare ostacoli. Nella pratica, la copertura dipende da vari fattori: ostacoli, posizionamento della base station, morfologia del terreno.
+
+#nota()[
+  Uno dei requisiti fondamentali della rete cellulare è garantire la mobilità del dispositivo tra le celle mantenendo la connettività.
+]
+
+#attenzione()[
+  Sul bordo di una cella si possono ricevere segnali da più base station. Se queste usano le stesse frequenze, si verificano interferenze (mancanza di coordinazione). Per questo sono necessarie politiche di riuso delle frequenze.
+]
+
+=== Approccio CDMA
+
+Si usa la stessa frequenza utilizzando tecniche di codifica per evitare le interferenze tra celle vicine (codice ortogonale). 
+
+#nota()[
+  Vantaggi: non serve coordinamento e si sfrutta tutto lo spettro.
+  
+  Svantaggi: minore data rate disponibile per ogni utente.
+]
+
+=== Bande diverse
+
+Si utilizzano bande diverse dello stesso spettro per celle vicine: celle adiacenti non hanno alcuna sovrapposizione. 
+
+#attenzione()[
+  Per garantire la stessa qualità del servizio è necessario:
+  - Aumentare lo spettro complessivo disponibile, oppure
+  - Diminuire la banda allocata in ogni cella
+]
+
+=== Bande diverse solo sui bordi
+
+Soluzione più intelligente della precedente. Per il centro della cella viene utilizzata una certa frequenza, mentre si usano bande di frequenza diverse per i bordi. In questo modo si garantisce l'assenza di interferenza.
+
+#attenzione()[
+  Questa soluzione richiede:
+  - Meccanismi di posizionamento precisi (OFDMA)
+  - Hardware più sofisticato sia a livello di dispositivo che di base station
+]
+
+
 = Lezione 10
 
-All'intenrno di locali. Abbiamo un passaggio molto omogeneo tra l'esterno e l'internod dell'edificio, senza cambiare la tecnologia di accesso.
+== Indoor Coverage
 
-Se il tempo riservato al traffico di controllo avremo delle code di dispositivi che vogliono fare traffico autonomo _handover_ e _handoff_
+All'interno di locali è necessario garantire un passaggio omogeneo tra l'esterno e l'interno dell'edificio, senza cambiare la tecnologia di accesso.
+
+#nota()[
+  Se il tempo riservato al traffico di controllo è insufficiente, si creano code di dispositivi che devono effettuare operazioni di _handover_ e _handoff_.
+]
 
 == Cell Sectoring
 
-Non abbiamo una antenna omidirezionale (copre tutta la celal uniforme), ma abbiamo più antenne direzioaneli, che coprano varie parti della cella. Abbiamo uan base station e la cella suddivisa in parti.
+Anziché utilizzare un'antenna omnidirezionale (che copre tutta la cella uniformemente), si impiegano più antenne direzionali che coprono varie parti della cella. Si ha quindi una base station con la cella suddivisa in settori.
 
-Una base station solitamente contiene 3 antenne e ognuna di queste ha 3 antenne. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
+#esempio()[
+  Una base station solitamente contiene 3 antenne e ognuna di queste gestisce un settore. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
+]
 
-Il vantaggio è che partizionando la cella in più parti abbiamo un minor path loss a partià di distanza (antenna gain). Le antenne sono direzionali, coprono in modo settoriale la cella.
+#nota()[
+  *Vantaggi*: Partizionando la cella in più parti si ha un minor path loss a parità di distanza (antenna gain). Le antenne direzionali coprono in modo settoriale la cella.
+  
+  *Svantaggi*: La parte di controllo diventa più complessa.
+]
 
-Tuttavia, viene complicata la parte di controllo.
+== Architettura ed operazioni
 
-== Archetettura ed operazioni
+Struttura generale (rimane invariata in ogni generazione):
 
-Struttura generale (in ogni generazione rimane la stessa struttura):
+*Livello Servizi*: Internet, applicazioni, ecc.
 
-- Servizi: Come internet, ecc
+*Core Network* (o anche MTSO - Mobile Telephone Switching Office): Il compito è portare la comunicazione in _rete_. Si occupa di mantenere le informazioni di controllo e di fare da tramite per i servizi esterni.
 
-- Core Network (o  anche MTSO). Il comptito è portare la comunicazione in _rete_. Si occupa di mantenere le informazioni di controllo e di fare da tramite per i servizi (esterno)
-  #nota()[
-    La rete mobile non offre servizi, essi sono esterni dalla rete
-  ]
+#nota()[
+  La rete mobile non offre servizi direttamente: i servizi sono forniti da entità esterne alla rete.
+]
 
-- RAN (Radio access netowrk). Si tratta del modulo per l'accesso e trasporta le informazioni al controller. Contiene
-  - Base Station controller: Serve a coordinare le base station
-  - Dispostivi
-  - Base station
+*RAN (Radio Access Network)*: Modulo per l'accesso radio che trasporta le informazioni al controller. Contiene:
+- *Base Station Controller*: coordina le base station
+- *Dispositivi* mobili
+- *Base station*
 
-Esistono due tipi di canali che trasposrtano due tipologie di traffichi:
-- *Canali di controllo*: Control Plane. Dicono che cosa deve essere fatto per gestire la rete.
+=== Control Plane e Data Plane
 
-- *Canali di dati*: Trasportano la voce e dati (traffico dei servizi offerti)-> Data Plane (indica come deve essere fatto).
+Esistono due tipi di canali che trasportano due tipologie di traffico:
 
-Man mano che si è andati avanti nelel tecnologie, i moduli sono stati separati, ci sono moduli che fanno controllo e moduli che si occupano del canale dati
+- *Canali di controllo* (Control Plane): Definiscono _che cosa_ deve essere fatto per gestire la rete
+
+- *Canali di dati* (Data Plane): Trasportano voce e dati (traffico dei servizi offerti), indicano _come_ deve essere fatto
+
+#nota()[
+  Con l'evoluzione delle tecnologie, i moduli sono stati sempre più separati: ci sono moduli dedicati al controllo e moduli dedicati al canale dati.
+]
 
 === Inizializzazione e monitoraggio del segnale
 
-Inizialmente deve essere scelta la migliore cella e chiesto l'accesso a quella cella.
+Inizialmente il dispositivo deve scegliere la migliore cella e richiedere l'accesso a quella cella.
 
-Periodicamente vengono inviati dei *pilot*. Sono dei segnali codificato in modo standard che contengono dati standard. Servono per sapere quanto il segnale è diverso da quello che so che viene trasmesso. Tanto più il segnale trasmesso è diverso da quello effettivo tanto più posso asserire sulla non qualità del canale. Grazie ai pilot possono essere anche applicati delle trasformazioni al segnale ricevuto, in modo da ricostruire il segnale.\
-La frequenza di invio dipende dal tempo di frequenza del mezzo radio (per che intervallo di tempo le caratteristiche dle segnle rimangono costanti).
+==== Segnali Pilot
 
-Il pilot ci permette di essere molto aggiornato sullo stato del canele, permettendolo di aggiornalo.
+Periodicamente vengono inviati dei *pilot*: segnali codificati in modo standard che contengono dati noti. 
 
 #nota()[
-  Operazioni svolte solamente dalla rete access Network
+  I pilot servono per misurare la qualità del canale:
+  - Confrontando il segnale ricevuto con quello atteso si può valutare il degrado
+  - Maggiore è la differenza, peggiore è la qualità del canale
+  - Permettono di applicare trasformazioni correttive al segnale ricevuto
+]
+
+La frequenza di invio dei pilot dipende dal tempo di coerenza del mezzo radio (per quanto tempo le caratteristiche del canale rimangono costanti).
+
+#informalmente()[
+  I pilot permettono di avere informazioni aggiornate sullo stato del canale, consentendo di adattare la trasmissione.
+]
+
+#attenzione()[
+  Queste operazioni sono svolte solamente dalla Radio Access Network.
 ]
 
 === Passaggio alla rete core
 
-Ci deve essere un canale radio dedicato all'utenete, viene chiesto alla base station a cui il dispositivo è attaccatto. Tutta la comunicazione è gestita dalla base station (non c'è un accesso random). Questo accade in quanto si vuole avere un controllo rigido (come bluethoot, la base station è il master).
+Deve essere allocato un canale radio dedicato all'utente, richiesto alla base station a cui il dispositivo è connesso. Tutta la comunicazione è gestita dalla base station (non c'è accesso casuale). 
+
+#nota()[
+  Si vuole avere un controllo rigido della rete: come nel Bluetooth, la base station è il master.
+]
 
 #esempio()[
-  Se sono in un lugo in cui non ci sono base station del mio operatore, viene negato l'accesso, non potento trasmettere dati. Solo chiamate di emergenza
+  Se ci si trova in un luogo in cui non ci sono base station del proprio operatore, l'accesso viene negato e non è possibile trasmettere dati. Sono consentite solo le chiamate di emergenza.
 ]
 
 === Paging
 
-Supponiamo che una chiamata arrivi dall'esterno. La conoscenza all'interno di MSTO non può tenere traccia di ogni base station e ogni dispositivo (troppi dispositivo).
+Supponiamo che una chiamata arrivi dall'esterno verso un dispositivo mobile. Il MTSO non può tenere traccia in tempo reale di ogni dispositivo su ogni base station (troppi dispositivi).
 
-Per questo motivo le base station vengono divisi in aeree (gruppo di base station identificate da un codice). Viene tenuto traccia di questa informazion MTSO sa che un dispositivo si trova nell'area 100. Per sapere la base station individuale viene effettuato il paging. Solo una base station risponderà che gestisce lei un certo dipsositivo, verranno po trasferiti i dati.
+#nota()[
+  Le base station vengono divise in *aree* (gruppi di base station identificati da un codice). Il MTSO tiene traccia solo dell'area in cui si trova un dispositivo (es. area 100).
+]
 
-Vantaggi:
-- I dispositivi si possono mettere in idle. Possono rilasciare i canali ad altri utenti. Vengono tenuti in memoria i servizi che sta utilizzando il dispositivo ed essere rilasciati ad altri. Quando il dispositivo deve ricevere qualcosa li vengono riassegnati.
+Per trovare la base station specifica viene effettuato il *paging*:
+1. Il MTSO invia una richiesta a tutte le base station dell'area
+2. Solo la base station che gestisce quel dispositivo risponde
+3. Vengono poi trasferiti i dati
 
-Operazione onerosa (si cerca di fare il meno possibile)
+==== Vantaggi del Paging
 
-C'è un canale specifico dedicato al paging.
+#esempio()[
+  I dispositivi possono essere messi in stato *idle*:
+  - Rilasciano i canali radio ad altri utenti
+  - I servizi in uso vengono salvati in memoria
+  - Quando il dispositivo deve ricevere dati, i canali vengono riassegnati
+]
+
+#attenzione()[
+  Il paging è un'operazione onerosa, quindi si cerca di minimizzarne l'uso.
+  
+  Esiste un canale specifico dedicato al paging.
+]
 
 === Chiamata accettata
 
-I canali devono essere accettati da entrambe le parti e dalle base station
+I canali devono essere accettati da entrambe le parti (chiamante e ricevente) e dalle base station coinvolte.
 
-=== handoff
-Possibilibiòtà di passare da una cella all'altra senza percepire l'interruzione del servizio.
+=== Handoff/Handover
 
-La parte di handover a tre fasi:
-- Decisione di una nuova associazione (spotamento di cella)
+*Handoff* è la possibilità di passare da una cella all'altra senza percepire l'interruzione del servizio.
 
-- Gestione nuova associazione. L'idea e non rilasciare le risorse acquisite della vecchia base station non prima che le nuove risorse siano pronte nella nuova base station. Se non avessimo le risorse pronte acadrebbe uan perdità di connessione.
+La procedura di handover si articola in tre fasi:
 
-- Riconfigurazione percorsi di comunicazione. Routing soprattuto verso la rete core.
+1. *Decisione di una nuova associazione*: rilevamento dello spostamento verso una nuova cella
+
+2. *Gestione nuova associazione*: 
+   #attenzione()[
+     Non si rilasciano le risorse della vecchia base station finché le nuove risorse non sono pronte nella nuova base station. Altrimenti si avrebbe una perdita di connessione.
+   ]
+
+3. *Riconfigurazione percorsi di comunicazione*: aggiornamento del routing, soprattutto verso la rete core
 
 == Ambiente in ambito cellulare
 
