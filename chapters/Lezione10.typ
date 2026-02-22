@@ -2,37 +2,65 @@
 
 = Mobile Network
 
-Il problema delle reti cellulari di prima generazione era fornire un servizio competitivo con la telefonia fissa, ma con la mobilità. Questo era l'obiettivo principale.
+Le reti mobili nascono per garantire la connettività anche in movimento, superando i limiti delle reti fisse. L'obbiettivo principale è garantire un servizio alla parti di quello fisso, ma in movimento.
 
-== Linee guida progettuali
+Linee guida progettuali:
+- Utilizzare *molti ripetitori* con una potenza $< 100 W$ 
+- Meno potenza significa minore raggio di copertura. La stessa area viene quindi divisa in tante piccole *celle*, ognuna coperta da una propria antenna
 
-- Utilizzare molti ripetitori con una potenza minore di $100$ W
-- Meno potenza significa minore raggio di copertura. La stessa area veniva quindi divisa in tante piccole celle, ognuna coperta da una propria antenna
-
-#attenzione()[
-  Ogni cella è servita da una base station che svolge tre funzioni fondamentali:
+- Ogni cella è servita da una *base station* che svolge tre funzioni fondamentali:
   - Trasmettitore
   - Ricevitore
   - Unità di controllo
-]
 
 #nota()[
-  Netta separazione tra traffico di controllo e traffico dati (anche a livello architetturale).
+  Soprattutto nelle versioni recenti, c'è una *netta separazione* tra traffico di controllo e traffico dati (sia a livello architetturale che a livello di protocollo).
 ]
-
-Molto spesso le base station operano con lo spettro licenziato (licenza privata).
 
 == Base station
 
-La base station ha una parte di antenne (remote radio head) staccabile dalla parte di controllo.
+Una base station è principalmente composta da un'antenna (remote radio head) e da un'unità di controllo. Le due parti sono indipendenti e possono essere posizionate in luoghi diversi.
+
+Molto spesso le base station operano nello *spettro licenziato* (licenza privata).
 
 I componenti principali sono:
-- Cablatura in fibra ottica per il collegamento
-- Base band unit (gestisce i dati in banda base)
+- *Antenna* (remote radio head)
+- *Radio unit* (modula e demodula i segnali radio)
+- *Control unit* (gestisce il traffico di controllo e coordina le operazioni). La control unit è collegata alla radio unit tramite una connessione in fibra ottica (fronthaul).
 
-I dati vengono modulati e trasmessi sulla portante in base alle frequenze licenziate. Le licenze si pagano sulla banda di frequenze utilizzata nelle telecomunicazioni.
+I dati vengono modulati e trasmessi sulla portante in base alle frequenze licenziate. Le licenze si pagano sulla banda di frequenze utilizzata nelle telecomunicazioni e non sull'accesso alla rete.
+
+Infine, la base station è collegata alla *rete core* tramite una connessione in fibra ottica (backhaul).
 
 == Rete cellulare
+
+Le *celle* sono progettate teoricamentee per fornire *equidistanza* da un qualsiasi punto della cella rispetto alla base station, senza considerare ostacoli. Nella pratica, la copertura dipende da vari fattori: ostacoli, posizionamento della base station, morfologia del terreno (le celle possono non essere degli esagoni perfetti).
+
+Uno dei requisiti fondamentali della rete cellulare è *garantire la mobilità del dispositivo tra le celle mantenendo la connettività*. Tuttavia, questa mobilità può introdurre una serie di $mr("problemi")$, soprattutto a livello di *interferenze*, in quanto la rete cellulare non è progettata per la coordinazione tra celle vicine (non c'è coordinamento tra le base station).
+
+#attenzione()[
+  Un dispositivo situato sul *bordo* di una *cella* può ricevere segnali da più base station. Se queste usano le stesse frequenze, si verificano *interferenze* (mancanza di coordinazione). Per questo sono necessarie politiche di differenziazione delle frequenze tra celle vicine.
+]
+
+=== Approccio CDMA
+
+Si usa la *stessa frequenza* utilizzando tecniche di *codifica* per evitare le interferenze tra celle vicine (codice ortogonale). 
+
+- $mg("Vantaggi")$: *non* serve coordinamento e si sfrutta tutto lo spettro.
+  
+- $mr("Svantaggi")$: minore data rate disponibile per ogni utente.
+
+=== Bande diverse
+
+Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiacenti non hanno alcuna sovrapposizione. 
+
+#attenzione()[
+  Per garantire la stessa qualità del servizio è necessario:
+  - *Aumentare* lo *spettro* complessivo disponibile, oppure
+  - *Diminuire* la *banda* allocata in ogni cella
+
+  Entrambe le soluzioni hanno delle conseguenze: più spettro da pagare o minore data rate per utente.
+]
 
 #import "@preview/cetz:0.3.2": canvas, draw
 
@@ -53,7 +81,7 @@ I dati vengono modulati e trasmessi sulla portante in base alle frequenze licenz
     }
     
     // Celle centrali con frequenze diverse
-    hex(0, 0, "F1", blue)
+    hex(0, 0, "F4", yellow)
     hex(2.1, 0, "F2", red)
     hex(1.05, 1.8, "F3", green)
     hex(-1.05, 1.8, "F1", blue)
@@ -64,69 +92,118 @@ I dati vengono modulati e trasmessi sulla portante in base alle frequenze licenz
   caption: [Struttura esagonale delle celle con riuso delle frequenze]
 )
 
-Le celle sono progettate teoricamente per avere equidistanza da un qualsiasi punto della cella rispetto alla base station, senza considerare ostacoli. Nella pratica, la copertura dipende da vari fattori: ostacoli, posizionamento della base station, morfologia del terreno.
-
-#nota()[
-  Uno dei requisiti fondamentali della rete cellulare è garantire la mobilità del dispositivo tra le celle mantenendo la connettività.
-]
-
-#attenzione()[
-  Sul bordo di una cella si possono ricevere segnali da più base station. Se queste usano le stesse frequenze, si verificano interferenze (mancanza di coordinazione). Per questo sono necessarie politiche di riuso delle frequenze.
-]
-
-=== Approccio CDMA
-
-Si usa la stessa frequenza utilizzando tecniche di codifica per evitare le interferenze tra celle vicine (codice ortogonale). 
-
-#nota()[
-  Vantaggi: non serve coordinamento e si sfrutta tutto lo spettro.
-  
-  Svantaggi: minore data rate disponibile per ogni utente.
-]
-
-=== Bande diverse
-
-Si utilizzano bande diverse dello stesso spettro per celle vicine: celle adiacenti non hanno alcuna sovrapposizione. 
-
-#attenzione()[
-  Per garantire la stessa qualità del servizio è necessario:
-  - Aumentare lo spettro complessivo disponibile, oppure
-  - Diminuire la banda allocata in ogni cella
-]
-
 === Bande diverse solo sui bordi
 
-Soluzione più intelligente della precedente. Per il centro della cella viene utilizzata una certa frequenza, mentre si usano bande di frequenza diverse per i bordi. In questo modo si garantisce l'assenza di interferenza.
+Si tratta di una soluzione più _intelligente_ della precedente.
+
+Al centro della cella viene utilizzata una certa frequenza, mentre si usano *bande* di frequenza *diverse per i bordi* tra celle vicine. In questo modo si garantisce l'assenza di interferenza.
+
+#figure(
+  canvas({
+    import draw: *
+    
+    // Funzione per disegnare un esagono
+    let hex(x, y, inner_color, border_color) = {
+      let r = 1.2
+      let r_inner = 0.7
+      let points_outer = ()
+      let points_inner = ()
+      
+      // Punti esagono esterno
+      for i in range(6) {
+        let angle = 60deg * i
+        points_outer.push((x + r * calc.cos(angle), y + r * calc.sin(angle)))
+      }
+      
+      // Punti esagono interno
+      for i in range(6) {
+        let angle = 60deg * i
+        points_inner.push((x + r_inner * calc.cos(angle), y + r_inner * calc.sin(angle)))
+      }
+      
+      // Disegna bordo
+      line(..points_outer, close: true, stroke: 2pt + black, fill: border_color.transparentize(50%))
+      
+      // Disegna centro
+      line(..points_inner, close: true, stroke: none, fill: inner_color.transparentize(30%))
+    }
+    
+    // Celle con centro e bordo colorati
+    hex(0, 0, gray, blue)
+    hex(2.1, 0, gray, red)
+    hex(1.05, 1.8, gray, green)
+    hex(-1.05, 1.8, gray, yellow)
+    hex(-2.1, 0, gray, red)
+    hex(-1.05, -1.8, gray, green)
+    hex(1.05, -1.8, gray, yellow)
+    
+    // Freccia
+    line((3.5, 0), (5, 0), mark: (end: "stealth"), stroke: 2pt + black)
+    
+    // Box esplicativo a destra
+    let box_x = 7
+    let box_y = 1.5
+    let box_width = 3
+    let box_height = 0.8
+    
+    // Nel centro
+    
+    
+    // Bordo - diviso in 3 parti
+    let border_y = box_y - box_height - 0.3
+    let part_width = box_width / 3
+    
+    rect((box_x, border_y), (box_x + part_width, border_y - box_height), 
+         fill: yellow.transparentize(30%), stroke: black + 1pt)
+    
+    rect((box_x + part_width, border_y), (box_x + 2*part_width, border_y - box_height), 
+         fill: red.transparentize(30%), stroke: black + 1pt)
+    
+    rect((box_x + 2*part_width, border_y), (box_x + box_width, border_y - box_height), 
+         fill: blue.transparentize(30%), stroke: black + 1pt)
+    
+    content((box_x + box_width/2 + 1.0, border_y + 0.3), text(size: 9pt, "bordo", blue))
+
+     content((box_x + box_width/2 - 0.5, border_y + 0.3), text(size: 9pt, "Centro"))
+    
+    // Annotazioni
+    content((box_x + box_width/2, border_y - box_height - 0.7), 
+            text(size: 8pt, fill: blue, [Maggiore bandwidth]))
+    content((box_x + box_width/2, border_y - box_height - 1.1), 
+            text(size: 8pt, fill: blue, [(per utenti interni)]))
+  }),
+  caption: [Allocazione delle frequenze: banda unica al centro, bande diverse sui bordi per evitare interferenze]
+)
+
+*Vantaggi*:
+- Gli utenti al centro della cella hanno maggiore bandwidth disponibile
+- Si evitano interferenze sui bordi dove più celle si sovrappongono
 
 #attenzione()[
   Questa soluzione richiede:
-  - Meccanismi di posizionamento precisi (OFDMA)
+  - Meccanismi di *posizionamento precisi* (OFDMA)
   - Hardware più sofisticato sia a livello di dispositivo che di base station
 ]
 
+== Migliorare la Scalabilità
 
-= Lezione 10
+Per migliorare la scalabilità della rete, si possono adottare diverse strategie:
+- *Cell Sectoring*: suddividere una celle in sotto-celle (settori) con antenne direzionali. Utile per aumentare la capacità in aree ad alta densità di utenti. Il prezzo da pagare è un maggiore traffico di controllo e frequenti *handoff* (cambi di cella).
 
-== Indoor Coverage
+- Aggiungere più canali radio e spettro (costoso)
 
-All'interno di locali è necessario garantire un passaggio omogeneo tra l'esterno e l'interno dell'edificio, senza cambiare la tecnologia di accesso.
+- *Prestito di frequenze* (frequency borrowing): permettere a una cella di utilizzare temporaneamente le frequenze di una cella vicina quando è congestionata. Richiede *coordinamento tra le celle* e può introdurre interferenze se non gestito correttamente.
 
-#nota()[
-  Se il tempo riservato al traffico di controllo è insufficiente, si creano code di dispositivi che devono effettuare operazioni di _handover_ e _handoff_.
-]
 
-== Cell Sectoring
+=== Cell Sectoring
 
-Anziché utilizzare un'antenna omnidirezionale (che copre tutta la cella uniformemente), si impiegano più antenne direzionali che coprono varie parti della cella. Si ha quindi una base station con la cella suddivisa in settori.
-
-#esempio()[
-  Una base station solitamente contiene 3 antenne e ognuna di queste gestisce un settore. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
-]
-
-#nota()[
-  *Vantaggi*: Partizionando la cella in più parti si ha un minor path loss a parità di distanza (antenna gain). Le antenne direzionali coprono in modo settoriale la cella.
+Anziché utilizzare un'antenna omnidirezionale (che copre tutta la cella uniformemente), si impiegano *più antenne direzionali* che coprono varie parti della cella. Si ha quindi un'unica base station e una cella a sua volta suddivisa in settori:
+- *$mg("Vantaggi")$*: Partizionando la cella in più parti si ha un *minor path loss* a parità di distanza (*antenna gain*). Le antenne direzionali coprono in modo settoriale la cella.
   
-  *Svantaggi*: La parte di controllo diventa più complessa.
+- *$mr("Svantaggi")$*: La parte di controllo diventa più complessa.
+
+#nota()[
+   Una base station di solito contiene $3$ antenne, ognuna di esse gestisce un settore. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
 ]
 
 == Architettura ed operazioni
