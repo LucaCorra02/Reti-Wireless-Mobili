@@ -434,209 +434,60 @@ Il parametro principale per la decisione del cambiamento di cella è la *potenza
 === Strategie di Handoff
 
 #nota()[
-  I grafici di handoff mostrano la potenza del segnale ricevuto da due base station (A e B) in funzione della distanza. Il dispositivo si sposta da sinistra a destra, avvicinandosi a B e allontanandosi da A.
+  I grafici di handoff mostrano la potenza del segnale ricevuto da due base station ($A$ e $B$) in funzione della distanza. Il dispositivo si sposta da sinistra a destra, avvicinandosi a $B$ e allontanandosi da $A$.
+
+  Come si può vedere, la potenza del segnale di $A$ diminuisce con la distanza, mentre quella di $B$ aumenta. Il punto di *intersezione* è quello in cui i segnali di $A$ e $B$ sono uguali.
+
 ]
 
-
-==== Potenza relativa
-
-Dopo un certo punto potrebbe accadere che $"Rx"_B > "Rx"_A$. 
-
-#attenzione()[
-  Il *ping pong effect* consiste nell'effettuare handover continui dalla base station $A$ a $B$ e viceversa. Questo effetto è deleterio per le risorse: c'è solo traffico di controllo, non si trasmettono mai dati, si continuano ad allocare e deallocare risorse.
+#align(center)[
+  #image("\assets\handoff-graph.png", width: 55%)
 ]
 
 #informalmente()[
   L'obiettivo è sempre connettersi alla base station con la potenza massima offerta.
 ]
 
+
+==== Potenza relativa
+
+La prima strategia prevede di effettuare l'handover quando la potenza del segnale di $B$ supera quella di $A$ (*punto di intersezione* $L_1$ nell'immagine ). Dopo il punto di intersezione accade che:
+$
+  "Rx"_B > "Rx"_A 
+$
+Dopo questo punto viene effettuato l'handover da $A$ a $B$.
+
+Il $mr("problema")$ principale di questo approccio è il *ping pong effect*: esso consiste nell'effettuare handover continui dalla base station $A$ a $B$ e viceversa. 
+
+In questo scenario, il dispositivo si trova in una zona di *confine* tra le due celle, dove la potenza del segnale è simile. Piccole variazioni (es. ostacoli, fading) possono far cambiare rapidamente la potenza del segnale, causando handover continui.
+
+#attenzione()[
+  Tale effetto è *deleterio per le risorse*: c'è solo traffico di controllo, non si trasmettono mai dati, si continuano ad allocare e deallocare risorse.
+]
+
+
 ==== Potenza relativa + Threshold
 
-Per evitare il ping pong effect si introduce una *threshold* (soglia). Si impone un valore assoluto di riferimento.
-
-#figure(
-  canvas(length: 1cm, {
-    import draw: *
-    
-    // Assi principali
-    line((0, 0), (10, 0), mark: (end: "stealth"), name: "x-axis")
-    line((0, 0), (0, 6), mark: (end: "stealth"), name: "y-axis")
-    
-    // Etichette assi
-    content((10.5, -0.3), [Distanza])
-    content((-1.2, 6.3), [Potenza])
-    content((0.5, -0.5), text(size: 9pt, [Base]))
-    content((0.5, -0.8), text(size: 9pt, [station A, $S_A$]))
-    content((9.5, -0.5), text(size: 9pt, [Base]))
-    content((9.5, -0.8), text(size: 9pt, [station B, $S_B$]))
-    
-    // Curve BS A (decrescente, parte alta) e BS B (crescente, parte bassa)
-    catmull((0, 5.5), (1.5, 5.0), (3, 4.3), (4.5, 3.5), (6, 2.8), (7.5, 2.2), (9, 1.7), (10, 1.4),
-         stroke: blue + 2.5pt, name: "curve-a")
-    
-    catmull((0, 1.4), (1, 1.7), (2.5, 2.2), (4, 2.8), (5.5, 3.5), (7, 4.3), (8.5, 5.0), (10, 5.5),
-         stroke: red + 2.5pt, name: "curve-b")
-    
-    // Soglie orizzontali
-    line((0, 4), (10, 4), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
-    content((-0.5, 4), text(size: 9pt, [$T h_1$]))
-    
-    line((0, 3), (10, 3), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
-    content((-0.5, 3), text(size: 9pt, [$T h_2$]))
-    
-    line((0, 2.4), (10, 2.4), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
-    content((-0.5, 2.4), text(size: 9pt, [$T h_3$]))
-    
-    // Punto di intersezione
-    circle((5, 3.15), radius: 0.1, fill: black)
-    line((5, 0), (5, 3.15), stroke: (dash: "dotted", paint: gray, thickness: 1pt))
-    
-    // Punti significativi
-    // L1: Curva A incrocia Th1
-    circle((2.1, 4), radius: 0.08, fill: purple)
-    line((2.1, 0), (2.1, 4), stroke: (dash: "dotted", paint: purple, thickness: 1pt))
-    content((2.1, -0.5), text(size: 9pt, fill: purple, [$L_1$]))
-    
-    // L2: Intersezione
-    circle((5, 3.15), radius: 0.08, fill: green)
-    line((5, 0), (5, 3.15), stroke: (dash: "dotted", paint: green, thickness: 1pt))
-    content((5, -0.5), text(size: 9pt, fill: green, [$L_2$]))
-    
-    // L3: Handoff (curva A sotto Th3 e B > A)
-    circle((6.5, 2.4), radius: 0.08, fill: orange)
-    line((6.5, 0), (6.5, 2.4), stroke: (dash: "dotted", paint: orange, thickness: 1pt))
-    content((6.5, -0.5), text(size: 9pt, fill: orange, weight: "bold", [$L_3$]))
-    
-    // L4: Curva B incrocia Th1
-    circle((7.9, 4), radius: 0.08, fill: purple)
-    line((7.9, 0), (7.9, 4), stroke: (dash: "dotted", paint: purple, thickness: 1pt))
-    content((7.9, -0.5), text(size: 9pt, fill: purple, [$L_4$]))
-    
-    // Freccia e annotazione per H (margine di isteresi)
-    line((9.5, 2.4), (9.5, 3.15), mark: (start: "stealth", end: "stealth"), stroke: blue + 1.5pt)
-    content((10.2, 2.8), text(size: 9pt, fill: blue, [$H$]))
-    
-    // Etichette curve
-    content((1.5, 5.3), text(fill: blue, weight: "bold", [$P r_1$]))
-    content((8.5, 5.3), text(fill: red, weight: "bold", [$P r_2$]))
-    
-    // Punto handoff evidenziato
-    content((6.5, 1.8), text(size: 9pt, fill: orange, weight: "bold", [Handoff]))
-  }),
-  caption: [Strategia potenza relativa + soglia: L'handoff da BS A a BS B avviene in $L_3$ quando $P r_1 < T h_3$ e $P r_2 > P r_1$. Le soglie multiple mostrano diversi livelli di qualità del segnale.]
-)
-
-#nota()[
-  L'handover da base station $A$ a base station $B$ avviene quando sono soddisfatte entrambe le condizioni:
+Oltre alla potenza relativa del segnale viene introdotta una *soglia* (threshold) $T$ per evitare il ping pong effect. L'handover da base station $A$ a base station $B$ avviene quando sono soddisfatte *entrambe* le condizioni:
   - $"Rx"_A < T$ (segnale di A minore della soglia in valore assoluto)
   - $"Rx"_B > "Rx"_A$ (segnale di B migliore di quello di A)
-  
-  Nel grafico, l'handoff avviene in posizione $L_3$ ($T h_3$).
+
+#esempio()[
+  Nel grafico, l'handoff avviene in posizione $L_4$ ($T h_3$). In questo modo si evita il ping pong effect, ma si rischia di rimanere con un segnale di bassa qualità (tra $L_1$ e $L_3$) per un periodo di tempo più lungo.
+
+  Il segnale di $A$ deve *rimanere sotto la soglia* $T_(h 3)$ per un lasso di tempo elevato prima di effettuare l'handover.
 ]
 
 #attenzione()[
-  La criticità è impostare correttamente la threshold: è difficile trovare un valore adeguato per tutti gli scenari.
+  La *criticità* è impostare correttamente la threshold: è difficile trovare un valore adeguato per tutti gli scenari.
 ]
 
 ==== Potenza relativa con Isteresi
 
-#figure(
-  canvas(length: 1cm, {
-    import draw: *
-    
-    // Assi principali
-    line((0, 0), (10, 0), mark: (end: "stealth"), name: "x-axis")
-    line((0, 0), (0, 6), mark: (end: "stealth"), name: "y-axis")
-    
-    // Etichette assi
-    content((10.5, -0.3), [Distanza])
-    content((-0.7, 6.3), [Potenza])
-    content((0.3, -0.5), [$L_A$])
-    content((9.7, -0.5), [$L_B$])
-    
-    // Curve BS A (decrescente) e BS B (crescente) - partono dagli assi
-    catmull((0, 5.8), (1, 5.2), (2, 4.5), (3, 3.8), (4, 3.2), (5, 2.7), (6, 2.3), (7, 1.9), (8, 1.6), (9, 1.3), (10, 1.0),
-         stroke: blue + 2pt, name: "curve-a")
-    
-    catmull((0, 1.0), (1, 1.3), (2, 1.6), (3, 1.9), (4, 2.3), (5, 2.7), (6, 3.2), (7, 3.8), (8, 4.5), (9, 5.2), (10, 5.8),
-         stroke: red + 2pt, name: "curve-b")
-    
-    // Threshold orizzontale
-    line((0.5, 2.5), (9.5, 2.5), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
-    content((0.3, 2.5), [$T$])
-    
-    // Soglie di isteresi (tracciate come offset dalle curve)
-    line((0.5, 2.2), (9.5, 2.2), stroke: (dash: "dashed", paint: purple, thickness: 1pt))
-    content((0.2, 2.2), text(size: 8pt, fill: purple, [$T_2$]))
-    
-    line((0.5, 2.8), (9.5, 2.8), stroke: (dash: "dashed", paint: purple, thickness: 1pt))
-    content((0.2, 2.8), text(size: 8pt, fill: purple, [$T_1$]))
-    
-    // Intersezione
-    circle((5, 2.7), radius: 0.08, fill: black)
-    content((5, 2.3), [$L_1$])
-    
-    // Punto handoff A->B (con isteresi, più a destra)
-    circle((6, 2.4), radius: 0.08, fill: green)
-    line((6, 0), (6, 2.4), stroke: (dash: "dotted", paint: green))
-    content((6, -0.5), text(fill: green, [$L_2$]))
-    
-    // Punto handoff B->A (con isteresi, più a sinistra)
-    circle((4, 2.9), radius: 0.08, fill: orange)
-    line((4, 0), (4, 2.9), stroke: (dash: "dotted", paint: orange))
-    content((4, -0.5), text(fill: orange, [$L_3$]))
-    
-    // Rettangolo che evidenzia la zona di isteresi
-    rect((4, 2.2), (6, 2.8), stroke: purple + 1pt, fill: purple.transparentize(90%))
-    
-    // Frecce per indicare H (margine di isteresi)
-    line((9.8, 2.5), (9.8, 2.8), mark: (start: "stealth", end: "stealth"), stroke: purple + 1.5pt)
-    content((10.3, 2.65), text(size: 9pt, fill: purple, [$H$]))
-    
-    // Etichette curve
-    content((2, 5), text(fill: blue, [BS $A$, $S_A$]))
-    content((8, 5), text(fill: red, [BS $B$, $S_B$]))
-    
-    // Annotazioni
-    content((6, 3.1), text(size: 8pt, fill: green, [A→B]))
-    content((4, 3.6), text(size: 8pt, fill: orange, [B→A]))
-    
-    // Grafico laterale per mostrare l'isteresi (spostato più a destra e ingrandito)
-    let hx = 12
-    let hy = 3
-    
-    // Assi del grafico isteresi
-    line((hx, hy - 2), (hx, hy + 2), mark: (end: "stealth"), stroke: black + 1pt)
-    line((hx - 0.5, hy), (hx + 2.5, hy), mark: (end: "stealth"), stroke: black + 1pt)
-    
-    content((hx + 2.8, hy - 0.1), text(size: 8pt, [$(P_B - P_A)$]))
-    content((hx - 0.2, hy + 2.3), text(size: 8pt, [BS]))
-    
-    // Funzione di isteresi (a gradino)
-    line((hx - 0.4, hy - 1.5), (hx + 0.4, hy - 1.5), stroke: red + 2.5pt)
-    line((hx + 0.4, hy - 1.5), (hx + 0.4, hy + 1.5), stroke: red + 2.5pt, mark: (start: "stealth", end: "stealth"))
-    line((hx + 0.4, hy + 1.5), (hx + 2.2, hy + 1.5), stroke: red + 2.5pt)
-    
-    // Soglie verticali tratteggiate
-    line((hx - 0.4, hy - 2), (hx - 0.4, hy + 2), stroke: (dash: "dashed", paint: purple, thickness: 1.5pt))
-    content((hx - 0.7, hy - 1.7), text(size: 8pt, fill: purple, weight: "bold", [$-H$]))
-    
-    line((hx + 0.4, hy - 2), (hx + 0.4, hy + 2), stroke: (dash: "dashed", paint: purple, thickness: 1.5pt))
-    content((hx + 0.7, hy + 1.7), text(size: 8pt, fill: purple, weight: "bold", [$+H$]))
-    
-    // Frecce di transizione (opzionali, per chiarezza)
-    line((hx + 0.1, hy - 1.2), (hx + 0.7, hy - 1.2), mark: (end: "stealth"), stroke: gray + 1pt)
-    line((hx + 0.7, hy + 1.2), (hx + 0.1, hy + 1.2), mark: (end: "stealth"), stroke: gray + 1pt)
-    
-    // Etichette BS
-    content((hx + 1.8, hy + 1.8), text(size: 9pt, weight: "bold", [B]))
-    content((hx - 0.8, hy - 1.2), text(size: 9pt, weight: "bold", [A]))
-  }),
-  caption: [Grafico 2: Handoff con isteresi. L'handoff A→B avviene in $L_2$, mentre B→A in $L_3$. Il margine $H$ previene il ping-pong effect. Il grafico a destra mostra la funzione di isteresi rispetto alla potenza relativa.]
-)
+*Isteresi*: il valore di una funzione non dipende solamente dall'input ma anche dallo stato precedente del sistema.
 
 #informalmente()[
-  *Isteresi* = il valore di una funzione non dipende solamente dall'input ma anche dallo stato precedente del sistema.
+  L'isteresi fornisce un *_buffer_* contro le variazioni repentine di segnale, evitando cambi di cella troppo frequenti.
 ]
 
 #esempio()[
@@ -647,30 +498,97 @@ Per evitare il ping pong effect si introduce una *threshold* (soglia). Si impone
   - Questo evita accensioni/spegnimenti continui
 ]
 
+Funzionamento dell'isteresi:
+- Sull'asse $x$: potenza relativa $P_B - P_A$
+
+- Punto $+H$: quando $B$ è migliore di $A$ di almeno $H$ si passa a $B$
+
+- Punto $-H$: quando $A$ è migliore di $B$ di almeno $H$ si torna ad $A$
+
+- La BS associata (asse $y$) dipende dalla *storia*: da dove proveniamo
+
+Nel grafico l'isteresi è rappresentata dalla curva tratteggiata sfalsata di $H$.
+
+#figure(
+  canvas(length: 0.7cm, {
+    import draw: *
+    
+    let w = 8
+    let h = 4
+    
+    // Assi
+    line((-w/2, 0), (w/2, 0), mark: (end: "stealth"), stroke: black + 1.5pt)
+    line((0, -0.5), (0, h+2), mark: (end: "stealth"), stroke: black + 1.5pt)
+    
+    // Etichette assi
+    content((w/2 + 1.2, -0.7), text(size: 10pt, [$(P_B - P_A)$]))
+    content((-1.5, h + 1.8), text(size: 10pt, [Assignment]))
+    
+    // Posizioni soglie
+    let threshold = 2.2
+    
+    // Livelli di assegnazione
+    let level_A = 1.2
+    let level_B = 3.8
+    
+    // Rettangolo di isteresi (ciclo)
+    // Linea orizzontale bassa (Assigned to A) - da sinistra fino a +H
+    line((-w/2 + 0.5, level_A), (threshold, level_A), stroke: red + 3pt)
+    
+    // Linea verticale a +H (salto verso B)
+    line((threshold, level_A), (threshold, level_B), stroke: red + 3pt)
+    
+    // Linea orizzontale alta (Assigned to B) - da +H fino a -H
+    line((threshold+1.5, level_B), (-threshold, level_B), stroke: red + 3pt)
+    
+    // Linea verticale a -H (salto verso A)
+    line((-threshold, level_B), (-threshold, level_A), stroke: red + 3pt)
+    
+    // Completa il ciclo
+    line((-threshold, level_A), (-w/2 + 0.5, level_A), stroke: red + 3pt)
+    
+    // Soglie verticali tratteggiate
+    line((-threshold, -0.3), (-threshold, 0.3), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
+    line((threshold, -0.3), (threshold, 0.3), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
+    
+    content((-threshold, -0.7), text(size: 10pt, weight: "bold", [$-H$]))
+    content((threshold, -0.7), text(size: 10pt, weight: "bold", [$+H$]))
+    
+    // Etichette assegnazione
+    content((-w/2 + 0.5, level_A - 0.4), text(size: 10pt, [Assigned to A]))
+
+    content((w/2 , level_B+0.5), text(size: 10pt, [Assigned to B]))
+
+    content((-w/2 + 1.8, level_B+0.5), text(size: 10pt, [B]))
+
+     content((w/2- 1.2, level_A - 0.2), text(size: 10pt, [A]))
+    
+    // FRECCE per le transizioni
+    // Freccia a destra (handoff to B) - verso l'alto
+    line((threshold + 0.4, level_A + 0.5), (threshold + 0.4, level_B - 0.5), 
+         mark: (end: "stealth"), stroke: orange + 2.5pt)
+    content((threshold + 1.3, (level_A + level_B)/2), text(size: 9pt, fill: orange, [Handoff]))
+    content((threshold + 1.3, (level_A + level_B)/2 - 0.4), text(size: 9pt, fill: orange, [to B]))
+    
+    // Freccia a sinistra (handoff to A) - verso il basso
+    line((-threshold - 0.4, level_B - 0.5), (-threshold - 0.4, level_A + 0.5), 
+         mark: (end: "stealth"), stroke: green + 2.5pt)
+    content((-threshold - 1.3, (level_A + level_B)/2), text(size: 9pt, fill: green, [Handoff]))
+    content((-threshold - 1.3, (level_A + level_B)/2 - 0.4), text(size: 9pt, fill: green, [to A]))
+  }),
+  caption: [Funzione di isteresi per l'handoff: il ciclo mostra come l'assegnazione dipenda dalla storia. Handoff A→B avviene a $+H$, handoff B→A avviene a $-H$.]
+)
+
+Le *condizioni* per l'handover diventano:
+- $"Rx"_A < T$ (segnale assoluto minore della threshold)
+- $"Rx"_B - "Rx"_A > H$ (potenza relativa di $B$ sufficientemente maggiore rispetto al margine di isteresi)
 
 #nota()[
-  Funzionamento dell'isteresi:
-  - Sull'asse $x$: potenza relativa $B - A$
-  - $+H$: quando $B$ è migliore di $A$ di almeno $H$ si passa a $B$
-  - $-H$: quando $A$ è migliore di $B$ di almeno $H$ si torna ad $A$
-  - La BS associata (asse $y$) dipende dalla storia: da dove proveniamo
-]
-
-#informalmente()[
-  L'isteresi fornisce un "buffer" contro le variazioni repentine di segnale, evitando cambi di cella troppo frequenti.
-]
-
-#attenzione()[
-  Le condizioni per l'handover diventano:
-  - $"Rx"_A < T$ (segnale assoluto minore della threshold)
-  - $"Rx"_B - "Rx"_A > H$ (potenza relativa di $B$ sufficientemente maggiore rispetto al margine di isteresi)
-  
-  L'isteresi lavora a livello relativo, ma serve comunque una soglia assoluta ($T$) per garantire una qualità minima.
+  L'isteresi lavora a livello relativo, ma *serve comunque una soglia assoluta* ($T$) per garantire una qualità minima. Altrimenti, si potrebbe effettuare l'handover a $B$ anche quando il segnale di $A$ è ancora molto forte (es. tra $L_1$ e $L_3$), causando una degradazione della qualità del servizio.
 ]
 
 == Hard Handoff vs Soft Handoff
 
-#nota()[
   Esistono due approcci fondamentali:
   
   *Hard Handoff* (dal 2G in avanti):
@@ -682,7 +600,7 @@ Per evitare il ping pong effect si introduce una *threshold* (soglia). Si impone
   - Il dispositivo mantiene la connettività con entrambe le BS contemporaneamente
   - Si rilascia la vecchia BS solo quando il segnale della nuova è chiaramente dominante
   - Maggiore affidabilità ma richiede più risorse
-]
+
 
 == FDD e TDD
 
