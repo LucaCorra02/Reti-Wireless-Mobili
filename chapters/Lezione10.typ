@@ -587,48 +587,44 @@ Le *condizioni* per l'handover diventano:
   L'isteresi lavora a livello relativo, ma *serve comunque una soglia assoluta* ($T$) per garantire una qualità minima. Altrimenti, si potrebbe effettuare l'handover a $B$ anche quando il segnale di $A$ è ancora molto forte (es. tra $L_1$ e $L_3$), causando una degradazione della qualità del servizio.
 ]
 
-== Hard Handoff vs Soft Handoff
+=== Hard Handoff vs Soft Handoff
 
-  Esistono due approcci fondamentali:
-  
-  *Hard Handoff* (dal 2G in avanti):
-  - Il dispositivo è associato a una sola BS alla volta
+Esistono due approcci fondamentali:
+
+-  *Hard Handoff* (dal 2G in avanti):
+  - Il dispositivo è associato a *una sola Base Station* alla volta
   - Si rilascia la vecchia connessione prima di stabilire la nuova
   - Minore consumo di risorse
   
-  *Soft Handoff*:
-  - Il dispositivo mantiene la connettività con entrambe le BS contemporaneamente
+- *Soft Handoff*:
+  - Il dispositivo mantiene la *connettività con entrambe le BS* contemporaneamente
   - Si rilascia la vecchia BS solo quando il segnale della nuova è chiaramente dominante
   - Maggiore affidabilità ma richiede più risorse
 
-
 == FDD e TDD
 
-In 2G la connessione avveniva in FDD (Frequency Division Duplex).
+=== FDD - Frequency Division Duplex
 
-*FDD - Frequency Division Duplex*:
-- Frequenze diverse per uplink e downlink
-- #nota()[Vantaggi:
+In 2G la connessione avveniva in FDD (Frequency Division Duplex). Ovvero si utilizzano *frequenze diverse* per uplink e downlink:
+
+*$mg("Vantaggi")$*:
   - Si può trasmettere e ricevere contemporaneamente (nessun delay)
-  ]
-- #attenzione()[Svantaggi:
-  - Richiede maggiori risorse spettrali
-  - Metà del datarate disponibile (bisogna dividere lo spettro)
-  ]
+  
+*$mr("Svantaggi")$*:
+  - Richiede uno spettro più ampio
+  - *Metà del datarate* disponibile (bisogna dividere lo spettro)
+  
 
-*TDD - Time Division Duplex*:
-- Utilizza una sola frequenza sia per uplink che per downlink
-- #nota()[Vantaggi:
+=== TDD - Time Division Duplex
+
+Utilizza *una sola frequenza* sia per uplink che per downlink. In 4G (LTE) sono presenti entrambe le soluzioni: LTE-FDD e LTE-TDD.
+
+*$mg("Vantaggi")$*:
   - Migliore efficienza spettrale
-  ]
-- #attenzione()[Svantaggi:
+  
+*$mr("Svantaggi")$*:
   - Maggiore ritardo (bisogna aspettare il proprio turno)
-  ]
-
-#informalmente()[
-  In 4G (LTE) sono presenti entrambe le soluzioni: LTE-FDD e LTE-TDD.
-]
-
+  
 == GSM Mobile Station
 
 Il GSM è diviso in due parti distinte:
