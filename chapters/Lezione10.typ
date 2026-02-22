@@ -442,7 +442,7 @@ Il parametro principale per la decisione del cambiamento di cella è la *potenza
 
 //fix path
 #align(center)[
-  #image("..\assets\handoff-graph.png", width: 55%) 
+  #image("../assets/handoff-graph.png", width: 55%) 
 ]
 
 #informalmente()[
