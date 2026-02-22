@@ -244,145 +244,232 @@ La procedura di handover si articola in tre fasi:
 
 == Ambiente in ambito cellulare
 
-L'ambiente può essere fondamentale nella diffuzione del segnale cellulare. La rete è molto influenzata dalla topologia del terreno.
+L'ambiente può essere fondamentale nella diffusione del segnale cellulare. La rete è molto influenzata dalla topologia del terreno.
 
-Dobbiamo capire:
-- Potenza del segnale. Non deve creare interferenza con le celle vicine ma superare gli ostacoli
-- Rete mobile molto variabile a casua della mobilità
-- Fading, attenuazine del segnale molto presente (a differenza di wifi)
+#nota()[
+  Aspetti da considerare:
+  - *Potenza del segnale*: non deve creare interferenza con le celle vicine ma deve superare gli ostacoli
+  - *Variabilità*: rete mobile molto variabile a causa della mobilità degli utenti
+  - *Fading*: attenuazione del segnale molto presente (più che nel Wi-Fi)
+]
 
-La rete cellulare ha una attenuazione del Line of Site molto marcata.
+La rete cellulare ha un'attenuazione del Line of Sight molto marcata.
 
-Queste operazioni prendono il nome di NetworkPlaning. Prendono al topologia 3D di un sito e studiano come si propaga il segnale in questo ambiente.
+#informalmente()[
+  Il *Network Planning* consiste nel prendere la topologia 3D di un sito e studiare come si propaga il segnale in quell'ambiente specifico.
+]
 
 == HandOff/HandOver
 
-Viene fatto in questo modo:
-- La procedura viene decisa dalla rete osservando le misurazioni del segnale ricevuto per capire quanto è buono il canale di comunicazione.
+=== Modalità di decisione
 
-  La basestation osserva la qualità del canale di uplink (non chiede informazioni aggiuntive) mentre il dispositivo trasmette. Se il canale è andato, può richiedere una procedura di handover.
+La procedura viene decisa dalla rete osservando le misurazioni del segnale ricevuto per valutare la qualità del canale di comunicazione.
 
-- Il dispositivo può essere coinvolto nella decisione. Il dispositivo invia dei feedback tramite il segnale di uplink. Si tratta di cioò che il dispositivo _capisce_ dalla basestation (viene usato il downlink).
+*Approccio 1 - Solo Base Station*:
+- La base station osserva la qualità del canale di uplink mentre il dispositivo trasmette (non richiede informazioni aggiuntive)
+- Se il canale degrada, può richiedere una procedura di handover
 
-Sono informazioni che la basestation può utilizzare. La basestaion è molto veloce nel fare queste operazioni (garantito dall'hardware)
-
-//aggiugnere grafico
-
-Il grafico è in scala logaritimica.
-
-=== Potenza relativa
-
-Dopo un po potrebbe cadere che $"Rx"_B$ < $"Rx"_A$. Il *ping pong* effect è che facciamo un handover continuo dalla basestaion $A$ a $B$. Questo effetto è deleterio per le risorse, c'è solo controllo non mandiamo mai dati continuiamo a deallocare e allocare le risorse.
-
-Vado a sempre al max della potenza offerta dalla base station.
-
-==== Potenza relativa + Tashold
-
-Per evitare questo effetto andiamo a posizionare una *Tashold*. Andiamo a imporre un valore assoluto di riferimento. L'ultima soglia, al di sotto del punto di intersezione dice che se percepiamo anche un altra base station che ha un seganle più alto non vale la pena cambiare. Sotto l'ultima soglia cambio stazione
-
-In questo caso triggheriamo l'handover in $L_4$ da base station $A$ a base Station $B$. Le condizioni diventano due per il passaggio:
-- $"Rx"_A < T$. Deve essere minore della soglia, altrimenti non ha senso cambiare
-- $"Rx"_B > "Rx"_A$
-
-La criticità e settare la trashold, è difficile trovarne una adeguata.
-
-==== Potenza relativa Isteresi
-
-*Isteresi* = valore di una funzione non dipende solamente dall'input ma anche dallo stato precedente del sistema.
-#esempio()[
-  Impostiamo la temperatura a 20 gradi (si spegne il sitema). Il parametro di isteresi è quanto deve essere più preddo per triggerare l'accensione del riscaldamento. Il riscaldamento non si accende subito quando scende a $19.99$ ma a $19.7$ ad esempio.
-]
-
-//aggiungere grafico
-
-Sull'asse del $x$ c'è la potenza relativa $+H$ $B$ ha $H$ maggiore risetto ad $A$. Al contrario in $-H$ $A$ è migliore
-
-Supponiamo che la potenza di B stia aumentando. Nel momento in cui raggiunge il punto $+H$ essa raggiunge il punt di esteresi e passa a $B$.
+*Approccio 2 - Collaborativo*:
+- Il dispositivo viene coinvolto nella decisione
+- Il dispositivo invia feedback tramite il segnale di uplink
+- Questi feedback descrivono ciò che il dispositivo _percepisce_ dalla base station (usando il downlink)
 
 #nota()[
-  é una potenza relativa, $B - A >= H$ per triggerare il cambio.
+  La base station è molto veloce nell'eseguire queste operazioni grazie a hardware dedicato.
 ]
-Se siamo in $B$ e torniamo indietro fino alla soglia di isteresi di $A$  e cambiamo, rimanendo in $A$.
 
-La posizione sulla $Y$ ci dice la base station associata. La funzione ha due valori diversi in base alla funzione di partenza
+=== Strategie di Handoff
 
-Nel grafico precedente l'isteresi è come se seguissimo un'altra curva ($H$ nell'immagine). Tiene conto della potenza relativa di isteresi. Non faccio più il passagio in $L_1$ ma in un altro punto $L_2$.
 
-#nota()[
-  Problema con il segnle assoluto, Si impone una soglia in quanto l'isteresi lavora solatmente a livello relativo.
+==== Potenza relativa
+
+Dopo un certo punto potrebbe accadere che $"Rx"_B > "Rx"_A$. 
+
+#attenzione()[
+  Il *ping pong effect* consiste nell'effettuare handover continui dalla base station $A$ a $B$ e viceversa. Questo effetto è deleterio per le risorse: c'è solo traffico di controllo, non si trasmettono mai dati, si continuano ad allocare e deallocare risorse.
 ]
-La condizioni diventano:
-- $"Rx"_A < T$. Segnale minore in modo assoluto
-- $"Rx"B^h > "Rx"_A$. Potenza relativa di $B$ maggiore di quella di $A$. Stiamo dicendo che la potenza dell'altra stazione è sufficentemente maggiore rispetto al punto di isteresi.
 
 #informalmente()[
-  L'isteresi è una sorta di buffer per le variazioni repentive di segnale
+  L'obiettivo è sempre connettersi alla base station con la potenza massima offerta.
+]
+
+==== Potenza relativa + Threshold
+
+Per evitare il ping pong effect si introduce una *threshold* (soglia). Si impone un valore assoluto di riferimento.
+
+
+
+#nota()[
+  L'handover da base station $A$ a base station $B$ avviene quando sono soddisfatte entrambe le condizioni:
+  - $"Rx"_A < T$ (segnale di A minore della soglia in valore assoluto)
+  - $"Rx"_B > "Rx"_A$ (segnale di B migliore di quello di A)
+]
+
+#attenzione()[
+  La criticità è impostare correttamente la threshold: è difficile trovare un valore adeguato per tutti gli scenari.
+]
+
+==== Potenza relativa con Isteresi
+
+#informalmente()[
+  *Isteresi* = il valore di una funzione non dipende solamente dall'input ma anche dallo stato precedente del sistema.
+]
+
+#esempio()[
+  Termostato con temperatura impostata a 20°C:
+  - Il sistema si spegne quando raggiunge 20°C
+  - Il parametro di isteresi determina quando riaccendersi
+  - Il riscaldamento non si accende subito a 19.99°C ma, ad esempio, a 19.7°C
+  - Questo evita accensioni/spegnimenti continui
+]
+
+
+#nota()[
+  Funzionamento dell'isteresi:
+  - Sull'asse $x$: potenza relativa $B - A$
+  - $+H$: quando $B$ è migliore di $A$ di almeno $H$ si passa a $B$
+  - $-H$: quando $A$ è migliore di $B$ di almeno $H$ si torna ad $A$
+  - La BS associata (asse $y$) dipende dalla storia: da dove proveniamo
+]
+
+#informalmente()[
+  L'isteresi fornisce un "buffer" contro le variazioni repentine di segnale, evitando cambi di cella troppo frequenti.
+]
+
+#attenzione()[
+  Le condizioni per l'handover diventano:
+  - $"Rx"_A < T$ (segnale assoluto minore della threshold)
+  - $"Rx"_B - "Rx"_A > H$ (potenza relativa di $B$ sufficientemente maggiore rispetto al margine di isteresi)
+  
+  L'isteresi lavora a livello relativo, ma serve comunque una soglia assoluta ($T$) per garantire una qualità minima.
 ]
 
 == Hard Handoff vs Soft Handoff
 
-- Hard da 2g in avanti. Il dispositivo è assocato ad una sola BS alla volta
-
-- Soft = il dispositiv mantiene la conettività con entrambe le BS, il rilascio di una BS quando il segnale è chiaramente dominante. Richiede ovviamente più risorse.
+#nota()[
+  Esistono due approcci fondamentali:
+  
+  *Hard Handoff* (dal 2G in avanti):
+  - Il dispositivo è associato a una sola BS alla volta
+  - Si rilascia la vecchia connessione prima di stabilire la nuova
+  - Minore consumo di risorse
+  
+  *Soft Handoff*:
+  - Il dispositivo mantiene la connettività con entrambe le BS contemporaneamente
+  - Si rilascia la vecchia BS solo quando il segnale della nuova è chiaramente dominante
+  - Maggiore affidabilità ma richiede più risorse
+]
 
 == FDD e TDD
 
-In 2g la connessione avvenivs in FDD. Frequenze diverse per uplink e downlink. Vantaggi:
-- Posso trasmettere e ricevere contemporaneamente (non c'è delay)
-- Maggiori risorse, metà del datarate, devo dividere lo spettro
+In 2G la connessione avveniva in FDD (Frequency Division Duplex).
 
-TDD. Utilizzo una sola frequenza sia per uplink e downlink. Utilizzo di una sola frequenza. Maggiore ritardo perchè devo aspettare
+*FDD - Frequency Division Duplex*:
+- Frequenze diverse per uplink e downlink
+- #nota()[Vantaggi:
+  - Si può trasmettere e ricevere contemporaneamente (nessun delay)
+  ]
+- #attenzione()[Svantaggi:
+  - Richiede maggiori risorse spettrali
+  - Metà del datarate disponibile (bisogna dividere lo spettro)
+  ]
 
-In 4G sono presenti entrambe le soluzioni
+*TDD - Time Division Duplex*:
+- Utilizza una sola frequenza sia per uplink che per downlink
+- #nota()[Vantaggi:
+  - Migliore efficienza spettrale
+  ]
+- #attenzione()[Svantaggi:
+  - Maggiore ritardo (bisogna aspettare il proprio turno)
+  ]
 
-== GSM Mobile station
+#informalmente()[
+  In 4G (LTE) sono presenti entrambe le soluzioni: LTE-FDD e LTE-TDD.
+]
 
-IL GSM è diviso in due parti:
-- Mobile equipment
-- Sim
+== GSM Mobile Station
 
-=== ME
-identificativo del dispositivo, fatto nel seguente modo:
-- TAC: costruttore
-- FAC: dove viene assemblato
-- SN: sequence number
-- Check Digit: bit di controllo
+Il GSM è diviso in due parti distinte:
+- *Mobile Equipment* (ME): il dispositivo fisico
+- *SIM Card*: la carta SIM che identifica l'utente
 
-identifica in modo unico un dispositivo mobile (viene utilizzato in caso di furto).
+=== Mobile Equipment (ME)
+
+Identificativo unico del dispositivo, composto da:
+- *TAC* (Type Allocation Code): identifica il costruttore
+- *FAC* (Final Assembly Code): identifica dove viene assemblato il dispositivo
+- *SN* (Serial Number): numero sequenziale
+- *Check Digit*: bit di controllo
+
+#nota()[
+  Questo identificativo (chiamato IMEI) identifica in modo univoco un dispositivo mobile ed è utilizzato, ad esempio, in caso di furto per bloccare il dispositivo.
+]
 
 === SIM Card
 
-Identifica un abbonato (un utente). La SIM contiene anche la chiave segreta per autenticazione e generazione delle chiavi di cifratura. L'identificativo della sim è detto IMSI, ed è composto da:
-- MCC: stato dell'operatore
-- MNC: mobile network code, unico a livello nazionale
-- MISN: Mobile Subscriber per identification number
+Identifica un abbonato (un utente). La SIM contiene:
+- L'identificativo dell'utente
+- La chiave segreta per l'autenticazione
+- I dati per la generazione delle chiavi di cifratura
 
-#nota()[
-  Il numero di SIM non ha nulla a che vedere con il numero di telfono
+L'identificativo della SIM è chiamato *IMSI* (International Mobile Subscriber Identity) ed è composto da:
+- *MCC* (Mobile Country Code): codice dello Stato dell'operatore
+- *MNC* (Mobile Network Code): codice dell'operatore, unico a livello nazionale
+- *MSIN* (Mobile Subscriber Identification Number): identificativo dell'abbonato
+
+#attenzione()[
+  L'IMSI della SIM *non* ha nulla a che vedere con il numero di telefono!
 ]
 
-Il numero di telefono è chiamaso MSISDN. ISDN sta per la rete digitale (precursore della DSL). Il numero di telefono è fatto da:
-- CC: codice del paese
-- NDC: Destination Code
-- Numero
+=== Numero di telefono (MSISDN)
 
-Tuttavia *non* c'è più un associazione $1:1$. Ad oggi una SIM può portare più numeri di telefono. è stata introdotta a metà degli anni 2000.
+Il numero di telefono è chiamato *MSISDN* (Mobile Station International Subscriber Directory Number). 
 
-= GSM //non in esame
+#informalmente()[
+  ISDN sta per Integrated Services Digital Network, la rete digitale precursore della DSL.
+]
 
-L'idea iniziale è di trasmettere solo voce, poi SMS (all'inizio erano messaggi di controllo).
+Il numero di telefono è composto da:
+- *CC* (Country Code): codice del paese
+- *NDC* (National Destination Code): codice di destinazione nazionale
+- *Subscriber Number*: numero dell'abbonato
 
-Ad oggi GSM è un circuit-switch virtualizzato su IP. Vogliamo avere un numero elevato di utenti cambiando il meno possibile.
+#nota()[
+  Oggi *non* esiste più un'associazione 1:1 tra SIM e numero di telefono. Una SIM può avere associati più numeri di telefono. Questa funzionalità è stata introdotta a metà degli anni 2000.
+]
 
-GSM è stato standardizzato dalla ETSI.
+= GSM // non in esame
 
-GSM funzionava con frequency division duplex. Due canali. Ogni banda sono $25 "Mhz"$. Ogni banda a sua volta viene divisa in $125$ canali da $200 "kHz"$.
+L'idea iniziale di GSM era trasmettere solo voce. Successivamente furono aggiunti gli SMS (che all'inizio erano messaggi di controllo della rete).
 
-Dicendo il canale $2$ possiamo sapere il dispositivo associato. Ad ogni dispositivo veniva associato un canale e un time-slot. Si parlava sempre a intervalli regolai (costant bit rate) e $2G$.
+#nota()[
+  Oggi GSM è essenzialmente un sistema circuit-switched virtualizzato su IP. L'obiettivo è supportare un numero elevato di utenti cambiando il meno possibile l'infrastruttura esistente.
+]
 
-Abbiamo un grande dispendio per installare le base station e controllare il traffico voce.
+GSM è stato standardizzato dall'ETSI (European Telecommunications Standards Institute).
+
+== Caratteristiche tecniche
+
+GSM funzionava con *FDD* (Frequency Division Duplex):
+- Due bande di frequenza (uplink e downlink)
+- Ogni banda: $25$ MHz
+- Ogni banda divisa in $125$ canali da $200$ kHz
+
+#esempio()[
+  Specificando il canale 2, si può risalire al dispositivo associato. Ad ogni dispositivo veniva assegnato un canale e un time-slot. Si trasmetteva sempre a intervalli regolari (constant bit rate) in 2G.
+]
+
+#informalmente()[
+  L'infrastruttura richiedeva un grande investimento per installare le base station e gestire il traffico voce.
+]
 
 = GPRS & EDGE
 
-Si tratta dellìintegrazione di GSM con la rete internet. Non vogliamo buttare via la parte radio (base station) ma solamente la parte software.
+GPRS (General Packet Radio Service) ed EDGE (Enhanced Data rates for GSM Evolution) rappresentano l'integrazione di GSM con la rete Internet.
+
+#nota()[
+  L'obiettivo era mantenere l'infrastruttura radio esistente (base station) modificando solamente la parte software e di core network.
+  
+  In questo modo si poteva riutilizzare l'investimento fatto per il 2G aggiungendo capacità di trasferimento dati a pacchetto.
+]
 
