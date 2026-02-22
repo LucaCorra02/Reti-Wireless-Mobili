@@ -181,7 +181,7 @@ La combinazione intelligente dei parametri EDCA permette una *differenziazione e
   )
 ]
 
-#attenzione()[
+#attenzione[
   Il sistema EDCA garantisce che *non* ci sia *starvation*: anche il traffico _Background_ (AC_BK) prima o poi accederà al canale. Tuttavia, in condizioni di carico elevato, le AC a bassa priorità subiranno ritardi significativi, per garantire QoS ai servizi real-time.
 ]
 
@@ -373,23 +373,23 @@ Il *Sequence Number* è il meccanismo fondamentale di AODV per *garantire loop-f
   1. Quando inizia una nuova ricerca di percorso (RREQ)
   2. Quando risponde a una RREQ come destinazione (RREP)
 
-  #nota()[
-    L'incrimento del Sequence Number prima di eseguire una RREQ serve per prevenire conflitti con i percorsi inversi, stabiliti dalla RREQ precedente.
+  #nota[
+    L'incremento del Sequence Number prima di eseguire una RREQ serve per prevenire conflitti con i percorsi inversi, stabiliti dalla RREQ precedente.
   ]
 
 / *Aggiornamento*: Un nodo può aggiornare il sequence number di una entry nella sua tabella solo se:
   - Riceve *informazioni più fresche* (SN maggiore) per quella destinazione
-  - È il *nodo stesso* (aggiorna la propria entry nella sua tabella di routing) e offre una nuovo percorso per se stesso)
+  - È il *nodo stesso* (aggiorna la propria entry nella sua tabella di routing e offre un nuovo percorso per sé stesso)
   - La entry scade (*timeout*)
 
-#attenzione()[
+#attenzione[
   L'*incremento* avviene trattando il sequence number come un *unsigned integer* a $32 "bit"$, quindi dopo $2^32-1$ ritorna a $0$. 
 
-  Il *confronto* tra sequence number avviene come se fossero *unsigned* (per gestrire overflow $2^31$), quindi se:
+  Il *confronto* tra sequence number avviene come se fossero *unsigned* (per gestire overflow $2^31$), quindi se:
   $
     "entry_SN" - "altro_SN" > 0 -> "entry_SN è l'informazione più fresca" 
   $
-  #esempio()[
+  #esempio[
     - Se $"entry_SN" = 10$ e $"altro_SN" = 5$, allora $"entry_SN"$ è più fresco.
 
     - Se $"entry_SN" = 2$ e $"altro_SN" = 2^31$, allora si verifica un underflow:  $2 - (2^32-1) = 3 > 0$, quindi anche in questo caso "entry_SN" è più fresco.
@@ -465,7 +465,7 @@ I Vantaggi offerti sono:
   - *Riduce overhead* se la destinazione è vicina (caso comune)
   - *Evita flooding* completo se non necessario
 
-#informalmente()[
+#informalmente[
   L'originator inizia con un TTL basso (es. 2) per cercare la destinazione nei nodi vicini. Se non riceve risposta entro un *timeout*, incrementa il TTL e ritrasmette la RREQ, *espandendo progressivamente l'area di ricerca* fino a raggiungere un TTL massimo.
 ]
 
@@ -501,7 +501,7 @@ I Vantaggi offerti sono:
 - $"TTL"_"increment"$: Incremento ad ogni fallimento (dopo timeout)
 - $"TTL"_"net_diameter"$: *TTL massimo*, diametro massimo della rete
 
-#nota()[  
+#nota[  
   Esiste un *caso speciale* per cui la ricerca parte con un TTL più alto: Se esiste una entry invalida per la destinazione (o un percorso interrotto) con *hop count noto* (es. 10), la ricerca parte con $"TTL_noto"$ invece di $"TTL"_"start"$.
 ]
 
@@ -531,7 +531,7 @@ Quando un nodo riceve una RREQ, verifica se ha già visto la coppia $<"Originato
 
 Mentre la RREQ si propaga, ogni nodo intermedio costruisce il *percorso inverso* verso l'originator. Questo percorso sarà utilizzato dalla RREP per tornare indietro in unicast.
 
-#nota()[
+#nota[
   Se il flag $"destination_only" == 0$, allora un *nodo intermedio può rispondere* con una RREP se ha una route valida e fresca verso la destinazione, evitando di propagare ulteriormente la RREQ.
 
   Formalmente le condizioni di risposta sono:
@@ -649,9 +649,9 @@ Se le condizioni sono soddisfatte, il nodo intermedio crea una RREP con:
 - _Lifetime_ = In base al valore presente nella entry
 - _Hop Count_ = Valore presente nella entry
 
-Succesivamente invia la RREP in unicast lungo il percorso inverso verso l'originator, senza propagare ulteriormente la RREQ.
+Successivamente invia la RREP in unicast lungo il percorso inverso verso l'originator, senza propagare ulteriormente la RREQ.
 
-#nota()[
+#nota[
   Se il flag *$"gratuitous_rrep" == 1$*, il nodo intermedio, invia anche una RREP gratuita alla destinazione, informandola della creazione del percorso inverso verso l'origine. 
   
   Utile per la *scoperta bidirezionale*.
@@ -894,7 +894,7 @@ Ogni nodo intermedio che inoltra la RREP:
 
 A registra il percorso: $mono("A -> C -> F -> G -> H")$ con 3 hop e DST_SN = 149.
 
-#nota()[
+#nota[
   *Mancanza di bidirezionalità*: In questo momento, $A$ ha un percorso verso $H$ (passando per $C-F-G$), ma questo percorso *non è bidirezionale*. $H$ non ha ancora ricevuto informazioni su questa rotta e non può usarla per comunicare con $A$. Questo perché:
   - La RREP di $F$ è stata generata dalla cache di $F$, non da $H$
   - $H$ non ha ricevuto alcuna informazione su questo percorso
@@ -1012,24 +1012,177 @@ Di conseguenza il nodo $H$ esegue i seguenti passi per generare la RREP:
 In questo modo, il nodo $A$ salva definitivamente il percorso: $mono("A -> B -> D -> H")$ con $3$ hop e $"DST_SN" = 150$.
 ]
 
-=== RREP con flag Gratuitous
+== Flag Gratuito
 
-Il flag $"gratuitous_rrep" == 1$ serve per ottenere un *cammino biderezionale* più rapidamente (a differenza dell'esempio precedente). Quando un nodo intermedio risponde con una RREP, se questo flag è settato, il nodo invia anche una RREP gratuita alla destinazione, informandola della creazione del percorso inverso verso l'origine.
+Risolve il problema della *potenziale assimetria* (a differenza dell'esempio precedente).
+
+Se un nodo intermedio riceve una RREQ con flag $G==1$ e soddisfa le condizioni per rispondere, oltre a generare una RREP verso l'origine, invia anche una *RREP gratuita verso la destinazione*. Questa RREP gratuita informa la destinazione dell'esistenza di un percorso verso l'origine, permettendo così alla destinazione di aggiornare la propria tabella di routing e costruire un percorso bidirezionale.
+
+#informalmente[
+  Viene *simulata* la risposta di un nodo intermedio alla destinazione, come se la destinazione avesse inviato una RREQ verso l'origine e il nodo intermedio stesse rispondendo a quella richiesta.
+]
+
+La RREP gratuita verso la destinazione (della RREQ originale) contiene:
+- _Hop Count_: numero di hop verso la destinazione (valore preso dalla entry)
+- _Destination IP_: IP dell'originator (come se fosse la destinazione che chiede di trovare una rotta verso l'origine) 
+- _Destination SN_: SN nella entry verso l'origine della RREQ 
+- _Originator IP_: IP della destinazione (preso dalla RREQ)
+- _Lifetime_: lifetime della rotta verso l'origine (preso dalla entry)
+
+#nota[
+  Tramite questo meccanismo, andiamo a risolvere il seguiente problema: Se un nodo intermedio risponde alla richiesta, allora, simao in grado di stabilire un *percorso unidirezionale*:
+  $
+    "Originator" -> "Nodo Intermedio" -> "Destinazione"
+  $
+  Tuttavia, *non* possiamo sapere se la destinazione conosce un modo per arrivare alla sorgente, il percorso origine-destinazione potrebbe essere *asimmetrico*.
+]
 
 
 
+#esempio[
+  Sempre usando la stessa topologia dell'esempio precedente e considerando la RREQ inviata da $A$ per raggiungere $H$ con $"DST_SN" = 140$, $G=1$.
+
+  Quando la RREQ raggiunge $F$, siccome esso ha una entry valida verso $H$ con $"DST_SN" = 149$ ($> 140$ RREQ), può rispondere alla RREQ. Inoltre, siccome $G==1$, $F$ genera anche una RREP gratuita verso $H$:
+
+  - *RREP di F*, contiene:
+    - DEST = $H$
+    - DEST SN = $149$
+    - Originator = $A$
+    - Hop = $2$
+
+  - *RREP Gratuita*, contiene:
+    - DEST = $A$ (è come se il nodo $H$ avesse chiesto di trovare una rotta per il nodo $A$)
+    - DEST SN = $200$ (SN di $A$)
+    - Originator = $H$
+    - Hop count = $2$
+]
+
+== Hello Message
+
+Ogni nodo può indicare informazioni sulla propria *connettività* locale ai vicini tramite gli *Hello Message*.
+
+#nota()[
+  I messaggi di hello message non sono altro che RREP con un $"TTL (Time To Live)" = 1$, inviati in *broadcast* ai vicini.
+]
+
+Tali messaggi servono per costruire la conoscenza della rete a distanza $1$. Hanno il compito di *mantenere conto della connettività locale*, stato dei link del vicinato. 
+
+=== Formato
+
+Un hello message contiene:
+- _Destination IP_: IP del nodo stesso
+- _Destination SN_: SN del nodo stesso
+- _Hop Count_: 0
+- _Lifetime_: $"ALLOWED_HELLO_LOSS" * "HELLO_INTERVAL"$ 
+
+Ogni nodo ha quindi il compito di tenere traccia della connettività con i nodi indicati come _next hop_ nelle proprie entry. Esistono due meccanismi per monitorare se un hello message è fallito:
+- *Livello Data Link*
+- *Livello Rete*
+
+=== Livello Data Link
+
+In mancanza di un Clear to Send o un *ACK* (da parte di un vicino), il link viene considerato _rotto_. 
+
+L'hello message viene mandato unicast a livello 2 o broadcast a livello 3:
+ - Se viene mandato *unicast* e l'altro nodo non risponde, allora il link viene considerato guasto (dopo un certo numero di tentativi). 
+ 
+ - Se invece viene mandato in *broadcast*, non è possibile sapere se il vicino ha ricevuto o meno il messaggio, quindi non è possibile monitorare la connettività a livello 2.
+
+=== Livello di Rete
+
+Se un nodo riceve un *qualsiasi pacchetto* da un vicino, allora quel vicino è considerato attivo. Se invece non riceve pacchetti da un vicino per un certo periodo di tempo, allora quel vicino viene considerato inattivo. Posso essere usate due tecniche per monitorare la connettività: 
+  - Route Request al next hop (destinazione è il next hop)
+  - ICMP Echo Request
 
 == Route Error (RERR)
 
-Quando un link si rompe (es. un nodo si muove fuori range), i nodi adiacenti rilevano il fallimento e inviano RERR per invalidare tutte le route che utilizzavano quel link.
+Se un link viene marcato come interrotto/scaduto (utilizzando livello 2 o livello 3), e se esso fa parte di un *percorso attivo*:
+- Vengono invalidati tutti i percorsi che usano quel link. Sicome AODV *non ammette multipath*, è sufficiente invalidare tutte le entry che usano quel link come next hop.
 
-Il RERR viene propagato a monte verso tutti i nodi che utilizzavano la route rotta, permettendo loro di:
-- Invalidare le entry nella routing table
-- Eventualmente iniziare una nuova route discovery
+- Vengono identificate le destinazioni per le quali viene usato come next hop il link interrotto
 
-#attenzione[
-AODV è sensibile alla mobilità: link breaks frequenti causano overhead significativo di RERR e nuove RREQ. In reti altamente dinamiche, protocolli proattivi o ibridi potrebbero essere più efficienti.
+- Viene determinato quali vicini possono essere affetti da questo problema (*lista dei predecessori*). Cioè i vicini che usano quel link come next hop per raggiungere una destinazione.
+
+- Viene inviato ai vicini identificati un messaggio di *Route Error (RERR)*
+
+#nota()[
+  I link che sono stati marcati come interrotti *non vengono eliminati*, ma marcati come invalidi per un certo periodo di tempo, in attesa di eventuali riparazioni.
 ]
+
+=== Formato
+
+Il messaggio *RERR (Route Error)* ha la seguente struttura:
+
+#align(center)[
+  #figure(
+    table(
+      columns: (2fr, 5fr),
+      align: (center + horizon, left + horizon),
+      [*Campo*], [*Descrizione*],
+      [Type], [Valore fisso = 3 (identifica il messaggio come RERR)],
+      [Flag N], [Se impostato a 1, indica che il link è rotto ma la destinazione della RERR, non deve cancellare le entry perché è stata eseguita una riparazione dal nodo che invia il messaggio],
+      [DestCount], [Numero di destinazioni non raggiungibili elencate nel messaggio (deve valere almeno 1)],
+      [Unreachable Dest], [Indirizzo IP della destinazione non raggiungibile],
+      [Unreachable SN], [Sequence Number della destinazione non raggiungibile],
+      [Additional Unreachable Destinations], [Eventuali coppie (IP, SN) aggiuntive per altre destinazioni non raggiungibili],
+    ),
+    caption: [Formato del messaggio Route Error (RERR)]
+  )
+]
+
+Il messaggio di RERR può essere inviato quando: 
+
+*Viene identificato un link interrotto*: quando un nodo deve inoltrare pacchetti dati lungo quel link. Se il transito insiste sul link interrotto, il nodo avvisa i vicini.
+#esempio[
+  Se nell'immagine di prima si guasta il link da $F$ a $G$, l'entry di $C$ che usa $F,G$ per andare a $H$ viene invalidata e il nodo $C$ viene avvisato con un messaggio di errore per l'entry $<H,F>$.
+]
+
+*Informazioni non aggiornate*: se un nodo riceve un pacchetto DATA per una destinazione per cui non possiede una entry. Il nodo ha delle informazioni non aggiornate che utilizzano ancora il link interrotto.
+
+*Route Error da vicini*: se un nodo riceve una RERR da un vicino per una o più destinazioni, le informazioni vengono aggiornate. Si tratta di una *RERR _passiva_*: Il nodo corrente usa come _next hop_ un nodo che a sua volta utilizza il nodo che ha scoperto il link interrotto.
+
+#esempio[
+  $C$ riceve un Route Error da $F$. Siccome $C$ usava $F$ per andare a $H$, anche $C$ non raggiunge più $H$. In questo caso $C$ avvisa $A$ che non raggiunge più $H$.
+]
+
+Cosa succede quando un nodo riceve un RERR:
+ - Marca come invalide le entry che sono indicate nella RERR
+
+ - Ogni entry viene invalidata ma preservata per eventuali riparazioni (per un certo lasso di tempo $"DELETE_PERIOD"$)
+
+
+- Vengono inoltrare le *RERR* ai predecessori (massimo di 1 hop) che usano il link interrotto come next hop per raggiungere una destinazione. Se un nodo non ha predecessori, non inoltra la RERR.
+
+=== Local Repair
+
+Se un nodo riceve un pacchetto per una destinazione lungo un percorso interrotto e la *destinazione non è troppo lontana* (fissato un numero di hop limitato), si può cercare di riparare la rottura trovando un percorso alternativo. La distanza di riparazione massima è data da: 
+$
+  "MAX_REPAIR_TTL" = 1/3 * "NET_DIAMETER"
+$
+#informalmente()[
+  La riparazione è limitata a un certo numero di hop, che è al massimo 1/3 del diametro della rete.
+]
+
+ #nota()[
+    La riparazione viene effettuata solo se il link rotto viene utilizzato in modo attivo (arrivano dei dati su quel link). Si tratta di una *riparazione reattiva* scatenata da un evento: trasmissione dei dati.
+ ]
+
+La riparazione viene eseguita tramite una *RREQ* limitata. Viene impostato un TTL in modo da raggiungere la sorgente. Se viene trovato un percorso alternativo:
+
+- Se il numero di hop trovato è accettabile, il percorso viene usato
+
+- Se il percorso trovato è più lungo, viene mandato un messaggio di *RERR* con il flag $ N ("no delete") = 1$. Il percorso trovato può essere accettato o meno, la scelta sta alla sorgente. Se non è soddisfatta può eseguire una nuova RREQ per trovare un percorso migliore.
+
+- Se la procedura di riparazione fallisce, viene inviato un RERR con $N=0$ (per indicare che le entry devono essere eliminate).
+
+=== Reboot
+
+La procedura di reboot viene eseguita quando un nodo si riavvia. *Durante* il *reboot*, il *nodo non è in grado di inoltrare messaggi* o rispondere a richieste. 
+
+Viene aspettato un certo periodo di tempo (definito da $"DELETE_PERIOD"$) prima di considerare il nodo attivo. Durante questo periodo, il nodo non può essere usato come next hop per nessuna destinazione.
+
+Tuttavia, potrebbero esserci ancora delle informazioni vecchie nelle tabelle di routing che indicano quel nodo come next hop per alcune destinazioni. Se il nodo che si sta riavviando riceve dei messaggi, *viene generata una RERR*, poiché il nodo non può operare come nodo attivo durante il $"DELETE_PERIOD"$.
+
 
 === Esempio Completo di Route Discovery //TODO modificare con tema esame
 
@@ -1183,11 +1336,4 @@ AODV è sensibile alla mobilità: link breaks frequenti causano overhead signifi
 4. *Multiple RREQ scartate*: Ogni nodo riceve probabilmente multiple copie della stessa RREQ (es. G riceve da D e da F), ma inoltra solo la prima o la migliore
 
 *Percorso finale stabilito*: A ↔ B ↔ D ↔ G ↔ H (oppure A ↔ C ↔ F ↔ G ↔ H)
-]
-
-#nota[
-*Criterio di selezione*: 
-- Sequence Number più alto vince sempre (frescrezza)
-- A parità di SN, Hop Count minore vince (percorso più corto)
-- D aveva SN 199 per A, la RREQ porta SN 200 → aggiornamento obbligatorio anche se la route via E esisteva
 ]
