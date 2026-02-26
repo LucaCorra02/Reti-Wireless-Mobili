@@ -31,6 +31,6 @@
 #part("Comunicazioni Wireless")
 #include "chapters/Lezione1.typ"
 #include "chapters/Lezione2.typ"
-#part("Bluetooth")
+#part("Wireless Personal Area Network (WPAN)")
 #include "chapters/Lezione4.typ"
 

@@ -112,7 +112,7 @@ Si tratta di una codifica *lossless* per onde. Partendo da un segnale continuo, 
   Per la voce dovremmo utilizzare frequenza di campionamento PCM a $8$ bit $8000"Hz"-> 64 "Kbps"$ (il segnale vole è a $300-3400"HZ"$). Con $8$ bit possiamo coodificare $256$ livelli di segnale.
 ]
 
-= Standard bluetooth ($802.15.1$)
+= Bluetooth ($802.15.1$)
 
 Bluetooth aderisce come tutte le altre tecnologie per le comunicazioni a corto raggio allo standard $802.15.x$. In particolare, bluetooth rientra nello standard $802.15.1$.
 
@@ -339,7 +339,7 @@ Il Bluetooth opera nella banda dei $2.4 "GHz"$, che è molto affollata. Per evit
 
 - Divisione dello Spettro: La banda viene divisa in canali più piccoli. Tipicamente per bluetooth classico vengono creati $79$ canali da $1 "MHz"$ ciascuno.
 
-- Hop: Il segnale non sta fermo. _Salta_ da un canale all'altro seguendo uno schema pseudocasuale. In particolare viene spostata la frequenza centrale:
+- Hop: Il segnale non sta fermo. Ogni $625 mu s$ _salta_ da un canale all'altro seguendo uno schema pseudocasuale. In particolare viene spostata la frequenza centrale:
 $
   f_c = 2402 + underbrace(k, "Numero"\ "canale") "Mhz"
 $
@@ -350,7 +350,7 @@ $
 
 I $mg("vantaggi")$ introdotti sono:
 - Prevenzione delle interferenze
-- Sicurezza: Resistenza a intercettazione e jamming. Un attaccante dovrebbe conoscere l'esatta sequenza di salti e la tempistica precis
+- Sicurezza: Resistenza a intercettazione e jamming. Un attaccante dovrebbe conoscere l'esatta sequenza di salti e la tempistica precisa
 - Coesistenza (CDMA).
 
 === Layer Baseband
@@ -402,23 +402,26 @@ In particolare lo standard bluetooth fornisce i cosi detti *_profili_*. Essi ind
 
 == Pico-net & Scatternet
 
-Come detto in precedenza, nella piconet ogni dispositivo può avere due etichette:
+Una *piconet* è composta da un singolo master e un numero variabile di slave, che possono essere di tre tipi:
 
-- *Active slave (AS)*: Membro attivo della rete. Al massimo il suo indirizzo è su `3 bit` *Active Member Address (AMA)* ($0$ è il master).
+- *Active slave (AS)*: Membro attivo della rete. Possiedono un indirizzo su `3 bit`, l'*Active Member Address (AMA)*. Il master ha indirizzo `000` 
 
   #nota()[
-    Al più in una piconet ci possono essere $8$ ($2^3$) dispositivi che comunicano attiviamento (compreso il master).
+    Al più in una piconet ci possono essere $8$ ($2^3$) dispositivi che comunicano attivamente, compreso il master.
   ]
 
-- *Parked Salve (PS)*: Si tratta di un dispositivo che fa comunque parte della piconet ma *non ha accesso diretto alla comunicazione*. Può ascoltare i messaggi ma non può comunicare attivamente. Il master decide se risvegliarlo, assegnandoli un indirizzo AMA.\
+- *Parked Salve (PS)*: Si tratta di un dispositivo che fa parte della piconet ma *non ha accesso diretto alla comunicazione*. Può ascoltare i messaggi ma non può comunicare attivamente. Il master decide se risvegliarlo, assegnandoli un indirizzo AMA.\
   Ogni dispositivo possiede un *parked member address (PMA)* su `8 bit`, al massimo $255$ ($2^8$) dispositivi. L'indirizzo zeresimo è riservato al master.
 
-- *Stanby Salve (SS)*: Ci sono anche dei dispositivi che sono conosciuti, ma sono esclusi dalla rete (*non sono indirizzati*). Essi possono essere in una quantità illimitata.
+- *Stanby Salve (SS)*: Ci sono anche dei dispositivi che sono conosciuti, ma sono esclusi dalla rete (*non sono indirizzati*). Possono essere una quantità illimitata.
 
-Siccome lo standard bluetooth permette ad *uno slave di far parte di più piconet*. In questo modo si viene a creare una *scatternet*: insieme di più piconet che condividono slave tra di loro.
+Una *scatternet*, invece, si ottiene nel momento in cui un dispositivo entra a far parte di più piconet. Tali dispositivi possono avere ruoli diversi nelle diverse piconet, dato che ogniuna di queste è gestita in modo indipendente dai rispettivi master.
 
-#nota()[
-  Ogni piconet è separata, ciascuna è gestita dal proprio master.
+#esempio[
+  Il dispositivo X nell'immmagine sottostante, rispetto alla piconet A può essere sia un AS che un PS, con il relativo indirizzo. 
+  Rispetto a B, X può essere uno slave di qualunque tipo, indipendentemente dal ruolo che assume in A.\
+  In caso X sia AS e/o PS gli indirizzi assegnati da A e B ad X possono anche essere diversi.\
+  Essenzialmente ogni master gestisce la propria piconet in modo indipendente.
 ]
 
 #align(center)[
@@ -460,7 +463,7 @@ Siccome lo standard bluetooth permette ad *uno slave di far parte di più picone
     draw-node((5, 3), "AS") // Active Slave in basso
 
     // Nodo nell'intersezione (SOLO AS - condiviso tra le due piconet)
-    draw-node((7, 5), "AS") // Active Slave al centro dell'intersezione - UNICO NODO CONDIVISO
+    draw-node((7, 5), "X") // Dispositivo al centro dell'intersezione - UNICO NODO CONDIVISO
 
     // Nodi Piconet B (solo nella parte destra)
     draw-node((10.5, 5), "M") // MASTER B - nella Piconet B
@@ -510,12 +513,16 @@ La comunicazione avviene tramite:
   La trasmissione è come se fosse sincrona implicitamente, la sincronia viene gestita dal master.
 ]
 
+La comunicazione avviene in modo rigido tra master e slave. Negli slot temporali pari trasmette il master, gli slave nei dispari. Ad ogni cambio di slot si ha un cambio di frequenza secondo il FH.\
+La durata della trasmissione può essere estesa su un numero di slot dispari(1, 3, 5) *consecutivi*, fino ad un massimo 5. Tale comunciazione avviene senza cambiare frequenza. \
+La durata dispari, in numero di slot, è fondamentale per mantenere il rigido alternarsi nella comunciazione tra master e slave.\
+La risposta avverrà sulla frequenza decisa dal FH.
+
+Il tempo nella piconet è assoluto, chi dovrà parlare in un certo istante dovrà usare la *frequenza $f_i$* in base alla *frequency hopping globale*.\
+Se si trasmette su *più slot temporali* la frequenza non viene cambiata e la frequenza successiva non dipenderà dalla precedente ma da quella globale.
+
 #esempio()[
   Esempio di comunicazione tra master e $3$ slave. Tutti gli slave sono sincronizzati temporalmente e condividono la stessa frequenza di frequency hopping.
-
-  #nota()[
-    La direzione nella comunicazione è decisa a priori. Nelle frequenze pari (in termini di tempo e non di canali) il master parla con gli slave, viceversa negli slot di tempo dispari
-  ]
 
   #figure[
     #align(center)[
@@ -648,18 +655,10 @@ La comunicazione avviene tramite:
       })
     ]]
 
-  Supponiamo di essere al $6$ slot di tempo.:
-  - In TDMA il master decise di paralre con lo slave $2$. In particolare lo slave $2$ ascolterà sulla frequenza $f_6$ del frequency holding. Per tutti i $3$ slot successivi il master *non cambia la frequenza* (viene mantenuta la frequenza $f_6$ per tutto lo sloto).\
+  Supponiamo di essere al $6°$ slot di tempo:
+  - In TDMA il master decide di paralre con lo slave $2$, che ascolterà sulla frequenza $f_6$ del frequency hopping. Per tutti i $3$ slot successivi il master *non cambia la frequenza* (viene mantenuta la frequenza $f_6$ per tutto lo slot).\
 
   - Lo slave risponde sulla frequenza $f_9$.
-
-  #nota()[
-    Questo offset è presente in quanto il metronomo assoluto della piconet continua a battere ogni $625 mu s$. Chi dovrà parlare in un certo istante dovrà usare la *frequenza $f_i$* in base alla *frequency hopping globale*.
-
-    La frequency hopping viene scelta dal master, ogni tot secondi si _cambia_. Se si trasmette su *più slot temporali* *non* viene cambiata frequenza. La frequenza successiva non dipenderà dalla precedente ma da quella globale.
-
-    Inoltre, a causa della rigidità del modello il tempo di trasmissione può impiegare *solo slot di durata dispari*.
-  ]
 ]
 
 === Scatternet FH + CDMA
@@ -682,9 +681,10 @@ In alcuni momenti (non si sa quali) sui $79$ canali utilizzabili si può verific
 
 All'interno del livello Baseband esistono due tipi di collegamenti tra master e slave.
 
-*Synchronous Connection-Oriented (SCO)*: Si tratta di un collegamento *orientato alla connessione sincrona*, principalmente utilizzato per la trasmissione di *dati real-time* come la voce. Le caratteristiche principali sono:
+*Synchronous Connection-Oriented (SCO)* (point-to-point):\ 
+Si tratta di un collegamento *orientato alla connessione sincrona*, principalmente utilizzato per la trasmissione di *dati real-time* come la voce. Le caratteristiche principali sono:
 - *Simmetrico*: stessa banda in entrambe le direzioni (master $->$ slave e slave $->$ master)
-- *Slot riservati*: il master riserva slot temporali fissi e periodici per la comunicazione SCO
+- *Slot riservati*: il master riserva periodicamente coppie di slot adiacenti, così da permettere una comunicazione bidirezionale.
 - *Senza ritrasmissione*: i pacchetti persi non vengono ritrasmessi (meglio perdere qualche dato che introdurre ritardi)
 - *Payload fisso*: tipicamente $30$ byte per pacchetto
 - *Latenza bassa e costante*: ideale per applicazioni real-time
@@ -694,7 +694,8 @@ All'interno del livello Baseband esistono due tipi di collegamenti tra master e 
   Un collegamento SCO viene utilizzato per le chiamate vocali Bluetooth: il master riserva slot temporali regolari per garantire un flusso audio continuo senza interruzioni.
 ]
 
-*Asynchronous Connection-Less (ACL)*: Si tratta di un collegamento *asincrono senza connessione*, utilizzato per la trasmissione di *dati generici*. Le caratteristiche principali sono:
+*Asynchronous Connection-Less (ACL)* (point-to-multipoint):\
+ Si tratta di un collegamento *asincrono senza connessione*, utilizzato per la trasmissione di *dati generici*. Le caratteristiche principali sono:
 - *Asimmetrico*: può allocare più banda in una direzione rispetto all'altra
 - *Slot dinamici*: gli slot vengono assegnati dinamicamente dal master in base alle necessità
 - *Con ritrasmissione*: supporta meccanismi di controllo degli errori e ritrasmissione (ARQ)
@@ -707,7 +708,7 @@ All'interno del livello Baseband esistono due tipi di collegamenti tra master e 
 ]
 
 #nota()[
-  In una piconet possono coesistere sia collegamenti SCO che ACL. Il master gestisce entrambi i tipi attraverso lo scheduling degli slot temporali.
+  In una piconet possono coesistere sia collegamenti SCO, per un massimo di 3 per piconet, che ACL. Il master gestisce entrambi i tipi attraverso lo scheduling degli slot temporali.
 ]
 
 == Formato frame Baseband
@@ -716,9 +717,9 @@ Ogni frame Baseband è composto da tre parti principali:
 
 
 *Access Code* ($72$ bit): Serve per la sincronizzazione e l'identificazione. Ha un preambolo per sincronizzare la parte radio del ricevitore. L'Access Code può essere di tre tipi:
-- *CAC (Channel Access Code)*: identifica univocamente la piconet. Derivato dall'indirizzo del master
+- *CAC (Channel Access Code)*: identifica univocamente la piconet. Derivato dal MAC address del master
 - *DAC (Device Access Code)*: derivato dall'indirizzo hardware dello slave, serve per indicare che un certo messaggio è destinato a quel dispositivo specifico
-- *IAC (Inquiry Access Code)*: usato nella fase di scoperta per trovare dispositivi nelle vicinanze
+- *IAC (Inquiry Access Code)*: usato dal master nella fase di scoperta per trovare dispositivi nelle vicinanze
 
 *Header* ($54$ bit): Contiene informazioni di controllo per la gestione del collegamento:
 - *AM_ADDR (Active Member Address)*: indirizzo del membro attivo della piconet (master o slave) su $3$ bit
@@ -729,7 +730,7 @@ Ogni frame Baseband è composto da tre parti principali:
 - *SEQN (Sequence Number)*: numero di sequenza per ordinare i pacchetti ($1$ bit)
 - *HEC (Header Error Check)*: controllo degli errori dell'header ($8$ bit)
 
-Il header viene trasmesso tre volte per garantire robustezza agli errori.
+L'header viene trasmesso tre volte per garantire robustezza agli errori.
 
 *Payload* (variabile): Dimensione variabile in base al tipo di pacchetto:
 - *SCO*: payload fisso di $30$ byte
@@ -944,7 +945,7 @@ Il protocollo Bluetooth utilizza uno schema di controllo degli errori *Stop-and-
   Se trasmetto il pacchetto $1$ e ricevo conferma, il successivo sarà lo $0$. Il sequence number alterna tra $0$ e $1$ (SEQN modulo $2$).
 ]
 
-== Connessione alla piconet
+== Connessione alla piconet (layer LMP)
 
 Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency hopping, non sa come contattare i master) alla *modalità attiva* all'interno di una piconet?
 
@@ -952,9 +953,9 @@ Come fa un dispositivo a passare dallo *standby mode* (non conosce il frequency 
 
 Il processo di scoperta funziona nel seguente modo:
 
-+ *Master in inquiry*: il master sceglie un sotto-insieme specifico di canali (non tutti i $79$ per evitare interferenze) chiamati *inquiry channels*. Su questi canali trasmette periodicamente *inquiry packet* ogni $625 mu s$ (uno slot BT) per chiedere se ci sono dispositivi che vogliono connettersi
++ *Master in inquiry*: il master sceglie 39 canali chiamati *wake-up channels*. Su questi canali trasmette periodicamente *inquiry packet* per chiedere se ci sono dispositivi che vogliono connettersi
 
-+ *Slave in scan*: lo slave, per risparmiare energia, scansiona i canali di connessione *periodicamente* (non in modo continuo). L'inquiry scan dura circa $11.25 "ms"$ e viene eseguito con intervalli di $1.28$ o $2.56$ secondi. Quando intercetta un inquiry packet, non risponde immediatamente
++ *Slave in scan*: lo slave, per risparmiare energia, scansiona i wake-up channels *periodicamente* (non in modo continuo). L'inquiry scan dura circa $11.25 "ms"$ e viene eseguito con intervalli di $1.28$ o $2.56$ secondi. Quando intercetta un inquiry packet, non risponde immediatamente
 
 + *Random backoff*: lo slave attende un *random backoff time* prima di rispondere. Questo meccanismo evita collisioni con altri slave che potrebbero voler connettersi contemporaneamente. Il backoff è calcolato in modo da sincronizzarsi con il timing del master
 
@@ -1092,7 +1093,7 @@ Il processo di scoperta funziona nel seguente modo:
   ]
 
   Il diagramma mostra come:
-  - Il master trasmette continuamente inquiry packets (rettangoli $mg("verdi")$) ogni $625 mu s$
+  - Il master trasmette periodicamente inquiry packets (rettangoli $mg("verdi")$)
   - Lo slave effettua inquiry scan periodici (rettangoli $mb("blu")$) con lunghi intervalli tra uno scan e l'altro
   - I primi due scan falliscono ($mr("X rossa")$) perché non coincidono con l'invio di un inquiry packet
   - Il terzo scan ha successo (checkmark verde) intercettando un inquiry packet
@@ -1102,7 +1103,7 @@ Il processo di scoperta funziona nel seguente modo:
 === Fase di Paging (Connessione)
 
 Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
-+ Il master invia *page packet* sullo slave utilizzando il suo indirizzo hardware (DAC)
++ Il master invia *page packet* allo slave utilizzando il suo indirizzo hardware (DAC) su 16 dei 32 canali di wake-up.
 
 + Lo slave risponde e inizia la negoziazione dei parametri di connessione
 
