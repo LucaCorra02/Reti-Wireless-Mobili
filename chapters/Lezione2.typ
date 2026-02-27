@@ -1,55 +1,5 @@
 #import "../template.typ": *
 
-// TODO SPOTARE DI SEZIONE
-//Può capitare all'esame
-#esempio()[
-  Dati: 
-  - Uno spettro che va da $3"Mhz"$ a $4"Mhz" => "Bandwidth"$ = $4"Mhz"-3"Mhz"$ = $1"Mhz"$
-  - Un rapporto segnale rumore $"SNR"_("dB") = 12"db"$
-
-  Vogliamo: 
-  - Trovare la capacità del canale $C$;
-  - Calcolare il numero di livelli di segnale che devo avere per avere quella capacità del canale.
-
-  Per la _Shannon Capacity Formula_ la massima capacità del canale è data dal prodotto fra la _Bandwidth_ e logaritmo in base 2 di (1 + $"SNR"$).
-  $
-    C = B dot log_2(1+"SNR")
-  $
-
-  *NB:* Si usa $"SNR"$ (*rapporto lineare*) e non $"SNR"_("dB")$ (*rapporto in Decibel*) nella formula. 
-
-  Per il _ Teorema di Nyquist sulla banda_, la capacità del canale in assenza di rumore è data dal prodotto fra due volte la _Bandwidth_ e logaritmo in base 2 del numero di livelli di segnale $M$:
-  $
-    C = 2B dot log_2(M)
-  $
-  Trovando quindi $C$, da prima richiesta del problema, vien da sé che è possibile sfruttare il _Teorema di Nyquist sulla banda_ per isolare $M$ e soddisfare anche la seconda richiesta.\
-  - $C$:
-    
-    Per prima cosa dobbiamo passare da $"SNR"_"(dB)"$ a SNR "_puro_" o _lineare_. Per farlo, l'equazione è la seguente:
-  $
-    "SNR" = 10^("SNR"_("dB")/10) =>\
-    => "SNR" = 10^(12/10) = 10 dot log_(10)("SNR") =>\
-    => 10^(12/10) = 10^(1,2) -> "SNR" = 15,8 approx 16
-  $
-  
-  #h(1em)Possiamo ora calcolare la capacità del canale $C$: 
-  $
-    C = 1"MHz" dot log_2(1+16) approx 4"Mbps"
-  $
-
-  - $M$:
-
-    Vogliamo calcolare ora il numero di segnali che il livello fisico deve implementare per raggiungere tale capacità:
-  $
-    C = 2B dot log_2(M) =>\
-    => 4"Mbps" = 2 dot 1"Mhz" dot log_2(M) =>\
-    => log_2(M) = 2 =>\
-    => M = 4
-  $
-
-  *CONCLUSIONE:* Il nostro livello fisico deve almeno usare $2$ bit.
-]
-
 = Lezione 2
 
 == Trasmissione wireless
