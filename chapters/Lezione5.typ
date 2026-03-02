@@ -11,7 +11,7 @@
 / *Signaling (SOS)*: canale bidirezionale usato per  per servizi speciali. Serve per *operazioni di controllo* all'interno della piconet.
 
 #nota()[
-  Il livello L2CAP si occupa di fare *segmentazione* e *frammentazione* dei pacchetti che arrivano lato applicazione dal mittente, e *riassemblaggio* lato destinazione. Operazioni necessarie in quanto un pacchetto applicativo non ci sta in un singolo pacchetto livello baseband.
+  Il livello L2CAP si occupa di fare *segmentazione* e *frammentazione* dei pacchetti che arrivano lato applicazione dal mittente, e *riassemblaggio* lato destinazione. Operazioni necessarie in quanto un pacchetto applicativo non ci sta in un singolo pacchetto a livello baseband.
 
   La frammentazione viene nascosta a livello data-link.
 ]
@@ -23,11 +23,9 @@ I 3 canali (servizi offerti da L2CAP) vengono riconosciuti da un *Channel ID* ($
 - $"ID" = 2$: _Connectionless path_
 - $"ID" >= 64$: _Connection-oriented_
 
-Al posto di avere dati relativi all'applicazione, il payload di un pacchetto di controllo contiene:
+Al posto di contenere dati relativi all'applicazione, il payload di un pacchetto di controllo contiene:
 - _Code_: codice per il tipo di comando
 - _Id_: per l'Identificazione del comando
-
-
 
 === SDP Service Discovery
 
@@ -50,17 +48,17 @@ Al posto di avere dati relativi all'applicazione, il payload di un pacchetto di 
 La prima differenza è che la procedura di *inquiry* cambia, diventando *molto più semplice*, richiedendo *meno consumo di batteria*.
 
 A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*:
-/ *Piconet* (stella): topologia classica con master e slave.
+- *Piconet* (stella): topologia classica con master e slave.
 
-/ *Broadcast*: trasmissione a tutti i dispositivi in ascolto.
+- *Broadcast*: trasmissione a tutti i dispositivi in ascolto.
 
-/ *Architettura Mesh*: rete distribuita tra più nodi.
+- *Architettura Mesh*: rete distribuita tra più nodi.
 
-/ *Presenza*: notifica automatica della presenza di un dispositivo.
+- *Presenza*: notifica automatica della presenza di un dispositivo.
 
-/ *Distanza*: misura della distanza tramite radio frequenze (RSSI).
+- *Distanza*: misura della distanza tramite radio frequenze (RSSI).
 
-/ *Direction*: individuazione della direzione di provenienza del segnale.
+- *Direction*: individuazione della direzione di provenienza del segnale.
 
 #nota()[
   *Tutti* i beacon Bluetooth sono dispositivi *Low Energy*.
@@ -72,16 +70,16 @@ A differenza del Bluetooth normale abbiamo differenti *pattern di comunicazione*
 
 Viene utilizzata *GFSK* (#[*Gaussian Frequency Shift Keying*]) con rate di modulazione a $1 "Mbps"$, sufficiente per gli scopi di Bluetooth Low Energy.
 
-Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza del Bluetooth base. In particolare l'*architettura si semplifica*. La *banda* rimane *$2.4 "GHz"$*, tuttavia i canali diventano $40$:
+Per quanto riguarda il protocollo in sè, cambiano alcuni livelli rispetto a Bluetooth base. In particolare, l'*architettura si semplifica*. La *banda* rimane *$2.4 "GHz"$*, tuttavia i canali diventano $40$:
 - $37$ canali usati come data channels
 - $3$ canali dedicati all'advertising: canali $37$, $38$, $39$
 
 #nota()[
   Il *frequency hopping* è *molto più semplice*. Il canale successivo viene calcolato come:
   $
-    "Channel" = ("curr_channel" + "hop") mod 37
+    "Channel" = ("curr_channel" + mb("hop")) mod 37
   $
-  dove $"hop"$ è stabilito all'atto della connessione.
+  dove $mb("hop")$ è stabilito all'atto della connessione.
 ]
 
 #figure[
@@ -166,14 +164,14 @@ Per quanto riguarda il protocollo in sè cambiano alcuni livelli a differenza de
 
 === Stati del Link Layer BLE
 
-Cambia la *macchina a stati finiti*, in particolare gli *stati del link-layer*. Gli stati sono diversi dal punto di vista dell'*utilizzo* che ne viene fatto:
+Rispetto a Bluethoot base, cambia la *macchina a stati finiti*, in particolare, gli *stati del link-layer*. Gli stati sono diversi dal punto di vista dell'*utilizzo* che ne viene fatto:
 
 / *Isochronous Broadcasting*: modo *temporizzato* di fare broadcasting (isocrono). Il livello link layer mette a disposizione questo servizio che periodicamente invia sui 3 canali di advertising.
 
 / *Advertising*: Si *inverte* il paradigma classico. Non c'è più un master che fa inquiry, è lo *slave* che *annuncia la presenza* sui canali di advertising.
 
 #nota()[
-  Nonostante l'*inversione di paradigma*: in Bluetooth classico il master cerca attivamente gli slave (inquiry), in BLE sono gli slave che si annunciano periodicamente (advertising) e il master li ascolta passivamente.\
+  *Inversione di paradigma*: in Bluetooth classico il master cerca attivamente gli slave (inquiry), in BLE sono gli slave che si annunciano periodicamente (advertising) e il master li ascolta passivamente.\
   Rimane la completa *non sincronizzazione* del sistema: master e slave non hanno un clock comune.
 ]
 
@@ -247,7 +245,7 @@ Dove:
 
 === GATT (Generic Attribute Profile)
 
-*GATT* gestisce i *profili* dei dispositivi BLE. Il suo compito è mediare tra il server (provider di servizi) e applicazione (richiede i servizi). I profili sono specifici e definiscono *cosa fa* il dispositivo. Alcuni profili comuni sono:
+*GATT* gestisce i *profili* dei dispositivi BLE. Il suo compito è mediare tra il server (provider di servizi) e applicazione (richiedente dei servizi). I profili sono specifici e definiscono *cosa fa* il dispositivo. Alcuni profili comuni sono:
 - *BCS* - Body Composition Service
 - *CSCP* - Cycling Speed and Cadence Profile
 - *HRS* - Heart Rate Service
@@ -281,9 +279,9 @@ L'obiettivo è creare una comunicazione *unicast* (peer to peer) per scambiare m
 
 + Una volta ricevuto un messaggio, il master *risponde sempre su quel canale*. In particolare, il master invierà una *connection request* nello slot di tempo successivo (viene mantenuto sempre il *TDD*, nello slot di tempo successivo all’invio il dispositivo starà aspettando). Nella connection request sono presenti anche le informazioni per il FH.
 
-+ Dopo aver connesso lo slave, viene comunicato l'*hop* dall'initiator che diventa client
++ Dopo aver connesso lo slave viene comunicato l'*hop* dall'initiator che diventa client
 
-#informalmente()[
+#nota()[
   Il master svolge il ruolo di *client* per verificare se lo slave si è collegato correttamente.
 ]
 
@@ -796,7 +794,7 @@ Il super-frame è diviso in due parti principali:
   - Più è grande la parte inattiva, *più risparmio energia*
   - I dispositivi possono *spegnere la radio* completamente
 
-Per *sincronizzare* il *duty cycle*, all’interno di ogni beacon è presente l’informazione su quando sarà il beacon seguente e questo accenderà la radio
+Per *sincronizzare* il *duty cycle*, all’interno di ogni beacon è presente l’informazione su quando sarà il beacon seguente, i dispositivi accenderanno la radio
 appena prima. Se un dispositivo non deve inviare/ricevere niente, spegne la radio fino al superframe successivo.
 
 #informalmente()[
@@ -1313,18 +1311,38 @@ I dispositivi ZigBee organizzano le funzionalità in *endpoint* e *cluster*:
       content((start-x + 4, start-y + 6.5), text(size: 10pt, weight: "bold", "Dispositivo ZigBee"))
 
       // ZDO Endpoint 0
-      rect((start-x + 0.5, start-y + 4.5), (start-x + 3, start-y + 5.5), fill: rgb("#FF6B6B").lighten(30%), stroke: 1.2pt + red)
+      rect(
+        (start-x + 0.5, start-y + 4.5),
+        (start-x + 3, start-y + 5.5),
+        fill: rgb("#FF6B6B").lighten(30%),
+        stroke: 1.2pt + red,
+      )
       content((start-x + 1.75, start-y + 5), text(size: 8pt, weight: "bold", "ZDO\nEndpoint 0"))
 
       // Application Endpoints
-      rect((start-x + 3.5, start-y + 4.5), (start-x + 5.5, start-y + 5.5), fill: rgb("#4ECDC4").lighten(40%), stroke: 1.2pt + blue)
+      rect(
+        (start-x + 3.5, start-y + 4.5),
+        (start-x + 5.5, start-y + 5.5),
+        fill: rgb("#4ECDC4").lighten(40%),
+        stroke: 1.2pt + blue,
+      )
       content((start-x + 4.5, start-y + 5), text(size: 7pt, weight: "bold", "App EP 1"))
 
-      rect((start-x + 5.7, start-y + 4.5), (start-x + 7.7, start-y + 5.5), fill: rgb("#4ECDC4").lighten(40%), stroke: 1.2pt + blue)
+      rect(
+        (start-x + 5.7, start-y + 4.5),
+        (start-x + 7.7, start-y + 5.5),
+        fill: rgb("#4ECDC4").lighten(40%),
+        stroke: 1.2pt + blue,
+      )
       content((start-x + 6.7, start-y + 5), text(size: 7pt, weight: "bold", "App EP 2"))
 
       // APS Layer
-      rect((start-x + 0.5, start-y + 3.5), (start-x + 7.5, start-y + 4.3), fill: rgb("#FFD93D").lighten(40%), stroke: 1pt + orange)
+      rect(
+        (start-x + 0.5, start-y + 3.5),
+        (start-x + 7.5, start-y + 4.3),
+        fill: rgb("#FFD93D").lighten(40%),
+        stroke: 1pt + orange,
+      )
       content((start-x + 4, start-y + 3.9), text(size: 8pt, weight: "bold", "APS Layer"))
 
       // NWK Layer
@@ -1450,11 +1468,25 @@ Thread utilizza un algoritmo di routing mesh basato su *mesh-under*:
       content((start-x + 5, start-y + 4.5), text(size: 9pt, weight: "bold", "Matter Application Layer"))
 
       // Matter Protocol
-      rect((start-x, start-y + 3), (start-x + 10, start-y + 3.9), fill: rgb("#4ECDC4").lighten(30%), stroke: 1.5pt + blue)
-      content((start-x + 5, start-y + 3.45), text(size: 9pt, weight: "bold", "Matter Protocol (Data Model, Clusters, Commands)"))
+      rect(
+        (start-x, start-y + 3),
+        (start-x + 10, start-y + 3.9),
+        fill: rgb("#4ECDC4").lighten(30%),
+        stroke: 1.5pt + blue,
+      )
+      content((start-x + 5, start-y + 3.45), text(
+        size: 9pt,
+        weight: "bold",
+        "Matter Protocol (Data Model, Clusters, Commands)",
+      ))
 
       // Transport Layer
-      rect((start-x, start-y + 2.1), (start-x + 10, start-y + 2.9), fill: rgb("#FFD93D").lighten(30%), stroke: 1.5pt + orange)
+      rect(
+        (start-x, start-y + 2.1),
+        (start-x + 10, start-y + 2.9),
+        fill: rgb("#FFD93D").lighten(30%),
+        stroke: 1.5pt + orange,
+      )
       content((start-x + 5, start-y + 2.5), text(size: 9pt, weight: "bold", "Security + UDP/TCP + IPv6"))
 
       // Network Layer - Multiple options
