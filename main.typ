@@ -34,3 +34,6 @@
 #include "chapters/Lezione3.typ"
 #part("Wireless Personal Area Network (WPAN)")
 #include "chapters/Lezione4.typ"
+
+#part("Da 2G a 4G")
+#include "chapters/Lezione11.typ"
