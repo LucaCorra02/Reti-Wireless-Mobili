@@ -141,24 +141,639 @@ In UMTS, invece, i *canali radio sono dinamici* e vengono definiti attraverso un
 
 = Long Term Evolution 4G LTE
 
-== Core Network . . . . . . . . . . . . . . . . . . . . . . . . . . . 124
-=== Mobility Management Entity MME . . . . . . . . . . 124
-=== Home Subscriber Server HSS . . . . . . . . . . . . . .
-=== Packet Data Network Gateway P-GW . . . . . . . . . 125
-=== Serving Gateway S-GW . . . . . . . . . . . . . . . . . 125
-=== Policy Control and Charging Rules Function PCRF . 126
-=== Servizi operatore . . . . . . . . . . . . . . . . . . . . . 126
+LTE (Long Term Evolution) rappresenta la *quarta generazione* (4G) delle reti mobili cellulari. L'obiettivo principale è fornire prestazioni significativamente superiori rispetto a UMTS, sia in termini di velocità che di latenza.
 
-== E-UTRAN . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 126
-=== Evolved-NodeB eNodeB . . . . . . . . . . . . . . . . . 126
-=== Modulazione e Codifica Trasmissione . . . . . . . . . . 126
-=== Riuso frequenze . . . . . . . . . . . . . . . . . 129
-=== Durata Simboli 129
-=== Struttura Slot 129
-=== Duplex 130
-=== Orthogonal Frequency Division Multiple Access OFDMA13
-=== eNodeB Scheduler . . . . . . . . . . . . . . . . . . . . 133
-=== Velocità per UE . . . . . . . . . . . . . . . . . . . . . 133
-=== Collegamento alla Core Network . . . . . . . . . . . . 134
-=== Tracking Area . . . . . . . . . . . . . . . . . . . . . . 134
-=== Interfaccia X2 . . . . . . . . . . . . . . . . . 135
+*Caratteristiche principali*:
+- *All-IP architecture*: eliminazione del dominio circuit-switched, tutto il traffico (voce e dati) viene trasportato su IP
+- *Data rate elevati*: fino a $300$ Mbps in downlink e $75$ Mbps in uplink (LTE Advanced fino a $1$ Gbps)
+- *Bassa latenza*: latenza del piano utente inferiore a $10$ ms
+- *Efficienza spettrale*: utilizzo ottimizzato dello spettro radio
+- *Scalabilità della banda*: supporto per bande da $1.4$ MHz fino a $20$ MHz
+- *Mobilità elevata*: supporto per velocità fino a $350$ km/h
+
+#nota()[
+  LTE rappresenta una rottura rispetto alle tecnologie precedenti: abbandona completamente il CDMA in favore di OFDMA (Orthogonal Frequency Division Multiple Access) per il downlink e SC-FDMA (Single Carrier FDMA) per l'uplink.
+]
+
+L'architettura LTE è divisa in due componenti principali:
+- *E-UTRAN* (Evolved UMTS Terrestrial Radio Access Network): rete di accesso radio
+- *EPC* (Evolved Packet Core): rete core completamente basata su IP
+
+== Core Network
+
+La rete core EPC (Evolved Packet Core) rappresenta un'architettura completamente basata su IP, progettata per gestire esclusivamente traffico a pacchetto. L'EPC è composta da diversi nodi funzionali che gestiscono routing, mobilità, QoS e policy.
+
+#nota()[
+  A differenza di UMTS, in LTE *non esiste più* il dominio circuit-switched. Anche la voce viene trasportata su IP tramite tecnologie VoLTE (Voice over LTE) o VoIP.
+]
+
+=== Mobility Management Entity (MME)
+
+L'MME è il *nodo di controllo principale* della rete LTE. Si occupa della gestione della mobilità e della sicurezza, ma *non gestisce il traffico dati* dell'utente.
+
+*Funzioni principali*:
+- *Gestione della mobilità*: tracking dell'UE (User Equipment) e gestione degli handover
+- *Autenticazione e sicurezza*: autenticazione dell'utente, generazione e distribuzione delle chiavi di cifratura
+- *Gestione dei bearer*: setup, modifica e rilascio dei bearer EPS (Evolved Packet System)
+- *Paging*: invio di messaggi di paging agli UE in idle mode
+- *Selezione del S-GW e P-GW*: scelta dei gateway appropriati per l'UE
+- *Gestione delle Tracking Area*: aggiornamento delle Tracking Area List
+
+#informalmente()[
+  L'MME è come il _cervello_ della rete LTE: coordina tutto ciò che riguarda la connessione e la mobilità dell'utente, ma non tocca mai i dati veri e propri che vengono scambiati.
+]
+
+*Interazioni*:
+- Con *eNodeB*: via interfaccia S1-MME per il controllo
+- Con *HSS*: per l'autenticazione e il profilo utente
+- Con *S-GW*: per la gestione dei bearer
+- Con altri *MME*: per gli handover tra aree diverse
+
+=== Home Subscriber Server (HSS)
+
+L'HSS è il *database centrale* che contiene tutte le informazioni relative agli abbonati della rete.
+
+*Informazioni memorizzate*:
+- *Dati di identità*: IMSI (International Mobile Subscriber Identity), MSISDN (numero di telefono)
+- *Profilo dell'abbonato*: servizi sottoscritti, QoS autorizzata, APN (Access Point Name) consentiti
+- *Informazioni di sicurezza*: chiavi di autenticazione, algoritmi di cifratura supportati
+- *Informazioni di localizzazione*: MME corrente a cui l'utente è registrato
+- *Dati di mobilità*: restrizioni di roaming, aree consentite
+
+*Funzioni principali*:
+- Generazione dei vettori di autenticazione per l'MME
+- Autorizzazione dell'accesso alla rete
+- Gestione del profilo QoS dell'utente
+- Supporto per la portabilità del numero
+
+#nota()[
+  In LTE, l'HSS sostituisce l'HLR (Home Location Register) di GSM/UMTS, offrendo funzionalità estese per supportare servizi IP avanzati.
+]
+
+=== Packet Data Network Gateway (P-GW)
+
+Il P-GW è il *punto di interconnessione* tra la rete LTE e le reti esterne (Internet, IMS per VoLTE, reti aziendali).
+
+*Funzioni principali*:
+- *Assegnazione indirizzi IP*: fornisce indirizzi IP agli UE tramite DHCPv4/v6
+- *Routing*: instrada i pacchetti tra la rete LTE e le reti esterne
+- *Punto di ancoraggio*: mantiene l'indirizzo IP dell'UE anche durante la mobilità (handover)
+- *Policy enforcement*: applica le policy di QoS e charging ricevute dal PCRF
+- *Packet filtering*: filtraggio dei pacchetti in base alle regole di sicurezza
+- *Deep Packet Inspection* (opzionale): ispezione del traffico per fini di charging o policy
+- *NAT*: traduzione degli indirizzi per UE con IP privati
+
+#attenzione()[
+  Il P-GW è un punto critico della rete: tutto il traffico dati degli utenti passa attraverso di esso. Per questo motivo, è un elemento che richiede elevate capacità di processing e throughput.
+]
+
+*Sessioni PDN*:
+- Ogni UE può avere *multiple connessioni PDN* (Packet Data Network) simultanee, ciascuna identificata da un diverso APN
+- Esempio: una connessione per Internet generale e una per servizi IMS (voce)
+- Ogni PDN connection ha il proprio indirizzo IP e QoS
+
+=== Serving Gateway (S-GW)
+
+L'S-GW è il *gateway di routing locale* che gestisce il traffico dati dell'utente all'interno della rete di accesso.
+
+*Funzioni principali*:
+- *Routing del traffico utente*: instrada i pacchetti tra eNodeB e P-GW
+- *Punto di ancoraggio locale*: mantiene il percorso dati durante handover intra-LTE
+- *Buffering dei dati*: memorizza temporaneamente i pacchetti quando l'UE è in idle mode
+- *Lawful interception*: supporto per intercettazioni legali
+- *Conteggio del traffico*: raccolta di statistiche per il charging
+- *Gestione dei bearer*: setup e modifica dei bearer radio
+
+#informalmente()[
+  Se il P-GW è la _porta verso l'esterno_, l'S-GW è il _postino locale_ che si occupa di recapitare i pacchetti all'eNodeB giusto, seguendo l'utente nei suoi spostamenti all'interno della rete.
+]
+
+*Mobilità*:
+- Durante un *intra-eNB handover* (cambio di cella sotto lo stesso eNodeB): nessun impatto sull'S-GW
+- Durante un *inter-eNB handover* (cambio di eNodeB): l'S-GW aggiorna il percorso dati
+- Durante un *inter-S-GW handover*: il P-GW rimane l'anchor point, ma il percorso viene riconfigurato
+
+#nota()[
+  La separazione tra S-GW (routing locale) e P-GW (gateway esterno) permette di ottimizzare la gestione della mobilità: il P-GW non deve essere cambiato durante la maggior parte degli handover, mantenendo stabile l'indirizzo IP dell'utente.
+]
+
+=== Policy Control and Charging Rules Function (PCRF)
+
+Il PCRF è il *motore delle policy* che determina come il traffico di ciascun utente deve essere gestito in termini di QoS e charging.
+
+*Funzioni principali*:
+- *Policy control*: definizione delle regole di QoS (bandwidth, latenza, priorità) per ogni servizio
+- *Charging control*: definizione delle regole di tariffazione (flat rate, pay-per-use, ecc.)
+- *Application detection*: riconoscimento delle applicazioni per applicare policy specifiche
+- *Gestione dei Service Data Flows*: controllo granulare dei flussi di traffico
+
+*Policy and Charging Rules (PCC)*:
+- *Bearer level*: QoS applicata all'intero bearer
+- *Service Data Flow level*: QoS applicata a flussi specifici (es: video streaming vs browsing)
+
+*Interfacce*:
+- *Rx*: verso l'Application Function (AF) per ricevere richieste di QoS (es: da IMS per VoLTE)
+- *Gx*: verso il P-GW per inviare le PCC rules
+- *Sp*: verso l'HSS per ottenere il profilo dell'utente
+
+#esempio()[
+  Quando un utente inizia una videochiamata VoLTE:
+  + L'IMS (Application Function) invia una richiesta al PCRF via interfaccia Rx
+  + Il PCRF verifica il profilo dell'utente dall'HSS
+  + Il PCRF genera delle PCC rules che garantiscono bassa latenza e banda sufficiente
+  + Le rules vengono inviate al P-GW via Gx
+  + Il P-GW configura il traffico secondo le rules ricevute
+]
+
+=== Servizi operatore
+
+LTE supporta diversi tipi di servizi attraverso l'architettura EPC:
+
+*Servizi dati*:
+- *Internet access*: connessione a Internet tramite APN dedicato
+- *Private networks*: accesso a reti aziendali private tramite VPN
+- *IMS services*: servizi multimediali (voce, video, messaging)
+
+*VoLTE (Voice over LTE)*:
+- Voce trasportata su IP tramite l'IMS (IP Multimedia Subsystem)
+- QoS garantita tramite dedicated bearer
+- Codec AMR-WB per qualità voce superiore (HD Voice)
+- Fallback su 3G/2G se VoLTE non disponibile (CSFB - Circuit Switched FallBack)
+
+*Quality of Service (QoS)*:
+- *QoS Class Identifier (QCI)*: 9 classi predefinite (1-9) con caratteristiche diverse
+  - QCI 1: VoLTE (GBR, priorità 2, latenza $100$ ms)
+  - QCI 2: Video call (GBR, priorità 4, latenza $150$ ms)
+  - QCI 9: Internet best effort (non-GBR, priorità 9)
+- *GBR* (Guaranteed Bit Rate): bandwidth garantita per traffico real-time
+- *Non-GBR*: bandwidth non garantita per traffico best-effort
+
+== E-UTRAN
+
+L'E-UTRAN (Evolved UMTS Terrestrial Radio Access Network) rappresenta la rete di accesso radio di LTE. La principale innovazione è la *flat architecture*: viene eliminato il controller (RNC) presente in UMTS.
+
+#nota()[
+  In LTE, le funzioni del RNC vengono spostate direttamente negli eNodeB, semplificando l'architettura e riducendo la latenza.
+]
+
+=== Evolved-NodeB (eNodeB)
+
+L'eNodeB è la *base station* di LTE, che integra tutte le funzioni di gestione radio precedentemente divise tra Node-B e RNC in UMTS.
+
+*Funzioni principali*:
+- *Gestione delle risorse radio*: scheduling di uplink e downlink
+- *Radio Resource Management*: controllo di potenza, ammissione, handover
+- *Compressione degli header*: riduzione dell'overhead per i pacchetti IP
+- *Cifratura*: encryption dei dati utente
+- *Selezione dell'MME*: scelta dell'MME appropriato durante l'attach
+
+*Interfacce*:
+- *S1-MME*: verso l'MME per il controllo (signaling)
+- *S1-U*: verso l'S-GW per il traffico dati utente
+- *X2*: verso altri eNodeB per handover e coordinamento inter-cella
+
+#informalmente()[
+  L'eNodeB è come un _orchestratore autonomo_: prende decisioni locali su come allocare le risorse radio senza dover consultare un controller centrale, riducendo così i tempi di risposta.
+]
+
+=== Modulazione e Codifica Trasmissione
+
+LTE utilizza tecniche di modulazione e codifica adattive per massimizzare l'efficienza spettrale in base alle condizioni del canale radio.
+
+*Schemi di modulazione supportati*:
+- *QPSK* (Quadrature Phase Shift Keying): $2$ bit/simbolo
+  - Usato in condizioni di scarsa qualità del segnale
+  - Più robusto ma meno efficiente
+- *16-QAM* (Quadrature Amplitude Modulation): $4$ bit/simbolo
+  - Compromesso tra robustezza ed efficienza
+  - Utilizzato con qualità del segnale media
+- *64-QAM*: $6$ bit/simbolo
+  - Massima efficienza ma richiede ottima qualità del segnale
+  - Usato vicino alla cella con SNR elevato
+- *256-QAM* (solo LTE Advanced Pro): $8$ bit/simbolo
+  - Introdotto nelle release successive per aumentare ulteriormente il throughput
+
+*Link Adaptation*:
+Il sistema *adatta dinamicamente* la modulazione e il coding rate in base a:
+- *CQI* (Channel Quality Indicator): report inviato dall'UE all'eNodeB sulla qualità del canale
+- *BLER* (Block Error Rate): tasso di errore sui blocchi ricevuti
+- *SINR* (Signal to Interference plus Noise Ratio): rapporto segnale/interferenza
+
+#esempio()[
+  Un UE vicino all'eNodeB con SINR elevato:
+  - Utilizza 64-QAM con coding rate elevato ($\sim 0.9$)
+  - Ottiene throughput elevato ($\sim 75$ Mbps su $20$ MHz)
+  
+  Un UE al bordo cella con SINR basso:
+  - Utilizza QPSK con coding rate basso ($\sim 0.3$)
+  - Ottiene throughput ridotto ma connessione stabile ($\sim 5$ Mbps su $20$ MHz)
+]
+
+*Modulation and Coding Scheme (MCS)*:
+- LTE definisce $29$ diversi MCS (da MCS-0 a MCS-28)
+- Ogni MCS specifica la combinazione di:
+  - Schema di modulazione (QPSK/16-QAM/64-QAM)
+  - Code rate (rapporto tra bit informativi e bit totali)
+  - Efficienza spettrale risultante
+
+*HARQ* (Hybrid Automatic Repeat Request):
+- Ritrasmissione automatica dei blocchi errati
+- Combina ARQ (ritrasmissione) con FEC (correzione errori)
+- *Soft combining*: i tentativi di ritrasmissione vengono combinati per migliorare la decodifica
+- Riduzione della latenza rispetto ad ARQ tradizionale
+
+#nota()[
+  HARQ opera a livello MAC, quindi le ritrasmissioni sono gestite direttamente tra eNodeB e UE senza coinvolgere la rete core, minimizzando la latenza.
+]
+
+=== Riuso frequenze
+
+LTE adotta una strategia di *riuso delle frequenze* molto più aggressiva rispetto alle tecnologie precedenti.
+
+*Riuso frequenze $= 1$* (Hard Frequency Reuse):
+- Tutte le celle utilizzano la stessa banda di frequenza
+- Possibile grazie all'ortogonalità delle sottoportanti OFDMA
+- *Interferenza inter-cella* gestita tramite:
+  - Coordinamento tra eNodeB via interfaccia X2
+  - Tecniche di mitigazione dell'interferenza
+  - Allocazione intelligente delle risorse
+
+*Fractional Frequency Reuse (FFR)*:
+- Tecnica avanzata per gestire l'interferenza al bordo cella
+- La banda viene divisa in:
+  - *Parte centrale*: usata con piena potenza, riuso $= 1$
+  - *Parte periferica*: diversi settori usano frequenze diverse, riuso $> 1$
+- Gli UE vicini alla cella usano tutte le frequenze
+- Gli UE al bordo cella usano frequenze coordinate per ridurre l'interferenza
+
+#esempio()[
+  In una configurazione FFR con $3$ celle:
+  - Banda totale: $20$ MHz divisa in $4$ parti (A, B, C, D)
+  - Cella 1 centro: usa A+B+C+D a potenza normale
+  - Cella 1 bordo: usa solo A a potenza elevata
+  - Cella 2 bordo: usa solo B a potenza elevata
+  - Cella 3 bordo: usa solo C a potenza elevata
+  - Le celle vicine non interferiscono al bordo usando frequenze diverse
+]
+
+*Soft Frequency Reuse (SFR)*:
+- Variante più flessibile di FFR
+- Allocazione dinamica della potenza per sottoportante
+- Le sottoportanti del bordo cella vengono trasmesse a potenza più elevata
+- Coordinamento inter-cella più sofisticato via X2
+
+*Inter-Cell Interference Coordination (ICIC)*:
+- Gli eNodeB si scambiano informazioni via X2 su:
+  - Utilizzo delle risorse (quali PRB sono occupati)
+  - Livello di interferenza per banda
+  - Indicatori di carico della cella
+- Permette decisioni di scheduling coordinate per minimizzare l'interferenza
+
+#attenzione()[
+  Il riuso frequenze aggressivo (riuso $= 1$) massimizza l'efficienza spettrale ma richiede tecniche avanzate di gestione dell'interferenza. Gli UE al bordo cella sono i più penalizzati e richiedono protezione speciale tramite FFR/SFR.
+]
+
+=== Durata Simboli
+
+La struttura temporale di LTE è basata su *simboli OFDM* con durata fissa.
+
+*Parametri temporali*:
+- *Durata simbolo OFDM utile*: $T_u = 66.67 \ mu s$
+- *Cyclic Prefix (CP)*: 
+  - *Normal CP*: $4.69 \ mu s$ (primo simbolo), $5.21 \ mu s$ (altri simboli)
+  - *Extended CP*: $16.67 \ mu s$ (tutti i simboli)
+- *Durata simbolo totale*:
+  - Normal CP: $71.35 \ mu s$ (primo), $71.88 \ mu s$ (altri)
+  - Extended CP: $83.33 \ mu s$
+
+*Cyclic Prefix (CP)*:
+Il CP è una *copia della parte finale* del simbolo OFDM inserita all'inizio dello stesso simbolo.
+
+*Funzioni del CP*:
+- *Protezione dal multipath*: assorbe i ritardi dovuti a riflessioni multiple del segnale
+- *Mantenimento dell'ortogonalità*: previene l'interferenza inter-simbolo (ISI)
+- *Semplificazione dell'equalizzazione*: trasforma la convoluzione lineare in circolare
+
+#nota()[
+  Il CP è un overhead necessario: occupa tempo ma non trasporta informazione. Tipicamente rappresenta circa il $7\%$ dell'overhead temporale. Tuttavia, senza CP, l'OFDM non funzionerebbe in ambienti con multipath.
+]
+
+*Normal vs Extended CP*:
+- *Normal CP*: usato nella maggior parte dei casi
+  - Minore overhead ($\sim 7\%$)
+  - Adatto per celle fino a $\sim 15$ km di raggio
+- *Extended CP*: usato in ambienti con dispersione temporale elevata
+  - Maggiore overhead ($\sim 25\%$)
+  - Necessario per celle grandi o ambienti con forte multipath
+  - Utilizzato anche per MBSFN (Multimedia Broadcast Single Frequency Network)
+
+=== Struttura Slot
+
+La struttura temporale di LTE è organizzata gerarchicamente in frame, subframe e slot.
+
+*Gerarchia temporale*:
+- *Radio Frame*: durata $10$ ms
+  - Composto da $10$ subframe
+- *Subframe*: durata $1$ ms
+  - Composto da $2$ slot
+  - Unità base per lo scheduling
+- *Slot*: durata $0.5$ ms
+  - Composto da $7$ simboli OFDM (Normal CP) o $6$ simboli (Extended CP)
+
+*Resource Grid*:
+Il *Resource Grid* è la struttura bidimensionale che rappresenta le risorse radio:
+- *Asse del tempo*: slot ($0.5$ ms)
+- *Asse delle frequenze*: sottoportanti ($15$ kHz di spaziatura)
+
+*Resource Element (RE)*:
+- *Unità minima* della griglia: $1$ sottoportante per $1$ simbolo OFDM
+- Trasporta un singolo simbolo di modulazione (QPSK/16-QAM/64-QAM)
+
+*Resource Block (RB)*:
+- *Unità base di allocazione*
+- Dimensioni: $12$ sottoportanti × $7$ simboli OFDM (Normal CP)
+- Larghezza: $180$ kHz ($12 times 15$ kHz)
+- Durata: $0.5$ ms (un slot)
+- Contiene: $84$ RE (con Normal CP)
+
+*Physical Resource Block (PRB)*:
+- RB numerato in base alla posizione in frequenza
+- L'eNodeB alloca ai diversi UE uno o più PRB
+- Numero totale di PRB dipende dalla banda del sistema:
+  - $1.4$ MHz: $6$ PRB
+  - $3$ MHz: $15$ PRB
+  - $5$ MHz: $25$ PRB
+  - $10$ MHz: $50$ PRB
+  - $15$ MHz: $75$ PRB
+  - $20$ MHz: $100$ PRB
+
+#esempio()[
+  In un sistema LTE con banda $20$ MHz:
+  - Disponibili $100$ PRB per subframe
+  - Ogni PRB = $180$ kHz × $1$ ms
+  - L'eNodeB scheduler decide quali PRB allocare a ciascun UE
+  - Un UE vicino alla cella potrebbe ricevere $10$ PRB con 64-QAM
+  - Un UE lontano potrebbe ricevere $5$ PRB con QPSK
+]
+
+*Reference Signals (RS)*:
+- Alcuni RE all'interno del RB sono riservati per *segnali di riferimento*
+- Funzioni:
+  - *Stima del canale*: l'UE usa gli RS per misurare la qualità del canale
+  - *Sincronizzazione*: aiutano a mantenere la sincronia temporale e di frequenza
+  - *CQI measurement*: base per il calcolo del Channel Quality Indicator
+- Tipi:
+  - *Cell-specific RS*: broadcast da tutte le antenne, usati da tutti gli UE
+  - *UE-specific RS*: dedicati a uno specifico UE (beamforming)
+
+#nota()[
+  In un RB, tipicamente $4$ RE per antenna sono dedicati ai reference signals. Questo rappresenta un overhead del $\sim 5\%$ delle risorse, ma è essenziale per il funzionamento del sistema.
+]
+
+=== Duplex
+
+LTE supporta due modalità di duplexing per separare la trasmissione uplink e downlink.
+
+*FDD (Frequency Division Duplex)*:
+- Uplink e downlink utilizzano *bande di frequenza diverse*
+- Trasmissione *simultanea* in entrambe le direzioni
+- Richiede *due bande separate* (paired spectrum)
+- Gaps di guardia tra le bande per prevenire interferenza
+
+*Caratteristiche FDD*:
+- *Vantaggio*: bassa latenza, trasmissione continua
+- *Svantaggio*: richiede più spettro (due bande)
+- *Uso tipico*: deployment commerciali più comuni (Europa, USA)
+
+*Esempi di bande FDD*:
+- Band 3: $1805$-$1880$ MHz (uplink), $1710$-$1785$ MHz (downlink)
+- Band 7: $2620$-$2690$ MHz (uplink), $2500$-$2570$ MHz (downlink)
+
+*TDD (Time Division Duplex)*:
+- Uplink e downlink utilizzano la *stessa banda di frequenza*
+- Trasmissione in *momenti diversi* (time-multiplexed)
+- Richiede *una singola banda* (unpaired spectrum)
+
+*Caratteristiche TDD*:
+- *Vantaggio*: maggiore efficienza spettrale, una sola banda necessaria
+- *Svantaggio*: richiede sincronizzazione temporale precisa tra celle
+- *Flessibilità*: il rapporto DL/UL può essere configurato dinamicamente
+- *Uso tipico*: Cina, India, alcuni paesi europei per bande specifiche
+
+*Configurazioni TDD*:
+LTE TDD definisce $7$ configurazioni UL/DL diverse:
+- Configurazione 0: $2$ DL : $3$ UL (più uplink)
+- Configurazione 1: $3$ DL : $2$ UL
+- Configurazione 2: $4$ DL : $1$ UL
+- ...
+- Configurazione 6: $9$ DL : $1$ UL (più downlink)
+
+#informalmente()[
+  La scelta tra FDD e TDD dipende principalmente da due fattori: lo spettro disponibile (paired vs unpaired) e il tipo di traffico previsto. FDD è più semplice ma richiede più spettro; TDD è più flessibile ma richiede sincronizzazione precisa.
+]
+
+*Special Subframe (TDD)*:
+In TDD, alcuni subframe sono *speciali* e divisi in tre parti:
+- *DwPTS* (Downlink Pilot Time Slot): trasmissione downlink
+- *GP* (Guard Period): periodo di guardia per lo switching
+- *UpPTS* (Uplink Pilot Time Slot): trasmissione uplink
+
+Il GP è necessario per:
+- Permettere allo switch di cambiare tra TX e RX
+- Compensare il propagation delay (distanza tra eNodeB e UE)
+- Prevenire interferenze tra UL e DL
+
+#attenzione()[
+  In TDD, la dimensione del Guard Period limita il raggio massimo della cella. Con GP standard, il raggio massimo è circa $15$-$20$ km. Per celle più grandi è necessario usare configurazioni speciali con GP esteso.
+]
+
+=== Orthogonal Frequency Division Multiple Access (OFDMA)
+
+OFDMA è la tecnologia di accesso multiplo utilizzata in LTE per il *downlink*. È un'evoluzione di OFDM che permette l'accesso multiplo.
+
+*Principi base OFDM*:
+- La banda disponibile viene divisa in molte *sottoportanti ortogonali*
+- Spaziatura sottoportanti: $15$ kHz
+- Ortogonalità: le sottoportanti non interferiscono tra loro
+- Ogni sottoportante trasporta un flusso dati a basso rate
+- La somma dei flussi dà il throughput totale elevato
+
+*Vantaggi OFDM*:
+- *Resistenza al multipath*: ogni sottoportante ha banda stretta, quindi è poco affetta dalla dispersione temporale
+- *Equalizzazione semplice*: equalizzazione nel dominio della frequenza (un coefficiente per sottoportante)
+- *Flessibilità*: allocazione granulare delle risorse
+- *Efficienza spettrale*: grazie all'ortogonalità, spaziatura minima tra portanti
+
+*OFDMA - Accesso Multiplo*:
+OFDMA estende OFDM permettendo a *più utenti* di trasmettere simultaneamente:
+- Ogni UE riceve un *sottoinsieme di sottoportanti* (PRB)
+- L'eNodeB scheduler assegna dinamicamente i PRB agli UE
+- Allocazione *sia in frequenza che in tempo*
+
+#esempio()[
+  Configurazione OFDMA in LTE $20$ MHz:
+  - $1200$ sottoportanti totali ($20 "MHz" \/ 15 "kHz"$)
+  - $100$ PRB ($12$ sottoportanti ciascuno)
+  - In un subframe ($1$ ms):
+    - UE1 riceve PRB 0-9 (vicino alla cella, 64-QAM)
+    - UE2 riceve PRB 10-14 (media distanza, 16-QAM)
+    - UE3 riceve PRB 15-17 (bordo cella, QPSK)
+    - PRB 18-99 allocati ad altri UE
+]
+
+*Scheduling in Frequenza*:
+L'eNodeB può sfruttare il *frequency selective scheduling*:
+- Misura la qualità del canale per ogni PRB (tramite CQI)
+- Alloca a ciascun UE i PRB dove ha il canale migliore
+- *Multi-user diversity*: aumenta il throughput complessivo del sistema
+
+#nota()[
+  Frequency selective scheduling è particolarmente efficace in ambienti con fading selettivo in frequenza, tipico negli ambienti urbani con multipath ricco.
+]
+
+*SC-FDMA per Uplink*:
+LTE utilizza *SC-FDMA* (Single Carrier FDMA) invece di OFDMA per l'uplink.
+
+*Motivazione SC-FDMA*:
+- *PAPR ridotto* (Peak-to-Average Power Ratio): il segnale SC-FDMA ha un PAPR inferiore rispetto a OFDM
+- *Efficienza energetica*: amplificatore di potenza nell'UE può lavorare vicino alla saturazione
+- *Durata batteria*: minor consumo energetico nell'UE
+
+*Funzionamento SC-FDMA*:
+- I simboli vengono prima *pre-codificati* con una DFT
+- Poi mappati su sottoportanti contigue (non sparse)
+- Infine, trasmessi usando OFDM
+
+#informalmente()[
+  SC-FDMA è come OFDMA ma con un "pre-processing" che rende il segnale più adatto per l'uplink: mantiene i vantaggi di OFDM (resistenza al multipath) ma riduce il PAPR, permettendo agli UE di trasmettere in modo più efficiente dal punto di vista energetico.
+]
+
+*Allocazione risorse uplink*:
+- Gli UE devono utilizzare PRB *contigui* (non possono saltare frequenze)
+- Limitazione necessaria per mantenere le proprietà "single-carrier" di SC-FDMA
+- Riduce leggermente la flessibilità di scheduling rispetto al downlink
+
+=== eNodeB Scheduler
+
+Lo scheduler dell'eNodeB è il componente che *decide l'allocazione delle risorse radio* agli UE, sia in downlink che in uplink.
+
+*Obiettivi dello scheduler*:
+- *Massimizzare il throughput* del sistema
+- *Garantire fairness* tra gli UE
+- *Rispettare i requisiti QoS* dei diversi bearer
+- *Ottimizzare l'uso dello spettro*
+
+*Scheduling downlink*:
+- Lo scheduler decide per *ogni subframe* ($1$ ms):
+  - Quali UE trasmettere
+  - Quanti PRB allocare a ciascun UE
+  - Quale MCS utilizzare per ciascun UE
+- Basato su:
+  - *CQI reports*: qualità del canale percepita da ciascun UE
+  - *Buffer status*: quantità di dati in attesa per ciascun UE
+  - *QoS requirements*: priorità, GBR, latency bounds
+  - *Fairness metrics*: evitare starvation di UE sfortunati
+
+*Scheduling uplink*:
+- Lo scheduler decide per ogni subframe:
+  - Grant di risorse (PRB) per ciascun UE
+  - MCS da utilizzare
+- Basato su:
+  - *BSR* (Buffer Status Report): l'UE informa l'eNodeB su quanti dati ha da trasmettere
+  - *Power headroom*: potenza disponibile nell'UE
+  - *CQI uplink*: stimato dall'eNodeB tramite SRS (Sounding Reference Signals)
+
+*Algoritmi di scheduling comuni*:
+- *Round Robin*: allocazione equa del tempo tra tutti gli UE
+- *Max C/I* (Maximum Carrier to Interference): alloca risorse agli UE con il canale migliore
+  - Massimizza il throughput totale
+  - Può causare unfairness verso UE con canale scarso
+- *Proportional Fair*: compromesso tra throughput e fairness
+  - Alloca risorse considerando sia la qualità istantanea che quella media del canale
+  - Formula: $text("priorità") = R_"istantaneo" \/ R_"medio"$
+  - Evita starvation ma mantiene buon throughput
+
+#nota()[
+  L'algoritmo di scheduling *non* è specificato dallo standard LTE. Ogni vendor può implementare il proprio algoritmo, permettendo differenziazione e ottimizzazione in base alle esigenze.
+]
+
+*Scheduling real-time vs best-effort*:
+- *Bearer real-time* (VoLTE, video): scheduling prioritario con GBR garantito
+- *Bearer best-effort* (web browsing): scheduling opportunistico in base alle risorse disponibili
+
+=== Velocità per UE
+
+La velocità dati effettiva per ciascun UE dipende da molteplici fattori.
+
+*Throughput teorico massimo*:
+Per un UE con configurazione ottimale ($20$ MHz, 64-QAM, tutti i PRB allocati):
+- $100 "PRB" times 12 "subcarrier" times 7 "symbols" times 6 "bit/symbol" = 50400 "bits/subframe"$
+- Considerando 2 anten ne MIMO: $50400 times 2 = 100800 "bits/subframe"$
+- Throughput: $100.8 "Mbps"$ per subframe di $1$ ms
+- Con overhead e reference signals: throughput effettivo $\sim 75$-$80$ Mbps
+
+*Fattori che influenzano il throughput*:
+- *Qualità del canale* (SINR): determina MCS utilizzabile
+- *Distanza dall'eNodeB*: path loss influenza SINR
+- *Interferenza*: da celle adiacenti (ICIC mitiga questo)
+- *Numero di PRB allocati*: dipende dallo scheduler e dal carico della cella
+- *Carico della cella*: più UE attivi = meno risorse per ciascuno
+- *MIMO configuration*: $2 times 2$, $4 times 4$ aumentano il throughput
+- *Carrier Aggregation* (LTE Advanced): combinazione di più bande
+
+*Throughput reale tipico*:
+- *Cell center* (SINR alto): $50$-$70$ Mbps in downlink, $20$-$30$ Mbps in uplink
+- *Cell edge* (SINR basso): $5$-$15$ Mbps in downlink, $2$-$5$ Mbps in uplink
+- *Cell loaded*: throughput diviso tra tutti gli UE attivi
+
+#esempio()[
+  Scenario: cella LTE $20$ MHz con $10$ UE attivi
+  - UE vicini (3 UE): ricevono $15$ PRB ciascuno, 64-QAM → $\sim 20$ Mbps
+  - UE medi (5 UE): ricevono $8$ PRB ciascuno, 16-QAM → $\sim 8$ Mbps
+  - UE lontani (2 UE): ricevono $5$ PRB ciascuno, QPSK → $\sim 2$ Mbps
+  - Throughput totale cella: $\sim 150$ Mbps
+]
+
+*LTE Advanced Pro enhancements*:
+- *256-QAM*: aumenta l'efficienza spettrale del $33\%$ rispetto a 64-QAM
+- *4×4 MIMO*: raddoppia il throughput in condizioni ottimali
+- *Carrier Aggregation*: combina fino a $5$ portanti (fino a $100$ MHz totali)
+- Throughput teorico: oltre $1$ Gbps
+
+=== Collegamento alla Core Network
+
+Gli eNodeB si collegano alla rete core EPC attraverso due interfacce distinte.
+
+*Interfaccia S1*:
+L'interfaccia S1 connette l'E-UTRAN (eNodeB) alla rete core EPC. È divisa in due parti:
+
+*S1-MME (Control Plane)*:
+- Collega eNodeB all'MME
+- Trasporta *signaling* (Non-Access Stratum messages)
+- Funzioni:
+  - Setup e release delle connessioni UE
+  - Handover preparation
+  - Paging
+  - S1 context management
+- Protocollo: S1-AP (S1 Application Protocol) over SCTP/IP
+
+*S1-U (User Plane)*:
+- Collega eNodeB all'S-GW
+- Trasporta il *traffico dati* dell'utente
+- Tunnel GTP per ogni bearer di ciascun UE
+- Protocollo: GTP-U (GPRS Tunneling Protocol - User plane) over UDP/IP
+
+#nota()[
+  La separazione tra control plane (S1-MME) e user plane (S1-U) permette di scalare indipendentemente i due piani. Inoltre, un eNodeB può essere connesso a più MME e S-GW per bilanciamento del carico e ridondanza.
+]
+
+*Architettura S1*:
+- Un eNodeB può connettersi a *più MME* (S1-flex)
+  - Permette load balancing
+  - Fornisce ridondanza in caso di failure dell'MME
+  - L'eNodeB seleziona l'MME appropriato durante l'attach
+- Relazione *many-to-many* tra eNodeB e MME/S-GW
+  - Flessibilità nel deployment
+  - Ottimizzazione del routing del traffico
+
+*Protocollo Stack S1-MME*:
