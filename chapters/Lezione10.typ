@@ -5,7 +5,7 @@
 Le reti mobili nascono per garantire la connettività anche in movimento, superando i limiti delle reti fisse. L'obbiettivo principale è garantire un servizio alla parti di quello fisso, ma in movimento.
 
 Linee guida progettuali:
-- Utilizzare *molti ripetitori* con una potenza $< 100 W$ 
+- Utilizzare *molti ripetitori* con una potenza $< 100 W$
 - Meno potenza significa minore raggio di copertura. La stessa area viene quindi divisa in tante piccole *celle*, ognuna coperta da una propria antenna
 
 - Ogni cella è servita da una *base station* che svolge tre funzioni fondamentali:
@@ -44,15 +44,15 @@ Uno dei requisiti fondamentali della rete cellulare è *garantire la mobilità d
 
 === Approccio CDMA
 
-Si usa la *stessa frequenza* utilizzando tecniche di *codifica* per evitare le interferenze tra celle vicine (codice ortogonale). 
+Si usa la *stessa frequenza* utilizzando tecniche di *codifica* per evitare le interferenze tra celle vicine (codice ortogonale).
 
 - $mg("Vantaggi")$: *non* serve coordinamento e si sfrutta tutto lo spettro.
-  
+
 - $mr("Svantaggi")$: minore data rate disponibile per ogni utente.
 
 === Bande diverse
 
-Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiacenti non hanno alcuna sovrapposizione. 
+Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiacenti non hanno alcuna sovrapposizione.
 
 #attenzione()[
   Per garantire la stessa qualità del servizio è necessario:
@@ -67,7 +67,7 @@ Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiac
 #figure(
   canvas({
     import draw: *
-    
+
     // Funzione per disegnare un esagono
     let hex(x, y, label, color) = {
       let r = 1.2
@@ -79,7 +79,7 @@ Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiac
       line(..points, close: true, stroke: 2pt + black, fill: color.transparentize(70%))
       content((x, y), text(size: 14pt, weight: "bold", label))
     }
-    
+
     // Celle centrali con frequenze diverse
     hex(0, 0, "F4", yellow)
     hex(2.1, 0, "F2", red)
@@ -89,7 +89,7 @@ Si utilizzano *bande diverse* dello stesso spettro per celle vicine: celle adiac
     hex(-1.05, -1.8, "F3", green)
     hex(1.05, -1.8, "F1", blue)
   }),
-  caption: [Struttura esagonale delle celle con riuso delle frequenze]
+  caption: [Struttura esagonale delle celle con riuso delle frequenze],
 )
 
 === Bande diverse solo sui bordi
@@ -101,33 +101,33 @@ Al centro della cella viene utilizzata una certa frequenza, mentre si usano *ban
 #figure(
   canvas({
     import draw: *
-    
+
     // Funzione per disegnare un esagono
     let hex(x, y, inner_color, border_color) = {
       let r = 1.2
       let r_inner = 0.7
       let points_outer = ()
       let points_inner = ()
-      
+
       // Punti esagono esterno
       for i in range(6) {
         let angle = 60deg * i
         points_outer.push((x + r * calc.cos(angle), y + r * calc.sin(angle)))
       }
-      
+
       // Punti esagono interno
       for i in range(6) {
         let angle = 60deg * i
         points_inner.push((x + r_inner * calc.cos(angle), y + r_inner * calc.sin(angle)))
       }
-      
+
       // Disegna bordo
       line(..points_outer, close: true, stroke: 2pt + black, fill: border_color.transparentize(50%))
-      
+
       // Disegna centro
       line(..points_inner, close: true, stroke: none, fill: inner_color.transparentize(30%))
     }
-    
+
     // Celle con centro e bordo colorati
     hex(0, 0, gray, blue)
     hex(2.1, 0, gray, red)
@@ -136,43 +136,53 @@ Al centro della cella viene utilizzata una certa frequenza, mentre si usano *ban
     hex(-2.1, 0, gray, red)
     hex(-1.05, -1.8, gray, green)
     hex(1.05, -1.8, gray, yellow)
-    
+
     // Freccia
     line((3.5, 0), (5, 0), mark: (end: "stealth"), stroke: 2pt + black)
-    
+
     // Box esplicativo a destra
     let box_x = 7
     let box_y = 1.5
     let box_width = 3
     let box_height = 0.8
-    
+
     // Nel centro
-    
-    
+
+
     // Bordo - diviso in 3 parti
     let border_y = box_y - box_height - 0.3
     let part_width = box_width / 3
-    
-    rect((box_x, border_y), (box_x + part_width, border_y - box_height), 
-         fill: yellow.transparentize(30%), stroke: black + 1pt)
-    
-    rect((box_x + part_width, border_y), (box_x + 2*part_width, border_y - box_height), 
-         fill: red.transparentize(30%), stroke: black + 1pt)
-    
-    rect((box_x + 2*part_width, border_y), (box_x + box_width, border_y - box_height), 
-         fill: blue.transparentize(30%), stroke: black + 1pt)
-    
-    content((box_x + box_width/2 + 1.0, border_y + 0.3), text(size: 9pt, "bordo", blue))
 
-     content((box_x + box_width/2 - 0.5, border_y + 0.3), text(size: 9pt, "Centro"))
-    
+    rect(
+      (box_x, border_y),
+      (box_x + part_width, border_y - box_height),
+      fill: yellow.transparentize(30%),
+      stroke: black + 1pt,
+    )
+
+    rect(
+      (box_x + part_width, border_y),
+      (box_x + 2 * part_width, border_y - box_height),
+      fill: red.transparentize(30%),
+      stroke: black + 1pt,
+    )
+
+    rect(
+      (box_x + 2 * part_width, border_y),
+      (box_x + box_width, border_y - box_height),
+      fill: blue.transparentize(30%),
+      stroke: black + 1pt,
+    )
+
+    content((box_x + box_width / 2 + 1.0, border_y + 0.3), text(size: 9pt, "bordo", blue))
+
+    content((box_x + box_width / 2 - 0.5, border_y + 0.3), text(size: 9pt, "Centro"))
+
     // Annotazioni
-    content((box_x + box_width/2, border_y - box_height - 0.7), 
-            text(size: 8pt, fill: blue, [Maggiore bandwidth]))
-    content((box_x + box_width/2, border_y - box_height - 1.1), 
-            text(size: 8pt, fill: blue, [(per utenti interni)]))
+    content((box_x + box_width / 2, border_y - box_height - 0.7), text(size: 8pt, fill: blue, [Maggiore bandwidth]))
+    content((box_x + box_width / 2, border_y - box_height - 1.1), text(size: 8pt, fill: blue, [(per utenti interni)]))
   }),
-  caption: [Allocazione delle frequenze: banda unica al centro, bande diverse sui bordi per evitare interferenze]
+  caption: [Allocazione delle frequenze: banda unica al centro, bande diverse sui bordi per evitare interferenze],
 )
 
 *Vantaggi*:
@@ -199,11 +209,11 @@ Per migliorare la scalabilità della rete, si possono adottare diverse strategie
 
 Anziché utilizzare un'antenna omnidirezionale (che copre tutta la cella uniformemente), si impiegano *più antenne direzionali* che coprono varie parti della cella. Si ha quindi un'unica base station e una cella a sua volta suddivisa in settori:
 - *$mg("Vantaggi")$*: Partizionando la cella in più parti si ha un *minor path loss* a parità di distanza (*antenna gain*). Le antenne direzionali coprono in modo settoriale la cella.
-  
+
 - *$mr("Svantaggi")$*: La parte di controllo diventa più complessa.
 
 #nota()[
-   Una base station di solito contiene $3$ antenne, ognuna di esse gestisce un settore. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
+  Una base station di solito contiene $3$ antenne, ognuna di esse gestisce un settore. Ogni antenna gestisce una sotto-cella. Ogni sotto-cella usa frequenze diverse o i meccanismi visti in precedenza.
 ]
 
 == Architettura ed operazioni
@@ -243,9 +253,9 @@ Periodicamente ogni base station invia dei segnali di broadcast (*pilot*) che co
 La *frequenza di invio* dei pilot dipende dal *tempo di coerenza* del mezzo radio (per quanto tempo le caratteristiche del canale rimangono costanti).
 
 La *qualità del canale* può essere valutata in diversi modi:
-  - Confrontando il segnale ricevuto con quello atteso, valutando il *degrado*. Maggiore è la differenza, peggiore è la qualità del canale.
+- Confrontando il segnale ricevuto con quello atteso, valutando il *degrado*. Maggiore è la differenza, peggiore è la qualità del canale.
 
-  - La potenza del segnale ricevuto (RSSI - Received Signal Strength Indicator) è un indicatore diretto della qualità del canale: più è alto, migliore è la qualità.
+- La potenza del segnale ricevuto (RSSI - Received Signal Strength Indicator) è un indicatore diretto della qualità del canale: più è alto, migliore è la qualità.
 
 #nota()[
   Inoltre, i pilot, possono essere inviati anche durante la comunicazione per monitorare continuamente la qualità del canale e *adattare la trasmissione* corregendola se necessario (es. per il handover).
@@ -257,16 +267,16 @@ La *qualità del canale* può essere valutata in diversi modi:
 
 === Comunicazione iniziata dal dispositivo
 
-Un dispositivo mobile può iniziare una comunicazione verso l'esterno (es. chiamata, invio dati) solo dopo essersi connesso a una base station. In particolare, deve essere *allocato un canale* radio dedicato all'utente, richiesto alla base station a cui il dispositivo è connesso. 
+Un dispositivo mobile può iniziare una comunicazione verso l'esterno (es. chiamata, invio dati) solo dopo essersi connesso a una base station. In particolare, deve essere *allocato un canale* radio dedicato all'utente, richiesto alla base station a cui il dispositivo è connesso.
 
 Una volta stabilita la comunicazione dispositivo-base station, la base station si occupa di instradare i dati verso la *rete core* (MTSO) che a sua volta li instrada verso la destinazione finale (es. Internet).
 
 #nota()[
-  Tutta la comunicazione è gestita dalla base station. Il dispositivo mobile è sempre connesso a una base station, anche quando è in idle (non sta trasmettendo dati). 
+  Tutta la comunicazione è gestita dalla base station. Il dispositivo mobile è sempre connesso a una base station, anche quando è in idle (non sta trasmettendo dati).
 
-  L'idea è di avere un *controllo centralizzato* sulla rete, evitando comunicazioni dirette tra dispositivi mobili (come accadeva in Bluetooth, la base station è il master). 
+  L'idea è di avere un *controllo centralizzato* sulla rete, evitando comunicazioni dirette tra dispositivi mobili (come accadeva in Bluetooth, la base station è il master).
 ]
- 
+
 #esempio()[
   Se ci si trova in un luogo in cui non ci sono base station del proprio operatore, l'accesso viene negato e non è possibile trasmettere dati. Sono consentite solo le chiamate di emergenza.
 ]
@@ -285,7 +295,7 @@ Per trovare la base station specifica a cui è collegato il dispositivo, viene e
 #figure(
   canvas({
     import draw: *
-    
+
     let hex(x, y) = {
       let r = 1.0
       let points = ()
@@ -295,32 +305,35 @@ Per trovare la base station specifica a cui è collegato il dispositivo, viene e
       }
       line(..points, close: true, stroke: 2pt + blue.darken(30%), fill: blue.transparentize(85%))
     }
-    
+
     // Funzione per disegnare un'antenna (triangolo)
     let antenna(x, y, highlight: false) = {
       let col = if highlight { red } else { blue.darken(50%) }
       let h = 0.25
-      line((x - 0.15, y - h), (x, y + h), (x + 0.15, y - h), close: true, 
-           fill: col, stroke: col.darken(20%) + 1pt)
+      line((x - 0.15, y - h), (x, y + h), (x + 0.15, y - h), close: true, fill: col, stroke: col.darken(20%) + 1pt)
     }
-    
+
     // Funzione per disegnare un dispositivo (pallino rosso)
     let device(x, y) = {
       circle((x, y), radius: 0.12, fill: red, stroke: red.darken(30%) + 1pt)
     }
-    
+
     // Disegna le celle in un pattern esagonale (area di paging)
     let cells = (
-      (0, 0), (2, 0), (4, 0),
-      (1, 1.7), (3, 1.7),
-      (1, -1.7), (3, -1.7)
+      (0, 0),
+      (2, 0),
+      (4, 0),
+      (1, 1.7),
+      (3, 1.7),
+      (1, -1.7),
+      (3, -1.7),
     )
-    
+
     for cell in cells {
       hex(cell.at(0), cell.at(1))
       antenna(cell.at(0), cell.at(1))
     }
-    
+
     // Aggiungi dispositivi (pallini rossi) in varie celle
     device(0.3, 0.2)
     device(1.7, 0.4)
@@ -329,49 +342,53 @@ Per trovare la base station specifica a cui è collegato il dispositivo, viene e
     device(1.3, -1.5)
     device(3.8, -1.8)
     device(4.2, 0.3)
-    
+
     // Evidenzia la cella che ha il dispositivo cercato
     antenna(2, 0, highlight: true)
     circle((2.5, -0.3), radius: 0.25, stroke: red + 2pt, fill: none)
-    
+
     // MTSO (scatola a destra)
     let mtso_x = 7
     let mtso_y = 0
-    rect((mtso_x - 0.6, mtso_y - 1.5), (mtso_x + 0.6, mtso_y + 1.5), 
-         fill: rgb("#8B4513").transparentize(20%), stroke: black + 2pt)
-    
+    rect(
+      (mtso_x - 0.6, mtso_y - 1.5),
+      (mtso_x + 0.6, mtso_y + 1.5),
+      fill: rgb("#8B4513").transparentize(20%),
+      stroke: black + 2pt,
+    )
+
     content((mtso_x, mtso_y + 0.7), text(fill: white, size: 11pt, weight: "bold", [M]))
     content((mtso_x, mtso_y + 0.2), text(fill: white, size: 11pt, weight: "bold", [T]))
     content((mtso_x, mtso_y - 0.3), text(fill: white, size: 11pt, weight: "bold", [S]))
     content((mtso_x, mtso_y - 0.8), text(fill: white, size: 11pt, weight: "bold", [O]))
-    
+
     // Linee dalle base station al MTSO
     for cell in cells {
       let is_responding = (cell.at(0) == 2 and cell.at(1) == 0)
       let line_color = if is_responding { red } else { gray }
       let line_width = if is_responding { 2pt } else { 1pt }
-      
-      line((cell.at(0) + 0.3, cell.at(1)), (mtso_x - 0.6, mtso_y), 
-           stroke: line_color + line_width,
-           mark: (end: if is_responding { "stealth" } else { none }))
+
+      line((cell.at(0) + 0.3, cell.at(1)), (mtso_x - 0.6, mtso_y), stroke: line_color + line_width, mark: (
+        end: if is_responding { "stealth" } else { none },
+      ))
     }
-    
+
     // Legenda
     content((mtso_x, -3), text(size: 8pt, fill: red, [← BS che risponde]))
     content((2, -3), text(size: 8pt, [Dispositivo cercato]))
   }),
-  caption: [Processo di paging: il MTSO interroga tutte le base station dell'area, solo quella che gestisce il dispositivo risponde]
+  caption: [Processo di paging: il MTSO interroga tutte le base station dell'area, solo quella che gestisce il dispositivo risponde],
 )
 
 Inoltre, i dispositivi possono essere messi in stato *idle*:
-  - Rilasciano i canali radio ad altri utenti. Inoltre viene risparmiata la batteria.
-  - I servizi in uso vengono salvati in memoria
+- Rilasciano i canali radio ad altri utenti. Inoltre viene risparmiata la batteria.
+- I servizi in uso vengono salvati in memoria
 
 Quando il dispositivo deve ricevere dati, i canali vengono riassegnati, è la base station che si occupa di *risvegliare* il dispositivo attraverso il *paging*
 
 #attenzione()[
   Il paging è un'operazione onerosa, quindi si cerca di *minimizzarne* l'uso.
-  
+
   Esiste un canale specifico dedicato al paging.
 ]
 
@@ -389,8 +406,8 @@ Le base station coinvolte devono accettare la comunicazione (allocare risorse, e
 La procedura di handover si articola in tre fasi:
 1. *Decisione di una nuova associazione*: rilevamento dello spostamento verso una nuova cella
 
-2. *Gestione nuova associazione*: 
-   
+2. *Gestione nuova associazione*:
+
 3. *Riconfigurazione percorsi di comunicazione*: aggiornamento del routing, soprattutto verso la rete core
 
 #attenzione()[
@@ -399,15 +416,15 @@ La procedura di handover si articola in tre fasi:
 
 == Ambiente in ambito cellulare
 
-L'ambiente può essere fondamentale nella *diffusione* del segnale cellulare. La rete è molto influenzata dalla topologia del terreno. L'ambiente è molto più imprevedibile rispetto agli altri scenari wireless. 
+L'ambiente può essere fondamentale nella *diffusione* del segnale cellulare. La rete è molto influenzata dalla topologia del terreno. L'ambiente è molto più imprevedibile rispetto agli altri scenari wireless.
 
 Aspetti da considerare:
-  - *Potenza del segnale*: non deve creare interferenza con le celle vicine ma deve superare gli ostacoli
-  - *Variabilità*: rete mobile molto variabile a causa della mobilità degli utenti
-  - *Fading*: attenuazione del segnale molto presente (più che nel Wi-Fi)
+- *Potenza del segnale*: non deve creare interferenza con le celle vicine ma deve superare gli ostacoli
+- *Variabilità*: rete mobile molto variabile a causa della mobilità degli utenti
+- *Fading*: attenuazione del segnale molto presente (più che nel Wi-Fi)
 
 #nota()[
-  La rete cellulare ha un'attenuazione del Line of Sight molto marcata. 
+  La rete cellulare ha un'attenuazione del Line of Sight molto marcata.
 ]
 
 Il *Network Planning* consiste nel prendere la topologia 3D di un sito e studiare come si propaga il segnale in quell'ambiente specifico. In paricolare vengono studiati i *punti di interesse* (es. strade, edifici, ecc.) per garantire una copertura adeguata. Alcuni parametri da considerare:
@@ -442,7 +459,7 @@ Il parametro principale per la decisione del cambiamento di cella è la *potenza
 
 //fix path
 #align(center)[
-  #image("../assets/handoff-graph.png", width: 55%) 
+  #image("../assets/handoff-graph.png", width: 55%)
 ]
 
 #informalmente()[
@@ -454,11 +471,11 @@ Il parametro principale per la decisione del cambiamento di cella è la *potenza
 
 La prima strategia prevede di effettuare l'handover quando la potenza del segnale di $B$ supera quella di $A$ (*punto di intersezione* $L_1$ nell'immagine ). Dopo il punto di intersezione accade che:
 $
-  "Rx"_B > "Rx"_A 
+  "Rx"_B > "Rx"_A
 $
 Dopo questo punto viene effettuato l'handover da $A$ a $B$.
 
-Il $mr("problema")$ principale di questo approccio è il *ping pong effect*: esso consiste nell'effettuare handover continui dalla base station $A$ a $B$ e viceversa. 
+Il $mr("problema")$ principale di questo approccio è il *ping pong effect*: esso consiste nell'effettuare handover continui dalla base station $A$ a $B$ e viceversa.
 
 In questo scenario, il dispositivo si trova in una zona di *confine* tra le due celle, dove la potenza del segnale è simile. Piccole variazioni (es. ostacoli, fading) possono far cambiare rapidamente la potenza del segnale, causando handover continui.
 
@@ -470,8 +487,8 @@ In questo scenario, il dispositivo si trova in una zona di *confine* tra le due 
 ==== Potenza relativa + Threshold
 
 Oltre alla potenza relativa del segnale viene introdotta una *soglia* (threshold) $T$ per evitare il ping pong effect. L'handover da base station $A$ a base station $B$ avviene quando sono soddisfatte *entrambe* le condizioni:
-  - $"Rx"_A < T$ (segnale di A minore della soglia in valore assoluto)
-  - $"Rx"_B > "Rx"_A$ (segnale di B migliore di quello di A)
+- $"Rx"_A < T$ (segnale di A minore della soglia in valore assoluto)
+- $"Rx"_B > "Rx"_A$ (segnale di B migliore di quello di A)
 
 #esempio()[
   Nel grafico, l'handoff avviene in posizione $L_4$ ($T h_3$). In questo modo si evita il ping pong effect, ma si rischia di rimanere con un segnale di bassa qualità (tra $L_1$ e $L_3$) per un periodo di tempo più lungo.
@@ -513,71 +530,79 @@ Nel grafico l'isteresi è rappresentata dalla curva tratteggiata sfalsata di $H$
 #figure(
   canvas(length: 0.7cm, {
     import draw: *
-    
+
     let w = 8
     let h = 4
-    
+
     // Assi
-    line((-w/2, 0), (w/2, 0), mark: (end: "stealth"), stroke: black + 1.5pt)
-    line((0, -0.5), (0, h+2), mark: (end: "stealth"), stroke: black + 1.5pt)
-    
+    line((-w / 2, 0), (w / 2, 0), mark: (end: "stealth"), stroke: black + 1.5pt)
+    line((0, -0.5), (0, h + 2), mark: (end: "stealth"), stroke: black + 1.5pt)
+
     // Etichette assi
-    content((w/2 + 1.2, -0.7), text(size: 10pt, [$(P_B - P_A)$]))
+    content((w / 2 + 1.2, -0.7), text(size: 10pt, [$(P_B - P_A)$]))
     content((-1.5, h + 1.8), text(size: 10pt, [Assignment]))
-    
+
     // Posizioni soglie
     let threshold = 2.2
-    
+
     // Livelli di assegnazione
     let level_A = 1.2
     let level_B = 3.8
-    
+
     // Rettangolo di isteresi (ciclo)
     // Linea orizzontale bassa (Assigned to A) - da sinistra fino a +H
-    line((-w/2 + 0.5, level_A), (threshold, level_A), stroke: red + 3pt)
-    
+    line((-w / 2 + 0.5, level_A), (threshold, level_A), stroke: red + 3pt)
+
     // Linea verticale a +H (salto verso B)
     line((threshold, level_A), (threshold, level_B), stroke: red + 3pt)
-    
+
     // Linea orizzontale alta (Assigned to B) - da +H fino a -H
-    line((threshold+1.5, level_B), (-threshold, level_B), stroke: red + 3pt)
-    
+    line((threshold + 1.5, level_B), (-threshold, level_B), stroke: red + 3pt)
+
     // Linea verticale a -H (salto verso A)
     line((-threshold, level_B), (-threshold, level_A), stroke: red + 3pt)
-    
+
     // Completa il ciclo
-    line((-threshold, level_A), (-w/2 + 0.5, level_A), stroke: red + 3pt)
-    
+    line((-threshold, level_A), (-w / 2 + 0.5, level_A), stroke: red + 3pt)
+
     // Soglie verticali tratteggiate
     line((-threshold, -0.3), (-threshold, 0.3), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
     line((threshold, -0.3), (threshold, 0.3), stroke: (dash: "dashed", paint: black, thickness: 1.5pt))
-    
+
     content((-threshold, -0.7), text(size: 10pt, weight: "bold", [$-H$]))
     content((threshold, -0.7), text(size: 10pt, weight: "bold", [$+H$]))
-    
+
     // Etichette assegnazione
-    content((-w/2 + 0.5, level_A - 0.4), text(size: 10pt, [Assigned to A]))
+    content((-w / 2 + 0.5, level_A - 0.4), text(size: 10pt, [Assigned to A]))
 
-    content((w/2 , level_B+0.5), text(size: 10pt, [Assigned to B]))
+    content((w / 2, level_B + 0.5), text(size: 10pt, [Assigned to B]))
 
-    content((-w/2 + 1.8, level_B+0.5), text(size: 10pt, [B]))
+    content((-w / 2 + 1.8, level_B + 0.5), text(size: 10pt, [B]))
 
-     content((w/2- 1.2, level_A - 0.2), text(size: 10pt, [A]))
-    
+    content((w / 2 - 1.2, level_A - 0.2), text(size: 10pt, [A]))
+
     // FRECCE per le transizioni
     // Freccia a destra (handoff to B) - verso l'alto
-    line((threshold + 0.4, level_A + 0.5), (threshold + 0.4, level_B - 0.5), 
-         mark: (end: "stealth"), stroke: orange + 2.5pt)
-    content((threshold + 1.3, (level_A + level_B)/2), text(size: 9pt, fill: orange, [Handoff]))
-    content((threshold + 1.3, (level_A + level_B)/2 - 0.4), text(size: 9pt, fill: orange, [to B]))
-    
+    line(
+      (threshold + 0.4, level_A + 0.5),
+      (threshold + 0.4, level_B - 0.5),
+      mark: (end: "stealth"),
+      stroke: orange + 2.5pt,
+    )
+    content((threshold + 1.3, (level_A + level_B) / 2), text(size: 9pt, fill: orange, [Handoff]))
+    content((threshold + 1.3, (level_A + level_B) / 2 - 0.4), text(size: 9pt, fill: orange, [to B]))
+
     // Freccia a sinistra (handoff to A) - verso il basso
-    line((-threshold - 0.4, level_B - 0.5), (-threshold - 0.4, level_A + 0.5), 
-         mark: (end: "stealth"), stroke: green + 2.5pt)
-    content((-threshold - 1.3, (level_A + level_B)/2), text(size: 9pt, fill: green, [Handoff]))
-    content((-threshold - 1.3, (level_A + level_B)/2 - 0.4), text(size: 9pt, fill: green, [to A]))
+    line(
+      (-threshold - 0.4, level_B - 0.5),
+      (-threshold - 0.4, level_A + 0.5),
+      mark: (end: "stealth"),
+      stroke: green + 2.5pt,
+    )
+    content((-threshold - 1.3, (level_A + level_B) / 2), text(size: 9pt, fill: green, [Handoff]))
+    content((-threshold - 1.3, (level_A + level_B) / 2 - 0.4), text(size: 9pt, fill: green, [to A]))
   }),
-  caption: [Funzione di isteresi per l'handoff: il ciclo mostra come l'assegnazione dipenda dalla storia. Handoff A→B avviene a $+H$, handoff B→A avviene a $-H$.]
+  caption: [Funzione di isteresi per l'handoff: il ciclo mostra come l'assegnazione dipenda dalla storia. Handoff A→B avviene a $+H$, handoff B→A avviene a $-H$.],
 )
 
 Le *condizioni* per l'handover diventano:
@@ -592,11 +617,11 @@ Le *condizioni* per l'handover diventano:
 
 Esistono due approcci fondamentali:
 
--  *Hard Handoff* (dal 2G in avanti):
+- *Hard Handoff* (dal 2G in avanti):
   - Il dispositivo è associato a *una sola Base Station* alla volta
   - Si rilascia la vecchia connessione prima di stabilire la nuova
   - Minore consumo di risorse
-  
+
 - *Soft Handoff*:
   - Il dispositivo mantiene la *connettività con entrambe le BS* contemporaneamente
   - Si rilascia la vecchia BS solo quando il segnale della nuova è chiaramente dominante
@@ -609,23 +634,23 @@ Esistono due approcci fondamentali:
 In 2G la connessione avveniva in FDD (Frequency Division Duplex). Ovvero si utilizzano *frequenze diverse* per uplink e downlink:
 
 *$mg("Vantaggi")$*:
-  - Si può trasmettere e ricevere contemporaneamente (nessun delay)
-  
+- Si può trasmettere e ricevere contemporaneamente (nessun delay)
+
 *$mr("Svantaggi")$*:
-  - Richiede uno spettro più ampio
-  - *Metà del datarate* disponibile (bisogna dividere lo spettro)
-  
+- Richiede uno spettro più ampio
+- *Metà del datarate* disponibile (bisogna dividere lo spettro)
+
 
 === TDD - Time Division Duplex
 
 Utilizza *una sola frequenza* sia per uplink che per downlink. In 4G (LTE) sono presenti entrambe le soluzioni: LTE-FDD e LTE-TDD.
 
 *$mg("Vantaggi")$*:
-  - Migliore efficienza spettrale
-  
+- Migliore efficienza spettrale
+
 *$mr("Svantaggi")$*:
-  - Maggiore ritardo (bisogna aspettare il proprio turno)
-  
+- Maggiore ritardo (bisogna aspettare il proprio turno)
+
 == GSM Mobile Station
 
 Il GSM è diviso in due parti distinte:
@@ -662,7 +687,7 @@ L'identificativo della SIM è chiamato *IMSI* (International Mobile Subscriber I
 
 === Numero di telefono (MSISDN)
 
-Il numero di telefono è chiamato *MSISDN* (Mobile Station International Subscriber Directory Number). 
+Il numero di telefono è chiamato *MSISDN* (Mobile Station International Subscriber Directory Number).
 
 #informalmente()[
   ISDN sta per Integrated Services Digital Network, la rete digitale precursore della DSL.
@@ -690,9 +715,21 @@ GSM è stato standardizzato dall'ETSI (European Telecommunications Standards Ins
 == Caratteristiche tecniche
 
 GSM funzionava con *FDD* (Frequency Division Duplex):
-- Due bande di frequenza (uplink e downlink)
-- Ogni banda: $25$ MHz
-- Ogni banda divisa in $125$ canali da $200$ kHz
+- *FDMA* (divisione in frequenza)
+  - Due bande di frequenza (uplink e downlink)
+  - Ogni banda: $25$ MHz
+  - Ogni banda divisa in $125$ canali da $200$ kHz
+
+  #nota()[
+    In ogni cella non tutti i canali potevano essere usati. Questo per evitare interferenze con le celle vicine.
+  ]
+
+- *TDMA* (divisione in tempo): Ogni canale in frequenza può essere diviso in $8$ slot temporali, permettendo l'accesso ad $8$ dispositivi tramite TDM (turini di trasmissione)
+
+La trasmissione duplex *non* è possibile. Ogni dispositivo deve alternare trasmissione e ricezione, impiegando più tempo.
+
+Una cella poteva essere grande al massimo $35 "Km"$ (nella pratica molto meno). La cella veniva divisa a sua volta in settori, al fine di aumentare la capacità e il riuso delle frequenze.
+
 
 #esempio()[
   Specificando il canale 2, si può risalire al dispositivo associato. Ad ogni dispositivo veniva assegnato un canale e un time-slot. Si trasmetteva sempre a intervalli regolari (constant bit rate) in 2G.
@@ -700,15 +737,5 @@ GSM funzionava con *FDD* (Frequency Division Duplex):
 
 #informalmente()[
   L'infrastruttura richiedeva un grande investimento per installare le base station e gestire il traffico voce.
-]
-
-= GPRS & EDGE
-
-GPRS (General Packet Radio Service) ed EDGE (Enhanced Data rates for GSM Evolution) rappresentano l'integrazione di GSM con la rete Internet.
-
-#nota()[
-  L'obiettivo era mantenere l'infrastruttura radio esistente (base station) modificando solamente la parte software e di core network.
-  
-  In questo modo si poteva riutilizzare l'investimento fatto per il 2G aggiungendo capacità di trasferimento dati a pacchetto.
 ]
 
