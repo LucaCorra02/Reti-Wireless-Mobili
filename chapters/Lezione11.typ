@@ -95,7 +95,7 @@ L'architettura UMTS è divisa in tre parti principali:
   - Ottimizzazione delle risorse radio
 
     #nota()[
-      Negli anni, come si può vedere, la seprazione tra modulo di trasmssione $"Node" B$ e modulo di controllo $"RNC"$ è sempre più marcata
+      Negli anni, come si può vedere, la seprazione tra modulo di trasmssione $"Node" B$ e modulo di controllo $"RNC"$ è sempre meno marcata. In 4G LTE, ad esempio, questi due moduli vengono condensati in un unico elemento chiamato *eNodeB*.
     ]
 
 *3. Core Network*:
@@ -145,18 +145,156 @@ LTE (Long Term Evolution) rappresenta la *quarta generazione* (4G) delle reti mo
 
 *Caratteristiche principali*:
 - *All-IP architecture*: eliminazione del dominio circuit-switched, tutto il traffico (voce e dati) viene trasportato su IP
-- *Data rate elevati*: fino a $300$ Mbps in downlink e $75$ Mbps in uplink (LTE Advanced fino a $1$ Gbps)
-- *Bassa latenza*: latenza del piano utente inferiore a $10$ ms
 - *Efficienza spettrale*: utilizzo ottimizzato dello spettro radio
-- *Scalabilità della banda*: supporto per bande da $1.4$ MHz fino a $20$ MHz
 - *Mobilità elevata*: supporto per velocità fino a $350$ km/h
+- *Accesso al canale*: LTE rappresenta una rottura rispetto alle tecnologie precedenti: abbandona completamente il CDMA in favore di *OFDMA* (Orthogonal Frequency Division Multiple Access) per il downlink e *SC-FDMA* (Single Carrier FDMA) per l'uplink.
 
-#nota()[
-  LTE rappresenta una rottura rispetto alle tecnologie precedenti: abbandona completamente il CDMA in favore di OFDMA (Orthogonal Frequency Division Multiple Access) per il downlink e SC-FDMA (Single Carrier FDMA) per l'uplink.
+
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 0.7cm, {
+      import cetz.draw: *
+
+      // Stile per i box dei componenti
+      let component-box(pos, width, height, label, color: rgb("#87CEEB")) = {
+        rect(pos, (pos.at(0) + width, pos.at(1) + height), fill: color, stroke: 1.5pt + black)
+        content((pos.at(0) + width / 2, pos.at(1) + height / 2), text(size: 11pt, weight: "bold", label))
+      }
+
+      // Posizioni dei componenti
+      let ue-pos = (0, 2)
+      let enodeb-pos = (3, 2)
+      let mme-pos = (7, 4)
+      let hss-pos = (10, 5.5)
+      let sgw-pos = (9, 2)
+      let pgw-pos = (12, 2)
+      let pcrf-pos = (15, 4)
+      let services-pos = (18, 2)
+
+      // Disegna i componenti
+      component-box(ue-pos, 2, 1.2, "UE")
+      component-box(enodeb-pos, 2.5, 1.2, "eNodeB")
+      component-box(mme-pos, 2, 1.2, "MME")
+      component-box(hss-pos, 2, 1.2, "HSS")
+      component-box(sgw-pos, 2, 1.2, "S-GW")
+      component-box(pgw-pos, 2, 1.2, "P-GW")
+      component-box(pcrf-pos, 2, 1.2, "PCRF")
+
+      // Ellisse per i servizi
+      circle(
+        (services-pos.at(0) + 2.5, services-pos.at(1) + 0.6),
+        radius: (2.5, 1),
+        fill: rgb("#87CEEB"),
+        stroke: 1.5pt + black,
+      )
+      content((services-pos.at(0) + 2.5, services-pos.at(1) + 0.8), text(size: 9pt, weight: "bold", "Operator's"))
+      content((services-pos.at(0) + 2.5, services-pos.at(1) + 0.4), text(
+        size: 9pt,
+        weight: "bold",
+        "IP services (for example,",
+      ))
+      content((services-pos.at(0) + 2.5, services-pos.at(1) + 0), text(size: 9pt, weight: "bold", "IMS, PSS)"))
+
+      // Linee di connessione (interfacce)
+      // LTE-Uu
+      line((ue-pos.at(0) + 2, ue-pos.at(1) + 0.6), (enodeb-pos.at(0), enodeb-pos.at(1) + 0.6), stroke: 2pt + black)
+      content(((ue-pos.at(0) + enodeb-pos.at(0) + 2) / 2, ue-pos.at(1) - 0.4), text(
+        size: 9pt,
+        style: "italic",
+        "LTE-Uu",
+      ))
+
+      // S1-MME (tratteggiata)
+      line((enodeb-pos.at(0) + 2.5, enodeb-pos.at(1) + 1), (enodeb-pos.at(0) + 2.5, mme-pos.at(1) + 1.2), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      line((enodeb-pos.at(0) + 2.5, mme-pos.at(1) + 1.2), (mme-pos.at(0), mme-pos.at(1) + 0.6), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      content((enodeb-pos.at(0) + 1.5, mme-pos.at(1) + 0.2), text(size: 9pt, style: "italic", "S1-MME"))
+
+      // S1-U (solida)
+      line((enodeb-pos.at(0) + 2.5, enodeb-pos.at(1) + 0.6), (sgw-pos.at(0), sgw-pos.at(1) + 0.6), stroke: 2pt + black)
+      content(((enodeb-pos.at(0) + sgw-pos.at(0) + 2.5) / 2, sgw-pos.at(1) + 0.2), text(
+        size: 9pt,
+        style: "italic",
+        "S1-U",
+      ))
+
+      // S11 (tratteggiata)
+      line((mme-pos.at(0) + 1, mme-pos.at(1)), (sgw-pos.at(0) + 1, sgw-pos.at(1) + 1.2), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      content((mme-pos.at(0) + 1.5, (mme-pos.at(1) + sgw-pos.at(1) + 1.2) / 2), text(size: 9pt, style: "italic", "S11"))
+
+      // S6a (tratteggiata)
+      line((mme-pos.at(0) + 1.5, mme-pos.at(1) + 1.2), (hss-pos.at(0), hss-pos.at(1) + 0.6), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      content(((mme-pos.at(0) + hss-pos.at(0) + 1.9) / 2, hss-pos.at(1) - 0.2), text(size: 9pt, style: "italic", "S6a"))
+
+      // S5/S8 (solida)
+      line((sgw-pos.at(0) + 2, sgw-pos.at(1) + 0.6), (pgw-pos.at(0), pgw-pos.at(1) + 0.6), stroke: 2pt + black)
+      content(((sgw-pos.at(0) + pgw-pos.at(0) + 2) / 2, sgw-pos.at(1) + 0.2), text(size: 9pt, style: "italic", "S5/S8"))
+
+      // Gx (tratteggiata)
+      line((pgw-pos.at(0) + 1.5, pgw-pos.at(1) + 1.2), (pcrf-pos.at(0), pcrf-pos.at(1) + 0.6), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      content(((pgw-pos.at(0) + pcrf-pos.at(0) + 1.7) / 2, pcrf-pos.at(1) - 0.4), text(
+        size: 9pt,
+        style: "italic",
+        "Gx",
+      ))
+
+      // Rx (tratteggiata)
+      line((pcrf-pos.at(0) + 2, pcrf-pos.at(1) + 0.6), (services-pos.at(0), services-pos.at(1) + 0.6), stroke: (
+        paint: black,
+        thickness: 2pt,
+        dash: "dashed",
+      ))
+      content(((pcrf-pos.at(0) + services-pos.at(0) + 2) / 2, pcrf-pos.at(1) + 0.2), text(
+        size: 9pt,
+        style: "italic",
+        "Rx",
+      ))
+
+      // SGi (solida)
+      line(
+        (pgw-pos.at(0) + 2, pgw-pos.at(1) + 0.6),
+        (services-pos.at(0), services-pos.at(1) + 0.6),
+        stroke: 2pt + black,
+      )
+      content(((pgw-pos.at(0) + services-pos.at(0) + 2) / 2, pgw-pos.at(1) + 0.2), text(
+        size: 9pt,
+        style: "italic",
+        "SGi",
+      ))
+
+      // Linee verticali di delimitazione (tratteggiate)
+      line((6, 1), (6, 6), stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
+      line((6.2, 5.8), (6.2, 1.2), stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
+    })
+  ]
 ]
 
+
+#nota()[
+  Si introduce una separazione a livelli di architettura più marcata rispetto a UMTS, con una *rete di accesso* (E-UTRAN) completamente *indipendente* dalla *rete core* (EPC).
+]
 L'architettura LTE è divisa in due componenti principali:
-- *E-UTRAN* (Evolved UMTS Terrestrial Radio Access Network): rete di accesso radio
+- *E-UTRAN* (Evolved UMTS Terrestrial Radio Access Network): rete di accesso radio. A differenza di 3G, non esistono più _Node B_ e _RNC_, tali moduli sono condensati in un unico elemento chiamato *eNodeB* (Evolved Node B).
+
 - *EPC* (Evolved Packet Core): rete core completamente basata su IP
 
 == Core Network
@@ -169,126 +307,99 @@ La rete core EPC (Evolved Packet Core) rappresenta un'architettura completamente
 
 === Mobility Management Entity (MME)
 
-L'MME è il *nodo di controllo principale* della rete LTE. Si occupa della gestione della mobilità e della sicurezza, ma *non gestisce il traffico dati* dell'utente.
+L'MME è il *nodo di controllo principale* della rete LTE. Si occupa di tutto quello che è il traffico di controllo e segnalazione all'interno della rete core.
 
-*Funzioni principali*:
+#attenzione()[
+  Il modulo MME *non* gestisce il traffico dati utente.
+]
+
+Funzioni principali:
 - *Gestione della mobilità*: tracking dell'UE (User Equipment) e gestione degli handover
 - *Autenticazione e sicurezza*: autenticazione dell'utente, generazione e distribuzione delle chiavi di cifratura
 - *Gestione dei bearer*: setup, modifica e rilascio dei bearer EPS (Evolved Packet System)
 - *Paging*: invio di messaggi di paging agli UE in idle mode
-- *Selezione del S-GW e P-GW*: scelta dei gateway appropriati per l'UE
 - *Gestione delle Tracking Area*: aggiornamento delle Tracking Area List
 
 #informalmente()[
-  L'MME è come il _cervello_ della rete LTE: coordina tutto ciò che riguarda la connessione e la mobilità dell'utente, ma non tocca mai i dati veri e propri che vengono scambiati.
+  L'MME è come il _cervello_ della rete LTE. Esso coordina tutto ciò che riguarda la connessione e la mobilità dell'utente, ma non tocca mai i dati utente che vengono scambiati.
 ]
-
-*Interazioni*:
-- Con *eNodeB*: via interfaccia S1-MME per il controllo
-- Con *HSS*: per l'autenticazione e il profilo utente
-- Con *S-GW*: per la gestione dei bearer
-- Con altri *MME*: per gli handover tra aree diverse
 
 === Home Subscriber Server (HSS)
 
-L'HSS è il *database centrale* che contiene tutte le informazioni relative agli abbonati della rete.
-
-*Informazioni memorizzate*:
-- *Dati di identità*: IMSI (International Mobile Subscriber Identity), MSISDN (numero di telefono)
-- *Profilo dell'abbonato*: servizi sottoscritti, QoS autorizzata, APN (Access Point Name) consentiti
-- *Informazioni di sicurezza*: chiavi di autenticazione, algoritmi di cifratura supportati
-- *Informazioni di localizzazione*: MME corrente a cui l'utente è registrato
-- *Dati di mobilità*: restrizioni di roaming, aree consentite
-
-*Funzioni principali*:
-- Generazione dei vettori di autenticazione per l'MME
-- Autorizzazione dell'accesso alla rete
-- Gestione del profilo QoS dell'utente
-- Supporto per la portabilità del numero
-
-#nota()[
-  In LTE, l'HSS sostituisce l'HLR (Home Location Register) di GSM/UMTS, offrendo funzionalità estese per supportare servizi IP avanzati.
-]
+L'HSS è il *database centrale* che contiene tutte le informazioni relative agli abbonati della rete LTE:
+- _Profilo dell'abbonato_: servizi sottoscritti, QoS autorizzata, APN (Access Point Name) consentiti
+- _Informazioni di localizzazione_: MME corrente a cui l'utente è registrato
+- _Dati di mobilità_: restrizioni di roaming, aree consentite
 
 === Packet Data Network Gateway (P-GW)
 
 Il P-GW è il *punto di interconnessione* tra la rete LTE e le reti esterne (Internet, IMS per VoLTE, reti aziendali).
 
-*Funzioni principali*:
-- *Assegnazione indirizzi IP*: fornisce indirizzi IP agli UE tramite DHCPv4/v6
-- *Routing*: instrada i pacchetti tra la rete LTE e le reti esterne
-- *Punto di ancoraggio*: mantiene l'indirizzo IP dell'UE anche durante la mobilità (handover)
-- *Policy enforcement*: applica le policy di QoS e charging ricevute dal PCRF
-- *Packet filtering*: filtraggio dei pacchetti in base alle regole di sicurezza
-- *Deep Packet Inspection* (opzionale): ispezione del traffico per fini di charging o policy
+Funzioni principali:
+- *_Assegnazione indirizzi IP_*: fornisce indirizzi IP agli UE tramite DHCPv4/v6
+- *_Routing_*: instrada i pacchetti tra la rete LTE e le reti esterne
+- *_Punto di ancoraggio_*: mantiene l'indirizzo IP dell'UE anche durante la mobilità (handover)
+- *_Policy enforcement_*: applica le policy di QoS e charging ricevute dal PCRF. Inoltro esegue il *filtraggio dei pacchetti* in base alle regole di sicurezza e in barer differenti in base alle politche di QoS.
 - *NAT*: traduzione degli indirizzi per UE con IP privati
 
 #attenzione()[
-  Il P-GW è un punto critico della rete: tutto il traffico dati degli utenti passa attraverso di esso. Per questo motivo, è un elemento che richiede elevate capacità di processing e throughput.
+  Il P-GW è un *punto critico* della rete: tutto il *traffico dati degli utenti* passa attraverso di esso. Per questo motivo, è un elemento che richiede elevate capacità di processing e throughput.
 ]
 
-*Sessioni PDN*:
-- Ogni UE può avere *multiple connessioni PDN* (Packet Data Network) simultanee, ciascuna identificata da un diverso APN
-- Esempio: una connessione per Internet generale e una per servizi IMS (voce)
+*Sessioni PDN* (Packet Data Network):
+- Ogni UE può avere *multiple connessioni PDN* simultanee, ciascuna identificata da un diverso APN. Esempio: _una connessione per Internet generale e una per servizi IMS (voce)_
 - Ogni PDN connection ha il proprio indirizzo IP e QoS
 
 === Serving Gateway (S-GW)
 
-L'S-GW è il *gateway di routing locale* che gestisce il traffico dati dell'utente all'interno della rete di accesso.
+L'S-GW è il *gateway di routing locale* che gestisce il traffico dati dell'utente all'interno della rete di accesso. In particolare, si occupa di instradare i pacchetti tra l'eNodeB e il P-GW, mantenendo la connessione dati durante la mobilità dell'utente.
 
-*Funzioni principali*:
+#nota()[
+  Gestisce tutti i pacchetti IP degli utenti circolanti nella rete dell'operatore, ma *non* si occupa di instradare i pacchetti verso l'esterno (Internet). Quella è la funzione del P-GW.
+]
+
+Funzioni principali:
 - *Routing del traffico utente*: instrada i pacchetti tra eNodeB e P-GW
 - *Punto di ancoraggio locale*: mantiene il percorso dati durante handover intra-LTE
 - *Buffering dei dati*: memorizza temporaneamente i pacchetti quando l'UE è in idle mode
-- *Lawful interception*: supporto per intercettazioni legali
-- *Conteggio del traffico*: raccolta di statistiche per il charging
-- *Gestione dei bearer*: setup e modifica dei bearer radio
 
 #informalmente()[
-  Se il P-GW è la _porta verso l'esterno_, l'S-GW è il _postino locale_ che si occupa di recapitare i pacchetti all'eNodeB giusto, seguendo l'utente nei suoi spostamenti all'interno della rete.
+  Se il *P-GW* è la _porta verso l'esterno_, l'*S-GW* è il _postino locale_ che si occupa di recapitare i pacchetti all'eNodeB giusto, seguendo l'utente nei suoi spostamenti all'interno della rete.
 ]
 
-*Mobilità*:
+La mobilità del dispositivo all'interno della rete può avere diversi impatti sull'S-GW:
+
 - Durante un *intra-eNB handover* (cambio di cella sotto lo stesso eNodeB): nessun impatto sull'S-GW
+
 - Durante un *inter-eNB handover* (cambio di eNodeB): l'S-GW aggiorna il percorso dati
+
 - Durante un *inter-S-GW handover*: il P-GW rimane l'anchor point, ma il percorso viene riconfigurato
 
 #nota()[
-  La separazione tra S-GW (routing locale) e P-GW (gateway esterno) permette di ottimizzare la gestione della mobilità: il P-GW non deve essere cambiato durante la maggior parte degli handover, mantenendo stabile l'indirizzo IP dell'utente.
+  La separazione tra S-GW (routing locale) e P-GW (gateway esterno) permette di ottimizzare la gestione della mobilità: il P-GW non deve essere cambiato durante la maggior parte degli handover, mantenendo *stabile l'indirizzo IP dell'utente*.
 ]
 
 === Policy Control and Charging Rules Function (PCRF)
 
-Il PCRF è il *motore delle policy* che determina come il traffico di ciascun utente deve essere gestito in termini di QoS e charging.
+Il PCRF è il *motore delle policy* che determina come il traffico di ciascun utente deve essere gestito in termini di *QoS* e *charging* in base al profilo HSS dell'utente e alle richieste delle applicazioni.
 
-*Funzioni principali*:
+Funzioni principali:
 - *Policy control*: definizione delle regole di QoS (bandwidth, latenza, priorità) per ogni servizio
 - *Charging control*: definizione delle regole di tariffazione (flat rate, pay-per-use, ecc.)
-- *Application detection*: riconoscimento delle applicazioni per applicare policy specifiche
-- *Gestione dei Service Data Flows*: controllo granulare dei flussi di traffico
 
-*Policy and Charging Rules (PCC)*:
-- *Bearer level*: QoS applicata all'intero bearer
-- *Service Data Flow level*: QoS applicata a flussi specifici (es: video streaming vs browsing)
-
-*Interfacce*:
-- *Rx*: verso l'Application Function (AF) per ricevere richieste di QoS (es: da IMS per VoLTE)
-- *Gx*: verso il P-GW per inviare le PCC rules
-- *Sp*: verso l'HSS per ottenere il profilo dell'utente
 
 #esempio()[
   Quando un utente inizia una videochiamata VoLTE:
   + L'IMS (Application Function) invia una richiesta al PCRF via interfaccia Rx
   + Il PCRF verifica il profilo dell'utente dall'HSS
   + Il PCRF genera delle PCC rules che garantiscono bassa latenza e banda sufficiente
-  + Le rules vengono inviate al P-GW via Gx
+  + Le rules vengono inviate al P-GW
   + Il P-GW configura il traffico secondo le rules ricevute
 ]
 
 === Servizi operatore
 
 LTE supporta diversi tipi di servizi attraverso l'architettura EPC:
-
 *Servizi dati*:
 - *Internet access*: connessione a Internet tramite APN dedicato
 - *Private networks*: accesso a reti aziendali private tramite VPN
@@ -297,8 +408,6 @@ LTE supporta diversi tipi di servizi attraverso l'architettura EPC:
 *VoLTE (Voice over LTE)*:
 - Voce trasportata su IP tramite l'IMS (IP Multimedia Subsystem)
 - QoS garantita tramite dedicated bearer
-- Codec AMR-WB per qualità voce superiore (HD Voice)
-- Fallback su 3G/2G se VoLTE non disponibile (CSFB - Circuit Switched FallBack)
 
 *Quality of Service (QoS)*:
 - *QoS Class Identifier (QCI)*: 9 classi predefinite (1-9) con caratteristiche diverse
@@ -310,7 +419,7 @@ LTE supporta diversi tipi di servizi attraverso l'architettura EPC:
 
 == E-UTRAN
 
-L'E-UTRAN (Evolved UMTS Terrestrial Radio Access Network) rappresenta la rete di accesso radio di LTE. La principale innovazione è la *flat architecture*: viene eliminato il controller (RNC) presente in UMTS.
+L'E-UTRAN (Evolved UMTS Terrestrial Radio Access Network) rappresenta la rete di accesso radio di LTE. La principale innovazione è la *flat architecture*: viene eliminato il controller (RNC) presente in 3G.
 
 #nota()[
   In LTE, le funzioni del RNC vengono spostate direttamente negli eNodeB, semplificando l'architettura e riducendo la latenza.
@@ -318,19 +427,14 @@ L'E-UTRAN (Evolved UMTS Terrestrial Radio Access Network) rappresenta la rete di
 
 === Evolved-NodeB (eNodeB)
 
-L'eNodeB è la *base station* di LTE, che integra tutte le funzioni di gestione radio precedentemente divise tra Node-B e RNC in UMTS.
+L'eNodeB è la *base station* di LTE, che integra tutte le funzioni di gestione radio.
 
-*Funzioni principali*:
-- *Gestione delle risorse radio*: scheduling di uplink e downlink
+Funzioni principali:
+- *Gestione delle risorse radio*: scheduling di uplink e downlink. Inclusa anche la gestione di più UE (accesso multiplo).
 - *Radio Resource Management*: controllo di potenza, ammissione, handover
 - *Compressione degli header*: riduzione dell'overhead per i pacchetti IP
 - *Cifratura*: encryption dei dati utente
-- *Selezione dell'MME*: scelta dell'MME appropriato durante l'attach
-
-*Interfacce*:
-- *S1-MME*: verso l'MME per il controllo (signaling)
-- *S1-U*: verso l'S-GW per il traffico dati utente
-- *X2*: verso altri eNodeB per handover e coordinamento inter-cella
+- Connessione con S-GW e MME per traffico dati e controllo
 
 #informalmente()[
   L'eNodeB è come un _orchestratore autonomo_: prende decisioni locali su come allocare le risorse radio senza dover consultare un controller centrale, riducendo così i tempi di risposta.
@@ -338,36 +442,38 @@ L'eNodeB è la *base station* di LTE, che integra tutte le funzioni di gestione 
 
 === Modulazione e Codifica Trasmissione
 
-LTE utilizza tecniche di modulazione e codifica adattive per massimizzare l'efficienza spettrale in base alle condizioni del canale radio.
+LTE utilizza tecniche di modulazione e *codifica adattive* per massimizzare l'efficienza spettrale in base alle condizioni del canale radio.
 
-*Schemi di modulazione supportati*:
-- *QPSK* (Quadrature Phase Shift Keying): $2$ bit/simbolo
-  - Usato in condizioni di scarsa qualità del segnale
-  - Più robusto ma meno efficiente
-- *16-QAM* (Quadrature Amplitude Modulation): $4$ bit/simbolo
-  - Compromesso tra robustezza ed efficienza
-  - Utilizzato con qualità del segnale media
-- *64-QAM*: $6$ bit/simbolo
-  - Massima efficienza ma richiede ottima qualità del segnale
-  - Usato vicino alla cella con SNR elevato
-- *256-QAM* (solo LTE Advanced Pro): $8$ bit/simbolo
-  - Introdotto nelle release successive per aumentare ulteriormente il throughput
+La procedura di *codifica* è la seguente:
++ Codifica dei bit in simboli tramite uno schema di modulazione (QPSK, 16-QAM, 64-QAM)
 
-*Link Adaptation*:
-Il sistema *adatta dinamicamente* la modulazione e il coding rate in base a:
-- *CQI* (Channel Quality Indicator): report inviato dall'UE all'eNodeB sulla qualità del canale
-- *BLER* (Block Error Rate): tasso di errore sui blocchi ricevuti
-- *SINR* (Signal to Interference plus Noise Ratio): rapporto segnale/interferenza
++ Modulazione usando una *frequenza intermedia* $"IF"$. In LTE questa frequenza viene utilizzata per modulare leggermente la frequenza portante, permettendo di trasmettere più simboli contemporaneamente (OFDMA)
 
-#esempio()[
-  Un UE vicino all'eNodeB con SINR elevato:
-  - Utilizza 64-QAM con coding rate elevato ($\sim 0.9$)
-  - Ottiene throughput elevato ($\sim 75$ Mbps su $20$ MHz)
-  
-  Un UE al bordo cella con SINR basso:
-  - Utilizza QPSK con coding rate basso ($\sim 0.3$)
-  - Ottiene throughput ridotto ma connessione stabile ($\sim 5$ Mbps su $20$ MHz)
++ Conversione in analogico (DAC)
+
++ Modulazione della portante RF (Radio Frequency), da banda base a banda traslata sulla portante.
+
++ Trasmissione
+
+#nota()[
+  Il sistema *adatta dinamicamente* la modulazione e il coding rate in base a:
+  - *CQI* (Channel Quality Indicator): report inviato dall'UE all'eNodeB sulla qualità del canale
+  - *BLER* (Block Error Rate): tasso di errore sui blocchi ricevuti
+  - *SINR* (Signal to Interference plus Noise Ratio): rapporto segnale/interferenza
 ]
+
+In *ricezione* avvengono i seguenti passaggi:
++ Si misura il segnale ricevuto. La misurazione comprende il rumore e lo sfasamento indotto dalla mobilità $psi$.
+
++ *Demodulazione*: viene rimossa la sequenza portante, tornando così in banda base.
+
++ Vine rimosso il rumore termico attraverso un filtro passa basso, ottenendo così il segnale digitale (ADC).
+
+
+
+
+
+
 
 *Modulation and Coding Scheme (MCS)*:
 - LTE definisce $29$ diversi MCS (da MCS-0 a MCS-28)
@@ -439,7 +545,7 @@ La struttura temporale di LTE è basata su *simboli OFDM* con durata fissa.
 
 *Parametri temporali*:
 - *Durata simbolo OFDM utile*: $T_u = 66.67 \ mu s$
-- *Cyclic Prefix (CP)*: 
+- *Cyclic Prefix (CP)*:
   - *Normal CP*: $4.69 \ mu s$ (primo simbolo), $5.21 \ mu s$ (altri simboli)
   - *Extended CP*: $16.67 \ mu s$ (tutti i simboli)
 - *Durata simbolo totale*:
