@@ -469,50 +469,104 @@ In *ricezione* avvengono i seguenti passaggi:
 
 + Vine rimosso il rumore termico attraverso un filtro passa basso, ottenendo così il segnale digitale (ADC).
 
++ Il segnale trasmesso era $phi$, quello ricevuto è $phi + psi$ (cambia di una certa sfasatura). Per capire quanto è *sfasato* rispetto al segnale originale, viene effettuata una *channel estimation*: Stima dello sfasamento dovuto alle condizioni del canale. Viene utilizzato un *pilota* (simbolo noto) per stimare lo sfasamento $psi$
 
++ Conversione da simbolo a bit tramite demodulazione inversa (QPSK, 16-QAM, 64-QAM)
 
-
-
-
-
-*Modulation and Coding Scheme (MCS)*:
-- LTE definisce $29$ diversi MCS (da MCS-0 a MCS-28)
-- Ogni MCS specifica la combinazione di:
-  - Schema di modulazione (QPSK/16-QAM/64-QAM)
-  - Code rate (rapporto tra bit informativi e bit totali)
-  - Efficienza spettrale risultante
-
-*HARQ* (Hybrid Automatic Repeat Request):
-- Ritrasmissione automatica dei blocchi errati
-- Combina ARQ (ritrasmissione) con FEC (correzione errori)
-- *Soft combining*: i tentativi di ritrasmissione vengono combinati per migliorare la decodifica
-- Riduzione della latenza rispetto ad ARQ tradizionale
+Le codifiche utilizzate in LTE sono principalmente:
+- *BPSK (Binary Phase Shift Keying)*: modulazione a 2 simboli. Utilizzata per alcuni *segnali di controllo* a basso livello (fondamentale riceverli)
+- *QPSK (Quadrature Phase Shift Keying)*: modulazione a 4 simboli. Usata per *messaggi di controllo* e per la trasmissione dati in condizioni sfavorevoli, garantisce robustezza.
+- *16/64-QAM (Quadrature Amplitude Modulation)*: modulazione a 16 simboli. Usata per la *trasmissione dati* in condizioni di canale migliori, offre maggiore efficienza spettrale.
 
 #nota()[
-  HARQ opera a livello MAC, quindi le ritrasmissioni sono gestite direttamente tra eNodeB e UE senza coinvolgere la rete core, minimizzando la latenza.
+  La scelta della modulazione e delal codifica è dinamica. Tale scelta è rappresentata da un numero su $4$ bit: *CQI (Channel Quality Indicator)*,  indica il numero di bit di informazione su $1024$ bit. Tale indice viene inviato dall'UE all'eNodeB. Un CQI più alto indica condizioni di canale migliori, permettendo l'uso di modulazioni più efficienti (16/64-QAM). Un CQI più basso indica condizioni peggiori, richiedendo modulazioni più robuste (QPSK).
 ]
 
 === Riuso frequenze
 
-LTE adotta una strategia di *riuso delle frequenze* molto più aggressiva rispetto alle tecnologie precedenti.
+LTE adotta una strategia di *riuso delle frequenze* molto più aggressiva rispetto alle tecnologie precedenti. L'idea è utilizzare il $100%$ delle frequenze disponibili (come in 3G). La gestione delle interferenze è coordinata tra le celle attraverso l'*interfaccia X2*, permettendo un'efficiente condivisione dello spettro.
 
-*Riuso frequenze $= 1$* (Hard Frequency Reuse):
-- Tutte le celle utilizzano la stessa banda di frequenza
-- Possibile grazie all'ortogonalità delle sottoportanti OFDMA
-- *Interferenza inter-cella* gestita tramite:
-  - Coordinamento tra eNodeB via interfaccia X2
-  - Tecniche di mitigazione dell'interferenza
-  - Allocazione intelligente delle risorse
-
-*Fractional Frequency Reuse (FFR)*:
-- Tecnica avanzata per gestire l'interferenza al bordo cella
-- La banda viene divisa in:
-  - *Parte centrale*: usata con piena potenza, riuso $= 1$
-  - *Parte periferica*: diversi settori usano frequenze diverse, riuso $> 1$
-- Gli UE vicini alla cella usano tutte le frequenze
-- Gli UE al bordo cella usano frequenze coordinate per ridurre l'interferenza
+Le frequenze vengono coordinate ai bordi delle celle adiacenti. In particolare, la banda viene divisa in due:
+- *Parte centrale* (centro cella): usata tutta la banda, in quanto l'interferenza è minima
+- *Parte periferica* (bordo cella): diverse celle adiacenti usano frequenze diverse per ridurre l'interferenza. La *banda* è *divisa in parti* per celle adiacenti.
 
 #esempio()[
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
+
+        // Funzione per disegnare un esagono centrato in (x, y) con raggio r
+        let hexagon(x, y, r, fill-color, label) = {
+          let angle = 60deg
+          let points = range(6).map(i => (
+            x + r * calc.cos(angle * i),
+            y + r * calc.sin(angle * i),
+          ))
+
+          // Disegna l'esagono
+          line(..points, close: true, fill: fill-color, stroke: 2pt + black)
+
+          // Label per la cella
+          content((x, y + 0.5), text(size: 12pt, weight: "bold", label))
+        }
+
+        // Funzione per disegnare una zona interna (cerchio)
+        let inner-zone(x, y, r, fill-color, label) = {
+          circle((x, y), radius: r, fill: fill-color.lighten(40%), stroke: 1pt + black)
+          content((x, y), text(size: 10pt, weight: "bold", label))
+        }
+
+        // Colori per le diverse bande
+        let color-a = rgb("#FF6B6B") // Rosso
+        let color-b = rgb("#4ECDC4") // Turchese
+        let color-c = rgb("#FFE66D") // Giallo
+        let color-all = rgb("#95E1D3") // Verde chiaro per il centro
+
+        // Posizioni degli esagoni in configurazione a nido d'ape
+        let h = calc.sqrt(3) * 4 // Altezza verticale tra centri
+        let w = 3 // Larghezza orizzontale tra centri
+
+        // Cella 1 (centro)
+        hexagon(-1.5, 1.8, 2, color-a, "Cella 1")
+        inner-zone(-1.5, 1.8, 1.2, color-all, "A+B+C+D")
+        content((-1.5, 0.4), text(size: 9pt, fill: color-a.darken(40%), "Bordo: A"))
+
+        // Cella 2 (destra)
+        hexagon(4.5, 1.8, 2, color-b, "Cella 2")
+        inner-zone(4.5, 1.8, 1.2, color-all, "A+B+C+D")
+        content((4.5, 0.4), text(size: 9pt, fill: color-b.darken(40%), "Bordo: B"))
+
+        // Cella 3 (alto-destra)
+        hexagon(w / 2, h / 2, 2, color-c, "Cella 3")
+        inner-zone(w / 2, h / 2, 1.2, color-all, "A+B+C+D")
+        content((w / 2, h / 2 - 1.5), text(size: 9pt, fill: color-c.darken(40%), "Bordo: C"))
+
+
+        // Legenda
+        rect((-0.2, 0.0), (3.5, -2.2), stroke: 1.5pt + black)
+        content((0.9, 0.2), text(size: 10pt, weight: "bold", "Legenda FFR"))
+
+        circle((0.3, -0.4), radius: 0.2, fill: color-all.lighten(40%), stroke: 1pt + black)
+        content((2, -0.4), text(size: 9pt, "Centro: Tutte le bande"))
+
+        circle((0.3, -0.9), radius: 0.2, fill: color-a, stroke: 1pt + black)
+        content((1.7, -0.9), text(size: 9pt, "Bordo: Banda A"))
+
+        circle((0.3, -1.4), radius: 0.2, fill: color-b, stroke: 1pt + black)
+        content((1.7, -1.4), text(size: 9pt, "Bordo: Banda B"))
+
+        circle((0.3, -1.9), radius: 0.2, fill: color-c, stroke: 1pt + black)
+        content((1.7, -1.9), text(size: 9pt, "Bordo: Banda C"))
+      })
+    ]
+  ]
+
+
+
+
+  // ...existing code...
+
   In una configurazione FFR con $3$ celle:
   - Banda totale: $20$ MHz divisa in $4$ parti (A, B, C, D)
   - Cella 1 centro: usa A+B+C+D a potenza normale
