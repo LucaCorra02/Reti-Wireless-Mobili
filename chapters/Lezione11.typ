@@ -576,210 +576,227 @@ Le frequenze vengono coordinate ai bordi delle celle adiacenti. In particolare, 
   - Le celle vicine non interferiscono al bordo usando frequenze diverse
 ]
 
-*Soft Frequency Reuse (SFR)*:
-- Variante più flessibile di FFR
-- Allocazione dinamica della potenza per sottoportante
-- Le sottoportanti del bordo cella vengono trasmesse a potenza più elevata
-- Coordinamento inter-cella più sofisticato via X2
-
-*Inter-Cell Interference Coordination (ICIC)*:
-- Gli eNodeB si scambiano informazioni via X2 su:
-  - Utilizzo delle risorse (quali PRB sono occupati)
-  - Livello di interferenza per banda
-  - Indicatori di carico della cella
-- Permette decisioni di scheduling coordinate per minimizzare l'interferenza
-
-#attenzione()[
-  Il riuso frequenze aggressivo (riuso $= 1$) massimizza l'efficienza spettrale ma richiede tecniche avanzate di gestione dell'interferenza. Gli UE al bordo cella sono i più penalizzati e richiedono protezione speciale tramite FFR/SFR.
-]
 
 === Durata Simboli
 
-La struttura temporale di LTE è basata su *simboli OFDM* con durata fissa.
-
-*Parametri temporali*:
-- *Durata simbolo OFDM utile*: $T_u = 66.67 \ mu s$
-- *Cyclic Prefix (CP)*:
-  - *Normal CP*: $4.69 \ mu s$ (primo simbolo), $5.21 \ mu s$ (altri simboli)
-  - *Extended CP*: $16.67 \ mu s$ (tutti i simboli)
-- *Durata simbolo totale*:
-  - Normal CP: $71.35 \ mu s$ (primo), $71.88 \ mu s$ (altri)
-  - Extended CP: $83.33 \ mu s$
-
-*Cyclic Prefix (CP)*:
-Il CP è una *copia della parte finale* del simbolo OFDM inserita all'inizio dello stesso simbolo.
-
-*Funzioni del CP*:
-- *Protezione dal multipath*: assorbe i ritardi dovuti a riflessioni multiple del segnale
-- *Mantenimento dell'ortogonalità*: previene l'interferenza inter-simbolo (ISI)
-- *Semplificazione dell'equalizzazione*: trasforma la convoluzione lineare in circolare
+La struttura temporale di LTE è basata su *simboli OFDM* con *durata fissa*.
 
 #nota()[
-  Il CP è un overhead necessario: occupa tempo ma non trasporta informazione. Tipicamente rappresenta circa il $7\%$ dell'overhead temporale. Tuttavia, senza CP, l'OFDM non funzionerebbe in ambienti con multipath.
+  In LTE, i dati non vengono inviati tutti in un unico _grande flusso_, ma vengono divisi in tanti _flussi più piccoli_ che viaggiano in parallelo, chiamati sottoportanti. L'OFDM (Orthogonal Frequency-Division Multiplexing) è la tecnica che crea e gestisce queste sottoportanti.
 ]
 
-*Normal vs Extended CP*:
+La durata di un simbolo è decisa in base a due parametri principali:
+- *$Delta f$* (spaziatura tra le sottoportanti): $15$ kHz per evitare interferenze tra le sottoportanti
+- *Punti $"FFT"$*: punti da campionare per la trasformata di Fourier, tipicamente $2048$ per una banda di $20$ MHz
+
+La frequenza di campionamento è data da:
+$
+  f_s = 2048 * 15000 "Hz" = 30.72 "MHz"
+$
+Il processore del livello fisico compie $30.72$ milioni di operazioni al secondo. L'unita di tempo base *$T_s$* (la durata di un singolo campione) è quindi:
+$
+  T_s = 1 / (underbrace(2048 * 15000 "Hz", f_s)) s tilde.eq 32.6 "ns"
+$
+Un simbolo OFDM, necessita di $2048$ campioni, quindi:
+$
+  T_u = 2048 * T_s tilde.eq 66.67 mu s
+$
+
+*Cyclic Prefix (CP)*: Il CP è una *copia della parte finale* del simbolo OFDM inserita all'inizio dello stesso simbolo. Il suo scopo principale è quella di *prevenire l'interferenza inter-simbolo* (ISI) causata da riflessioni multiple del segnale (multipath) e di mantenere l'ortogonalità tra le sottoportanti.
+
+#nota()[
+  Il CP è un *overhead necessario*. Esso occupa tempo ma non trasporta informazione. Tipicamente rappresenta circa il $7%$ dell'overhead temporale. Tuttavia, senza CP, l'OFDM non funzionerebbe in ambienti con multipath.
+]
+
+Esistono anche due varianti del cyclic preficx, *normal* ed  *extended CP*:
 - *Normal CP*: usato nella maggior parte dei casi
-  - Minore overhead ($\sim 7\%$)
-  - Adatto per celle fino a $\sim 15$ km di raggio
+  - Minore overhead ($7%$)
+  - Adatto per celle fino a $15$ km di raggio
 - *Extended CP*: usato in ambienti con dispersione temporale elevata
-  - Maggiore overhead ($\sim 25\%$)
+  - Maggiore overhead ($25%$)
   - Necessario per celle grandi o ambienti con forte multipath
-  - Utilizzato anche per MBSFN (Multimedia Broadcast Single Frequency Network)
 
-=== Struttura Slot
+I simboli sono organizzati in *slot* da $0.5$ ms, che contengono $7$ simboli OFDM (con CP normale) o $6$ simboli (con CP esteso). A loro volta gli slot sono organizzati in *subframe* da $1$ ms (2 slot) e in *frame* da $10$ ms (10 subframe).
 
-La struttura temporale di LTE è organizzata gerarchicamente in frame, subframe e slot.
-
-*Gerarchia temporale*:
-- *Radio Frame*: durata $10$ ms
-  - Composto da $10$ subframe
-- *Subframe*: durata $1$ ms
-  - Composto da $2$ slot
-  - Unità base per lo scheduling
-- *Slot*: durata $0.5$ ms
-  - Composto da $7$ simboli OFDM (Normal CP) o $6$ simboli (Extended CP)
-
-*Resource Grid*:
-Il *Resource Grid* è la struttura bidimensionale che rappresenta le risorse radio:
-- *Asse del tempo*: slot ($0.5$ ms)
-- *Asse delle frequenze*: sottoportanti ($15$ kHz di spaziatura)
-
-*Resource Element (RE)*:
-- *Unità minima* della griglia: $1$ sottoportante per $1$ simbolo OFDM
-- Trasporta un singolo simbolo di modulazione (QPSK/16-QAM/64-QAM)
-
-*Resource Block (RB)*:
-- *Unità base di allocazione*
-- Dimensioni: $12$ sottoportanti × $7$ simboli OFDM (Normal CP)
-- Larghezza: $180$ kHz ($12 times 15$ kHz)
-- Durata: $0.5$ ms (un slot)
-- Contiene: $84$ RE (con Normal CP)
-
-*Physical Resource Block (PRB)*:
-- RB numerato in base alla posizione in frequenza
-- L'eNodeB alloca ai diversi UE uno o più PRB
-- Numero totale di PRB dipende dalla banda del sistema:
-  - $1.4$ MHz: $6$ PRB
-  - $3$ MHz: $15$ PRB
-  - $5$ MHz: $25$ PRB
-  - $10$ MHz: $50$ PRB
-  - $15$ MHz: $75$ PRB
-  - $20$ MHz: $100$ PRB
-
-#esempio()[
-  In un sistema LTE con banda $20$ MHz:
-  - Disponibili $100$ PRB per subframe
-  - Ogni PRB = $180$ kHz × $1$ ms
-  - L'eNodeB scheduler decide quali PRB allocare a ciascun UE
-  - Un UE vicino alla cella potrebbe ricevere $10$ PRB con 64-QAM
-  - Un UE lontano potrebbe ricevere $5$ PRB con QPSK
-]
-
-*Reference Signals (RS)*:
-- Alcuni RE all'interno del RB sono riservati per *segnali di riferimento*
-- Funzioni:
-  - *Stima del canale*: l'UE usa gli RS per misurare la qualità del canale
-  - *Sincronizzazione*: aiutano a mantenere la sincronia temporale e di frequenza
-  - *CQI measurement*: base per il calcolo del Channel Quality Indicator
-- Tipi:
-  - *Cell-specific RS*: broadcast da tutte le antenne, usati da tutti gli UE
-  - *UE-specific RS*: dedicati a uno specifico UE (beamforming)
-
-#nota()[
-  In un RB, tipicamente $4$ RE per antenna sono dedicati ai reference signals. Questo rappresenta un overhead del $\sim 5\%$ delle risorse, ma è essenziale per il funzionamento del sistema.
-]
 
 === Duplex
 
-LTE supporta due modalità di duplexing per separare la trasmissione uplink e downlink.
+Per la gestione della comunicazione bidirezionale, ogni eNodeB può essere configurato in $2$ modalità comunicate dall'utente (UE) al momento della fase di configurazione:
+- *FDD* (Frequency Division Duplex): uplink e downlink usano bande di frequenza separate.
+- *TDD* (Time Division Duplex): uplink e downlink condividono la stessa banda di frequenza
 
-*FDD (Frequency Division Duplex)*:
-- Uplink e downlink utilizzano *bande di frequenza diverse*
-- Trasmissione *simultanea* in entrambe le direzioni
-- Richiede *due bande separate* (paired spectrum)
-- Gaps di guardia tra le bande per prevenire interferenza
+==== FDD (Frequency Division Duplex)
 
-*Caratteristiche FDD*:
-- *Vantaggio*: bassa latenza, trasmissione continua
-- *Svantaggio*: richiede più spettro (due bande)
+Tramite questa modalità è possibile trasmettere simultaneamente in uplink e downlink. Tuttavia, è necessario disporre di due bande di frequenza separate (paired spectrum), una per l'uplink e una per il downlink. Inoltre, è necessario inserire dei *gap di guardia* tra le bande per prevenire interferenze.
+
+Un frame di $10$ ms è diviso in
+- $10$ sub-frame da $1$ ms ciascuno
+- ogni sub-frame contiene $2$ slot da $0.5$ ms
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 0.8cm, {
+      import cetz.draw: *
+
+      // Dimensioni
+      let frame-width = 14
+      let frame-height = 1
+      let slot-width = frame-width / 20
+      let subframe-width = frame-width / 10
+
+      // Disegna il frame principale
+      rect((0, 0), (frame-width, frame-height), stroke: 2pt + black)
+
+      // Disegna i sub-frame (10 sub-frame per frame)
+      for i in range(10) {
+        let x = i * subframe-width
+        if i > 0 {
+          line((x, 0), (x, frame-height), stroke: 2pt + black)
+        }
+      }
+
+      // Disegna gli slot (linee tratteggiate, 2 slot per sub-frame)
+      for i in range(1, 20) {
+        let x = i * slot-width
+        line((x, 0), (x, frame-height), stroke: (paint: black, thickness: 1pt, dash: "dashed"))
+      }
+
+      // Etichetta frame principale (sopra)
+      content((frame-width / 2, frame-height + 0.8), text(size: 11pt, [1 frame $(10 "ms" = 307 space 200 space T_s)$]))
+
+      // Freccia sopra il frame
+      line(
+        (0, frame-height + 0.4),
+        (frame-width, frame-height + 0.4),
+        mark: (end: ">", start: ">"),
+        stroke: 1.5pt + black,
+      )
+
+      // Etichetta sub-frame (sotto a sinistra)
+      line((0, -0.4), (subframe-width, -0.4), mark: (end: ">", start: ">"), stroke: 1.5pt + black)
+      content((subframe-width / 2, -0.8), text(size: 10pt, [1 sub-frame $(1 "ms" = 30 space 720 space T_s)$]))
+
+      // Etichetta slot (sotto a destra)
+      let slot-pos = frame-width - slot-width
+      line((slot-pos, -0.4), (slot-pos + slot-width, -0.4), mark: (end: ">", start: ">"), stroke: 1.5pt + black)
+      content((slot-pos + slot-width / 2, -0.8), text(size: 10pt, [1 slot $(0.5 "ms" = 15 space 360 space T_s)$]))
+    })
+  ]
+]
+Siccome ogni slot contiene dai $6$ ai $7$ simboli OFDM il numero totale di simboli per sub-frame è di $14$ (con CP normale) o $12$ (con CP esteso). Mentre il numero *totale di simboli per frame* è:
+$
+  underbrace(10, "subframe") * underbrace(2, "slot") * underbrace(7, "simboli" \ "per slot") = 140 "simboli" ("CP normale")
+$
+
+- *$mg("Vantaggio")$*: bassa latenza, trasmissione continua
+- *$mr("Svantaggio")$*: richiede più spettro (due bande)
 - *Uso tipico*: deployment commerciali più comuni (Europa, USA)
 
-*Esempi di bande FDD*:
-- Band 3: $1805$-$1880$ MHz (uplink), $1710$-$1785$ MHz (downlink)
-- Band 7: $2620$-$2690$ MHz (uplink), $2500$-$2570$ MHz (downlink)
 
-*TDD (Time Division Duplex)*:
-- Uplink e downlink utilizzano la *stessa banda di frequenza*
-- Trasmissione in *momenti diversi* (time-multiplexed)
-- Richiede *una singola banda* (unpaired spectrum)
+==== TDD (Time Division Duplex)
 
-*Caratteristiche TDD*:
-- *Vantaggio*: maggiore efficienza spettrale, una sola banda necessaria
-- *Svantaggio*: richiede sincronizzazione temporale precisa tra celle
+Tramite questa modalità, la trasmissione avviene in *momenti diversi* (time-multiplexed) sulla *stessa banda di frequenza*. Ciò permette di utilizzare una sola banda (unpaired spectrum), ma richiede una sincronizzazione temporale precisa tra le celle per evitare interferenze.
+
+- *$mg("Vantaggio")$*: maggiore efficienza spettrale, una sola banda necessaria
+- *$mr("Svantaggio")$*: richiede sincronizzazione temporale precisa tra celle
 - *Flessibilità*: il rapporto DL/UL può essere configurato dinamicamente
 - *Uso tipico*: Cina, India, alcuni paesi europei per bande specifiche
-
-*Configurazioni TDD*:
-LTE TDD definisce $7$ configurazioni UL/DL diverse:
-- Configurazione 0: $2$ DL : $3$ UL (più uplink)
-- Configurazione 1: $3$ DL : $2$ UL
-- Configurazione 2: $4$ DL : $1$ UL
-- ...
-- Configurazione 6: $9$ DL : $1$ UL (più downlink)
 
 #informalmente()[
   La scelta tra FDD e TDD dipende principalmente da due fattori: lo spettro disponibile (paired vs unpaired) e il tipo di traffico previsto. FDD è più semplice ma richiede più spettro; TDD è più flessibile ma richiede sincronizzazione precisa.
 ]
 
-*Special Subframe (TDD)*:
-In TDD, alcuni subframe sono *speciali* e divisi in tre parti:
-- *DwPTS* (Downlink Pilot Time Slot): trasmissione downlink
-- *GP* (Guard Period): periodo di guardia per lo switching
-- *UpPTS* (Uplink Pilot Time Slot): trasmissione uplink
+LTE TDD definisce $7$ *configurazioni* UL/DL diverse:
+#align(center)[
+  #image("../assets/frame-TDD.png", width: 60%)
+]
 
-Il GP è necessario per:
-- Permettere allo switch di cambiare tra TX e RX
+Le barre bianche nell'immagine rappresentano il *guard time*. Esso serve per:
+- Permettere allo switch di cambiare tra TX (tramissione) e RX (ricezione)
 - Compensare il propagation delay (distanza tra eNodeB e UE)
-- Prevenire interferenze tra UL e DL
+- Prevenire interferenze tra uplink e downlink
 
-#attenzione()[
-  In TDD, la dimensione del Guard Period limita il raggio massimo della cella. Con GP standard, il raggio massimo è circa $15$-$20$ km. Per celle più grandi è necessario usare configurazioni speciali con GP esteso.
+Il guard time tiene conto dell'*anticipo di trasmissione* in Uplink (Uplink Timing Advance): L'UE inzia a trasmettere in anticipo rispetto al tempo del frame stabilito per la ricezione. Questo fenomeno avviene in quanto la ricezione potrebbe avvenire in maniera disalineata: dispositivi lontani ci mettono più tempo a far arrivare il segnale.
+
+Per questo motivo viene fornito un *timing advance* tra $0$ e $667 mu s$ per compensare la distanza. Il requisito è che *nessuno stia parlando in downlink*, altrimenti si avrebbero delle interferenze. Per questo motivo viene utilizzato il *guard time*: serve a permettere l'advance per l'uplink senza interferenze.
+
+#nota()[
+  Il *timing advance* garantisce che, anche con differenze dovute alla propagazione, i simboli arrivino entro il cyclic prefix, mantenendo la divisione in slot temporali.
 ]
 
 === Orthogonal Frequency Division Multiple Access (OFDMA)
 
-OFDMA è la tecnologia di accesso multiplo utilizzata in LTE per il *downlink*. È un'evoluzione di OFDM che permette l'accesso multiplo.
+In LTE gli eNodeB usano la tecnica di trasmissione e recezione chaiamta *OFDMA (Orthogonal Frequency Division Multiple Access)*. Si tratta di un'evoluzione di OFDM che permette l'accesso multiplo, permettendo a *più utenti* di trasmettere simultaneamente:
 
-*Principi base OFDM*:
-- La banda disponibile viene divisa in molte *sottoportanti ortogonali*
-- Spaziatura sottoportanti: $15$ kHz
-- Ortogonalità: le sottoportanti non interferiscono tra loro
-- Ogni sottoportante trasporta un flusso dati a basso rate
-- La somma dei flussi dà il throughput totale elevato
+L'idea è dividere la banda in piccole *sotto-bande* (sub-carries) le cui frequenze non interferiscono tra loro (ortogonalità). In questo modo, è possibile trasmettere più flussi dati in parallelo, aumentando il throughput complessivo. LTE usa sotto-bande di ampiezza $15$ kHz, che corrisponde alla spaziatura minima per garantire l'ortogonalità tra le sottoportanti.
 
-*Vantaggi OFDM*:
-- *Resistenza al multipath*: ogni sottoportante ha banda stretta, quindi è poco affetta dalla dispersione temporale
-- *Equalizzazione semplice*: equalizzazione nel dominio della frequenza (un coefficiente per sottoportante)
-- *Flessibilità*: allocazione granulare delle risorse
-- *Efficienza spettrale*: grazie all'ortogonalità, spaziatura minima tra portanti
+Le sotto-bande a loro volta vengono raggrupate in *Resource Block* (RB), essi rappresentano la *minima quantità di risorse* radio allocabili ad un singolo dipsositivo (UE). Solitamente un RB è composto da $12$ sottoportanti (180 kHz) e dura $0.5$ ms (1 slot) ovvero $7$ simboli OFDM.
 
-*OFDMA - Accesso Multiplo*:
-OFDMA estende OFDM permettendo a *più utenti* di trasmettere simultaneamente:
-- Ogni UE riceve un *sottoinsieme di sottoportanti* (PRB)
-- L'eNodeB scheduler assegna dinamicamente i PRB agli UE
+#esempio()[
+  Se sei l'Utente $A$ e deve mandare un semplice messaggio di testo, lo Scheduler darà come minimo $1$ Resource Block. Questo significa che in un simbolo OFDM ci saranno $12$ sottoportanti dedicate all'utente $A$.
+]
+
+
+Gli step per la trasmissione con OFDMA sono:
++ Ogni flusso di bit distinto viene trasformato in simboli tramite modulazione (QPSK, 16-QAM, 64-QAM)
+
++ I simboli vengono mappati sulle sottoportanti (sub-carriers) in base alla schedulazione dell'eNodeB
+
++ Viene applicata la IFFT (Inverse Fast Fourier Transform) per convertire il segnale da dominio della frequenza a dominio del tempo (dalle armoniche alle onde temporali, ovvero la sinusoide modulata)
+
++ I campioni temporali paralleli vengono ricombinati in un unico flusso seriale
+
++ Si aggiunge il prefisso ciclico
+
++ Il segnale viene convertito in analagoico e trasmesso
+
+Lato *ricevitore* bisogna fare il processo contrario, estraendo il flusso di bit per l’UE che sta ricevendo (vengono considerati solo i resource block a lui dedicati), correggendo il flusso dal rumore e sfasamento (tramite channel estimation).
+
+#align(center)[
+  #image("../assets/OFDMA.png", width: 80%)
+]
+
+Il grafico presenta due assi:
+- L'*asse delle frequenze* (orizonatale). Mostra come il segnale è strutturato in sottoportanti ortogonali:
+  - Ogni onda a campana, rappresenta una sottoportante spaziate tra di loro di $15$ kHz in modo da garantire l'ortogonalità
+
+  #nota()[
+    Il picco massimo di una campana cade esettamente nei punti di zero delle campane vicine, garantendo così che *non* ci sia interferenza tra le sottoportanti.
+  ]
+  - *FFT bins* (barra): L'algoritmo FTT prende il segnale continuo e lo divide in campioni discreti, ognuno rappresentato da un bin (2048 punti). Ogni bin corrisponde alle informazioni di una sottoportante specifica.
+
+  - Channel bandwidth (linea tratteggiata): rappresenta la banda totale disponibile (somma delle sottoportanti). Inoltre l'intera riga orrizontale forma esattamente un simbolo OFDM.
+
+- L'*asse del tempo* (verticale). Qusta parte mostra come i simboli vengono trasmessi nel tempo:
+  - $"Sym"0, "Sym"1, dots$: Rappresentano i simboli OFDM trasmessi in sequenza. Ogni simbolo contiene informazioni su tutte le sottoportanti (tutte le campane) in quel preciso istante di tempo. La durata dell'intera stricia dipende da $T_u = 66.7 mu s$
+
+  - *Guard interval* (linee blue): Essi sono posizionati prima di ogni simbolo OFDM e rappresentano il *cyclic prefix*. La loro funzione è quella di prevenire l'interferenza *inter-simbolo (ISI)* causata da riflessioni multiple del segnale (multipath) e di mantenere l'ortogonalità tra le sottoportanti.
+
+#nota()[
+  Ogni FFT Bin rappresenta una *singola sottoportante* (una singola frequenza di 15 kHz). In un certo istante di tempo, sulla sottoportante corrispondente, viene impressa un'onda radio modificata (modulata). La singola onda trasporta un gruppetto di bit. A seconda di quanto è buono il segnale, una singola sottoportante in un singolo simbolo può trasportare 2 bit (modulazione QPSK), 4 bit (16-QAM), 6 bit (64-QAM) e così via, provenienti dallo stesso UE.
+
+  Ogni *simbolo OFDM* è composto dalle onde provenienti da più *UE diversi*, che hanno trasmesso tutti nello stesso identico istante.
+]
+
+==== OFDMA Scheduling
+
+Tutte le comunicazioni da e per i dipsositivi $"EUs"$ sono gestite dall'eNodeB. Ogni UE riceve un *sottoinsieme di sottoportanti* oragnizzate in Resource Blocks (RB)
+- L'eNodeB scheduler assegna dinamicamente i RB agli UE
 - Allocazione *sia in frequenza che in tempo*
 
 #esempio()[
   Configurazione OFDMA in LTE $20$ MHz:
   - $1200$ sottoportanti totali ($20 "MHz" \/ 15 "kHz"$)
-  - $100$ PRB ($12$ sottoportanti ciascuno)
+  - $100$ RB ($12$ sottoportanti ciascuno)
   - In un subframe ($1$ ms):
     - UE1 riceve PRB 0-9 (vicino alla cella, 64-QAM)
     - UE2 riceve PRB 10-14 (media distanza, 16-QAM)
     - UE3 riceve PRB 15-17 (bordo cella, QPSK)
     - PRB 18-99 allocati ad altri UE
 ]
+
+
+
+
 
 *Scheduling in Frequenza*:
 L'eNodeB può sfruttare il *frequency selective scheduling*:
