@@ -779,7 +779,7 @@ Il grafico presenta due assi:
 
 ==== OFDMA Scheduling
 
-Tutte le comunicazioni da e per i dipsositivi $"EUs"$ sono gestite dall'eNodeB. Ogni UE riceve un *sottoinsieme di sottoportanti* oragnizzate in Resource Blocks (RB)
+Tutte le comunicazioni da e per i dipsositivi $"EUs"$ sono gestite dall'eNodeB. Ogni UE riceve un *sottoinsieme di sottoportanti* oragnizzate in *Resource Blocks* (RB)
 - L'eNodeB scheduler assegna dinamicamente i RB agli UE
 - Allocazione *sia in frequenza che in tempo*
 
@@ -794,163 +794,97 @@ Tutte le comunicazioni da e per i dipsositivi $"EUs"$ sono gestite dall'eNodeB. 
     - PRB 18-99 allocati ad altri UE
 ]
 
-
-
-
-
-*Scheduling in Frequenza*:
-L'eNodeB può sfruttare il *frequency selective scheduling*:
-- Misura la qualità del canale per ogni PRB (tramite CQI)
-- Alloca a ciascun UE i PRB dove ha il canale migliore
-- *Multi-user diversity*: aumenta il throughput complessivo del sistema
-
-#nota()[
-  Frequency selective scheduling è particolarmente efficace in ambienti con fading selettivo in frequenza, tipico negli ambienti urbani con multipath ricco.
-]
-
-*SC-FDMA per Uplink*:
-LTE utilizza *SC-FDMA* (Single Carrier FDMA) invece di OFDMA per l'uplink.
-
-*Motivazione SC-FDMA*:
-- *PAPR ridotto* (Peak-to-Average Power Ratio): il segnale SC-FDMA ha un PAPR inferiore rispetto a OFDM
-- *Efficienza energetica*: amplificatore di potenza nell'UE può lavorare vicino alla saturazione
-- *Durata batteria*: minor consumo energetico nell'UE
-
-*Funzionamento SC-FDMA*:
-- I simboli vengono prima *pre-codificati* con una DFT
-- Poi mappati su sottoportanti contigue (non sparse)
-- Infine, trasmessi usando OFDM
-
-#informalmente()[
-  SC-FDMA è come OFDMA ma con un "pre-processing" che rende il segnale più adatto per l'uplink: mantiene i vantaggi di OFDM (resistenza al multipath) ma riduce il PAPR, permettendo agli UE di trasmettere in modo più efficiente dal punto di vista energetico.
-]
-
-*Allocazione risorse uplink*:
-- Gli UE devono utilizzare PRB *contigui* (non possono saltare frequenze)
-- Limitazione necessaria per mantenere le proprietà "single-carrier" di SC-FDMA
-- Riduce leggermente la flessibilità di scheduling rispetto al downlink
-
-=== eNodeB Scheduler
-
-Lo scheduler dell'eNodeB è il componente che *decide l'allocazione delle risorse radio* agli UE, sia in downlink che in uplink.
-
 *Obiettivi dello scheduler*:
-- *Massimizzare il throughput* del sistema
-- *Garantire fairness* tra gli UE
+- Massimizzare il *throughput* del sistema
+- Garantire *fairness* tra gli UE
 - *Rispettare i requisiti QoS* dei diversi bearer
-- *Ottimizzare l'uso dello spettro*
+- Ottimizzare l'uso dello spettro
 
-*Scheduling downlink*:
-- Lo scheduler decide per *ogni subframe* ($1$ ms):
-  - Quali UE trasmettere
-  - Quanti PRB allocare a ciascun UE
-  - Quale MCS utilizzare per ciascun UE
-- Basato su:
-  - *CQI reports*: qualità del canale percepita da ciascun UE
-  - *Buffer status*: quantità di dati in attesa per ciascun UE
-  - *QoS requirements*: priorità, GBR, latency bounds
-  - *Fairness metrics*: evitare starvation di UE sfortunati
-
-*Scheduling uplink*:
-- Lo scheduler decide per ogni subframe:
-  - Grant di risorse (PRB) per ciascun UE
-  - MCS da utilizzare
-- Basato su:
-  - *BSR* (Buffer Status Report): l'UE informa l'eNodeB su quanti dati ha da trasmettere
-  - *Power headroom*: potenza disponibile nell'UE
-  - *CQI uplink*: stimato dall'eNodeB tramite SRS (Sounding Reference Signals)
-
-*Algoritmi di scheduling comuni*:
+Algoritmi di scheduling comuni:
 - *Round Robin*: allocazione equa del tempo tra tutti gli UE
 - *Max C/I* (Maximum Carrier to Interference): alloca risorse agli UE con il canale migliore
   - Massimizza il throughput totale
   - Può causare unfairness verso UE con canale scarso
 - *Proportional Fair*: compromesso tra throughput e fairness
-  - Alloca risorse considerando sia la qualità istantanea che quella media del canale
-  - Formula: $text("priorità") = R_"istantaneo" \/ R_"medio"$
+  - Alloca risorse considerando sia la qualità istantanea che quella media del canale:
+  $
+    text("priorità") = R_"istantaneo" \/ R_"medio"
+    $
   - Evita starvation ma mantiene buon throughput
 
 #nota()[
   L'algoritmo di scheduling *non* è specificato dallo standard LTE. Ogni vendor può implementare il proprio algoritmo, permettendo differenziazione e ottimizzazione in base alle esigenze.
 ]
 
-*Scheduling real-time vs best-effort*:
-- *Bearer real-time* (VoLTE, video): scheduling prioritario con GBR garantito
-- *Bearer best-effort* (web browsing): scheduling opportunistico in base alle risorse disponibili
-
 === Velocità per UE
 
-La velocità dati effettiva per ciascun UE dipende da molteplici fattori.
+La velocità dati effettiva per ciascun UE dipende da molteplici fattori: 
+- Capacità del dipsositivo (modulazione supportata, numero di antenne)
+- Qualità del segnale (*SINR*): interferenze e distanza dall'eNodeB alterano il coding rate e di conseguenza il throughput
+- Larghezza della banda in $"Mhz"$: maggiore è la banda, maggiore è il numero di resource block allocabili
+- Configurazaione *TDD* (time division duplex): a seconda della configurazione dell'enodeB, si possono avere differenti velocità in uplink e downlink
+- Numero di dispositivi attivi nella cella: più UE attivi = meno risorse per ciascuno
+- Altri fattori non dipendenti dal canale radio, come: congestione della rete di backhaul, congestione P-GW
 
-*Throughput teorico massimo*:
-Per un UE con configurazione ottimale ($20$ MHz, 64-QAM, tutti i PRB allocati):
-- $100 "PRB" times 12 "subcarrier" times 7 "symbols" times 6 "bit/symbol" = 50400 "bits/subframe"$
-- Considerando 2 anten ne MIMO: $50400 times 2 = 100800 "bits/subframe"$
-- Throughput: $100.8 "Mbps"$ per subframe di $1$ ms
-- Con overhead e reference signals: throughput effettivo $\sim 75$-$80$ Mbps
+#informalmente()[
+  *Throughput*: quantità effettiva di dati che vengono trasmessi con successo attraverso un canale di comunicazione in un determinato periodo di tempo.
+]
 
-*Fattori che influenzano il throughput*:
-- *Qualità del canale* (SINR): determina MCS utilizzabile
-- *Distanza dall'eNodeB*: path loss influenza SINR
-- *Interferenza*: da celle adiacenti (ICIC mitiga questo)
-- *Numero di PRB allocati*: dipende dallo scheduler e dal carico della cella
-- *Carico della cella*: più UE attivi = meno risorse per ciascuno
-- *MIMO configuration*: $2 times 2$, $4 times 4$ aumentano il throughput
-- *Carrier Aggregation* (LTE Advanced): combinazione di più bande
+La massime velocità teoriche per UE in LTE sono:
+- *Downlink* (DL): fino a $300$ Mbps con $20$ MHz
+- *Uplink* (UL): fino a $75$ Mbps con $20$ MHz
 
-*Throughput reale tipico*:
-- *Cell center* (SINR alto): $50$-$70$ Mbps in downlink, $20$-$30$ Mbps in uplink
-- *Cell edge* (SINR basso): $5$-$15$ Mbps in downlink, $2$-$5$ Mbps in uplink
-- *Cell loaded*: throughput diviso tra tutti gli UE attivi
+
 
 #esempio()[
-  Scenario: cella LTE $20$ MHz con $10$ UE attivi
-  - UE vicini (3 UE): ricevono $15$ PRB ciascuno, 64-QAM → $\sim 20$ Mbps
-  - UE medi (5 UE): ricevono $8$ PRB ciascuno, 16-QAM → $\sim 8$ Mbps
-  - UE lontani (2 UE): ricevono $5$ PRB ciascuno, QPSK → $\sim 2$ Mbps
-  - Throughput totale cella: $\sim 150$ Mbps
+  Supponiamo di avere una *cella* LTE $20$ MHz con $10$ UE attivi.
+
+  *Calcolo del throughput per UE*:  La formula generale per calcolare il throughput è:
+  $
+    "Throughput" = N_"RB" times 12 times N_"simboli" times "bit/simbolo" times 1000 times eta
+  $
+  dove:
+  - $N_"RB"$: numero di Resource Block allocati
+  - $12$: sottoportanti per RB
+  - $N_"simboli"$: simboli OFDM utili per subframe ($14$ con Cycle Period normale)
+  - $"bit/simbolo"$: dipende dalla modulazione (QPSK=$2$, 16-QAM=$4$, 64-QAM=$6$)
+  - $1000$: subframe al secondo
+  - $eta$: efficienza ($tilde.eq 0.75$ considerando overhead per segnali di riferimento e controllo)
+
+  Supponiamo inoltre di avere una configurazione *$2 times 2$ MIMO* (Multiple Input Multiple Output), ovvero $2$ antenne trasmittenti e $2$ riceventi, che raddoppia il throughput in condizioni ottimali.
+  
+  *UE vicini* ($3$ UE, $15$ RB ciascuno, 64-QAM):
+  $
+    "Throughput" &= underbrace(mr(15),"RB") times 12 times underbrace(mb(14), "symbol") times underbrace(mg(6), "bit/simbolo") times 1000 times 0.75 \
+    &= 15 times 12 times 14 times 6 times 750 \
+    &= 11.34 "Mbps"
+  $
+  Con MIMO $2 times 2$: $11.34 times 2 tilde.eq 22.7 "Mbps"$ → arrotondiamo a $20$ Mbps
+  
+  *UE medi* ($5$ UE, $8$ RB ciascuno, 16-QAM):
+  $
+    "Throughput" &= 8 times 12 times 14 times 4 times 1000 times 0.75 \
+    &= 8 times 12 times 14 times 4 times 750 \
+    &= 4.03 "Mbps"
+  $
+  Con MIMO $2 times 2$: $4.03 times 2 tilde.eq 8 "Mbps"$
+  
+  *UE lontani* ($2$ UE, $5$ RB ciascuno, QPSK):
+  $
+    "Throughput" &= 5 times 12 times 14 times 2 times 1000 times 0.75 \
+    &= 5 times 12 times 14 times 2 times 750 \
+    &= 1.26 "Mbps"
+  $
+  Con MIMO $2 times 2$: $1.26 times 2 tilde.eq 2.5 "Mbps"$ → arrotondiamo a $2$ Mbps
+  
+  *Allocazione totale Resource Block*: 
+  $
+    (3 times 15) + (5 times 8) + (2 times 5) = 45 + 40 + 10 = 95 "RB"
+  $ 
+  Su un totale di $100$ RB disponibili
+  
+  *Throughput totale cella*: 
+  $
+    (3 times 20) + (5 times 8) + (2 times 2) = 60 + 40 + 4 = 104 "Mbps"
+  $ 
 ]
-
-*LTE Advanced Pro enhancements*:
-- *256-QAM*: aumenta l'efficienza spettrale del $33\%$ rispetto a 64-QAM
-- *4×4 MIMO*: raddoppia il throughput in condizioni ottimali
-- *Carrier Aggregation*: combina fino a $5$ portanti (fino a $100$ MHz totali)
-- Throughput teorico: oltre $1$ Gbps
-
-=== Collegamento alla Core Network
-
-Gli eNodeB si collegano alla rete core EPC attraverso due interfacce distinte.
-
-*Interfaccia S1*:
-L'interfaccia S1 connette l'E-UTRAN (eNodeB) alla rete core EPC. È divisa in due parti:
-
-*S1-MME (Control Plane)*:
-- Collega eNodeB all'MME
-- Trasporta *signaling* (Non-Access Stratum messages)
-- Funzioni:
-  - Setup e release delle connessioni UE
-  - Handover preparation
-  - Paging
-  - S1 context management
-- Protocollo: S1-AP (S1 Application Protocol) over SCTP/IP
-
-*S1-U (User Plane)*:
-- Collega eNodeB all'S-GW
-- Trasporta il *traffico dati* dell'utente
-- Tunnel GTP per ogni bearer di ciascun UE
-- Protocollo: GTP-U (GPRS Tunneling Protocol - User plane) over UDP/IP
-
-#nota()[
-  La separazione tra control plane (S1-MME) e user plane (S1-U) permette di scalare indipendentemente i due piani. Inoltre, un eNodeB può essere connesso a più MME e S-GW per bilanciamento del carico e ridondanza.
-]
-
-*Architettura S1*:
-- Un eNodeB può connettersi a *più MME* (S1-flex)
-  - Permette load balancing
-  - Fornisce ridondanza in caso di failure dell'MME
-  - L'eNodeB seleziona l'MME appropriato durante l'attach
-- Relazione *many-to-many* tra eNodeB e MME/S-GW
-  - Flessibilità nel deployment
-  - Ottimizzazione del routing del traffico
-
-*Protocollo Stack S1-MME*:
