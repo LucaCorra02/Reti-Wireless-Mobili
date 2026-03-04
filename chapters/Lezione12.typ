@@ -3,29 +3,280 @@
 
 === E-UTRAN collegamento core network
 
-Le varie base station possono non usare la rete core per comunicare, ma possono comunicare in modo peer to peer.
+Oltre ad essere collegate alla rete core tramite l'interfaccia S1, le base station, possono anche comunicare tra di loro tramite l'*interfaccia X2* in modo *peer-to-peer*.
 
-Si tratta di *comunicazione logiche* dipende dal deployment della rete. Nell'immagine può essere realizzata tramite punti radio (canale diretto fisico) oppure usa la tranform network ip. Che è la stessa che porta da rete random a ip.
+Le comunicazioni tra BS sono *comunicazione logiche* (dipendenti dal deployment della rete). Esse possono essere realizzate in diversi modi:
+  - Tramite punti radio (canale diretto fisico)
+  - Sfruttando la Transform Network (rete di backhaul) con tunnel dedicati
 
-=== Tracking area
+Le base station (eNodeB), sono a loro volta organizzate in *tracking areas* (TAs), ovvero aree geografiche che raggruppano più celle. Ogni TA è identificata da un *Tracking Area Code* (TAC).
 
-Ogni base station deve sapere i pull che gestiscono la base station.
+==== Interfaccia X2
 
-=== Interfaccia X2
+L'interfaccia $"X"2$ permette la comunicazione diretta tra eNodeB, senza passare per la rete core. Tale interfaccia aggiunge una serie di funzionalità:
 
-L'interfaccia idue permette la comunicazione diretta tra E-Nodeb, si tratta di un modolo che aggiunge computazionalità aggiuntiva.
+- *Gestione degli handover*. Il traffico di controllo necessario per l'handover viene gestito tra i due eNodeB, senza coinvolgere larete core.
 
-Le funzionalità aggiunte sono:
-+ Gestione degli handover (convolgere moduli rete core o meno). Tutto il traffico di controllo di un utente da una BS all'altro se la smazzano le due BS direttamente senza rete core.
-+ Self-Organized-Network
-  - Load balancing
-  - Gestione delle interferenze. Se il dipsositivo sul bordo sente male chiede alla base station di finaco di cambiare le frequenze che usa sulo bordo
+- *Self-Organized-Network* (SON). Esse servono per migliorare le prestazioni della rete in modo autonomo, ad esempio:
+  - *Load balancing*. Se un eNodeB è sovraccarico, può chiedere ai suoi vicini di spostare alcuni dispositivi verso di loro (handover) per bilanciare il carico.
+  - *Gestione delle interferenze*. Se un dispositivo sul bordo della cella subisce interferenza da celle vicine, l'eNodeB che lo gestisce può chiedere ai vicini di modificare la frequenza di trasmissione.
 
-+ Evitare effetto ping-pong. Viene tenuto uno storico dei dispositivi già visti. Se accetto di nuovo un dispositivo giù visto in precedenza nona avvio la fase di handover.
+- Evitare effetto *ping-pong*. Viene tenuto uno storico dei dispositivi già visti. Se un eNodeB accetta di nuovo un dispositivo già visto in precedenza, in un lasso di tempo troppo breve, non avvia la fase di handover.
 
-== Control Plane: Stack Protocollare
+== Architettura LTE
 
-Il *control plane* gestisce tutta la segnalazione e il controllo della rete. Lo stack protocollare è organizzato in diversi livelli, ciascuno con funzionalità specifiche.
+#figure[
+  #align(center)[
+    #import "@preview/cetz:0.3.2": canvas, draw
+    #canvas(length: 1cm, {
+      import draw: *
+      
+      // Funzione per disegnare un dispositivo UE
+      let draw-ue(x, y, label) = {
+        // Schermo del dispositivo
+        rect((x, y), (x + 0.4, y + 0.7), fill: rgb("#E0E0E0"), stroke: 2pt + black, radius: 0.05)
+        // Linea superiore (notch)
+        line((x + 0.1, y + 0.6), (x + 0.3, y + 0.6), stroke: 2pt + gray)
+        // Schermo interno
+        rect((x + 0.05, y + 0.05), (x + 0.35, y + 0.55), fill: rgb("#FFFFFF"), stroke: 0.5pt + gray)
+        // Label
+        if label != "" {
+          content((x + 0.2, y - 0.3), text(size: 7pt, label))
+        }
+      }
+      
+      // Funzione per disegnare l'antenna eNodeB
+      let draw-enodeb(x, y) = {
+        // Base triangolare
+        line((x - 0.15, y), (x + 0.15, y), stroke: 3pt + black)
+        // Palo centrale
+        line((x, y), (x, y + 2), stroke: 3pt + black)
+        // Antenne laterali (3 per lato)
+        for i in range(3) {
+          let y-pos = y + 0.8 + i * 0.4
+          line((x, y-pos), (x - 0.3, y-pos - 0.1), stroke: 2pt + black)
+          line((x, y-pos), (x + 0.3, y-pos - 0.1), stroke: 2pt + black)
+        }
+        // Simbolo onde radio
+        content((x, y + 2.3), text(size: 14pt, "((•))"))
+      }
+      
+      // Disegna 3 UE a sinistra
+      let ue-positions = (
+        (0, 1.8),
+        (0, 0.9),
+        (0, 0)
+      )
+      
+      for (i, pos) in ue-positions.enumerate() {
+        let (ue-x, ue-y) = pos
+        draw-ue(ue-x, ue-y, "UE" + str(i + 1))
+        
+        // Linea tratteggiata verso eNodeB
+        line((ue-x + 0.4, ue-y + 0.35), (2, 1.3), 
+             stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
+      }
+      
+      // Disegna eNodeB al centro
+      draw-enodeb(2.5, 0)
+      
+      // Label eNodeB
+      content((2.5, -0.5), text(size: 9pt, weight: "bold", "eNodeB"))
+      
+      // Stack S1-MME (box colorati)
+      let stack-x = 4.5
+      let stack-y = 0.8
+      let stack-width = 0.8
+      let stack-height = 0.4
+      
+      let colors = (rgb("#4A90E2"), rgb("#5AB9EA"), rgb("#7DCE94"), rgb("#A8DBA8"))
+      
+      for (i, color) in colors.enumerate() {
+        rect((stack-x + i * stack-width, stack-y), 
+             (stack-x + (i + 1) * stack-width, stack-y + stack-height), 
+             fill: color, stroke: 1pt + black)
+      }
+      
+      // Label S1-MME sopra i box
+      content((stack-x + 2 * stack-width, stack-y + stack-height + 0.3), 
+              text(size: 8pt, weight: "bold", "S1-MME"))
+      
+      // Linea da eNodeB a stack S1-MME
+      line((3, 1.3), (stack-x, 1.0), 
+           stroke: (paint: black, thickness: 2pt),
+           mark: (end: ">", scale: 0.8))
+      
+      // MME box a destra
+      let mme-x = 7
+      let mme-y = 0.5
+      rect((mme-x, mme-y), (mme-x + 1.5, mme-y + 1), 
+           fill: rgb("#FFD700"), stroke: 2pt + black, radius: 0.1)
+      content((mme-x + 0.75, mme-y + 0.5), 
+              text(size: 11pt, weight: "bold", "MME"))
+      
+      // Linea da stack S1-MME a MME
+      line((stack-x + 4 * stack-width, 1.0), (mme-x, 1.0), 
+           stroke: (paint: black, thickness: 2pt),
+           mark: (end: ">", scale: 0.8))
+    })
+  ]
+  caption: [Architettura semplificata di LTE: i dispositivi UE comunicano con l'eNodeB tramite l'interfaccia radio (LTE-Uu), mentre l'eNodeB si connette al core network (MME) tramite l'interfaccia S1-MME che utilizza uno stack protocollare basato su SCTP/IP.]
+]
+
+In LTE si ha una netta separazione tra *control plane* e *data plane*.
+
+=== Control Plane: Stack Protocollare
+
+Il *control plane* gestisce tutta la parte di segnalazione e di controllo della rete. Lo stack protocollare è organizzato in diversi livelli, ciascuno con funzionalità specifiche.
+
+Il control plane controlla i seguenti moduli: UE, eNode, MME
+
+#figure[
+  #align(center)[
+    #import "@preview/cetz:0.3.2": canvas, draw
+    #canvas(length: 0.8cm, {
+      import draw: *
+      
+      // Parametri
+      let box-width = 3.5
+      let box-height = 0.7
+      let col-spacing = 1.5
+      let ue-x = 0
+      let enb-x = ue-x + box-width + col-spacing
+      let enb-s1-x = enb-x + box-width + 0.3
+      let mme-x = enb-s1-x + box-width + col-spacing
+      
+      // Funzione per disegnare un box dello stack
+      let stack-box(x, y, width, height, label, color) = {
+        rect((x, y), (x + width, y + height), fill: color, stroke: 1pt + black)
+        content((x + width/2, y + height/2), text(size: 9pt, weight: "bold", label))
+      }
+      
+      // Titoli colonne
+      content((ue-x + box-width/2 - 0., 8), text(size: 11pt, weight: "bold", "UE"))
+      content((enb-x + box-width/2 + 2, 7.5), text(size: 11pt, weight: "bold", "eNodeB"))
+      content((mme-x + box-width/2, 8), text(size: 11pt, weight: "bold", "MME"))
+      
+      // Etichette livelli ISO/OSI a sinistra
+      let levels = (
+        (7, "L7"),
+        (6.3, ""),
+        (5.6, "L3"),
+        (4.9, ""),
+        (4.2, "L2"),
+        (3.5, ""),
+        (2.8, ""),
+        (3.4, "L1"),
+      )
+      
+      for (y, label) in levels {
+        if label != "" {
+          content((-0.8, y + 0.35), text(size: 8pt, weight: "bold", label))
+        }
+      }
+      
+      // Colori
+      let color-nas = rgb("#9ACD32")      // Verde oliva chiaro
+      let color-rrc = rgb("#87CEEB")      // Azzurro
+      let color-s1ap = rgb("#9ACD32")     // Verde
+      let color-pdcp = rgb("#87CEEB")     // Azzurro
+      let color-rlc = rgb("#87CEEB")      // Azzurro
+      let color-mac = rgb("#87CEEB")      // Azzurro
+      let color-phy = rgb("#9ACD32")      // Verde
+      let color-sctp = rgb("#FFB6C1")     // Rosa chiaro
+      let color-ip = rgb("#9ACD32")       // Verde
+      let color-l2 = rgb("#9ACD32")       // Verde
+      let color-l1 = rgb("#9ACD32")       // Verde
+      
+      // Stack UE (colonna sinistra)
+      let y-pos = 7
+      stack-box(ue-x, y-pos, box-width, box-height, "NAS", color-nas)
+      
+      y-pos = y-pos - box-height
+      stack-box(ue-x, y-pos, box-width, box-height, "RRC", color-rrc)
+      
+      y-pos = y-pos - box-height
+      stack-box(ue-x, y-pos, box-width, box-height, "PDCP", color-pdcp)
+      
+      y-pos = y-pos - box-height
+      stack-box(ue-x, y-pos, box-width, box-height, "RLC", color-rlc)
+      
+      y-pos = y-pos - box-height
+      stack-box(ue-x, y-pos, box-width, box-height, "MAC", color-mac)
+      
+      y-pos = y-pos - box-height
+      stack-box(ue-x, y-pos, box-width, box-height, "PHY", color-phy)
+      
+      // Stack eNodeB (colonna centrale) - parte radio
+      y-pos = 7
+      y-pos = y-pos - box-height
+      stack-box(enb-x, y-pos, box-width, box-height, "RRC", color-rrc)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-x, y-pos, box-width, box-height, "PDCP", color-pdcp)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-x, y-pos, box-width, box-height, "RLC", color-rlc)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-x, y-pos, box-width, box-height, "MAC", color-mac)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-x, y-pos, box-width, box-height, "PHY", color-phy)
+      
+      
+      // Stack eNodeB - parte S1
+      y-pos = 6.3
+      stack-box(enb-s1-x, y-pos, box-width, box-height, "S1-AP", color-s1ap)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-s1-x, y-pos, box-width, box-height, "SCTP", color-sctp)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-s1-x, y-pos, box-width, box-height, "IP", color-ip)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-s1-x, y-pos, box-width, box-height, "L2", color-l2)
+      
+      y-pos = y-pos - box-height
+      stack-box(enb-s1-x, y-pos, box-width, box-height, "L1", color-l1)
+      
+      // Stack MME
+      y-pos = 7
+      stack-box(mme-x, y-pos, box-width, box-height, "NAS", color-nas)
+      
+      y-pos = y-pos - box-height
+      stack-box(mme-x, y-pos, box-width, box-height, "S1-AP", color-s1ap)
+      
+      y-pos = y-pos - box-height
+      stack-box(mme-x, y-pos, box-width, box-height, "SCTP", color-sctp)
+      
+      y-pos = y-pos - box-height
+      stack-box(mme-x, y-pos, box-width, box-height, "IP", color-ip)
+      
+      y-pos = y-pos - box-height
+      stack-box(mme-x, y-pos, box-width, box-height, "L2", color-l2)
+      
+      y-pos = y-pos - box-height
+      stack-box(mme-x, y-pos, box-width, box-height, "L1", color-l1)
+      
+
+      // Etichette livelli a destra
+      content((mme-x + box-width + 1.2, 7 + box-height/2), text(size: 8pt, "L7 con UE"))
+      content((mme-x + box-width + 1.2, 6.3 + box-height/2), text(size: 8pt, "L7 con eNB"))
+      content((mme-x + box-width + 0.6, 5.6 + box-height/2), text(size: 8pt, "L4"))
+      content((mme-x + box-width + 0.6, 4.9 + box-height/2), text(size: 8pt, "L3"))
+      content((mme-x + box-width + 0.6, 4.2 + box-height/2), text(size: 8pt, "L2"))
+      content((mme-x + box-width + 0.6, 3.5 + box-height/2), text(size: 8pt, "L1"))
+      
+    })
+  ]
+]
+
+I numeri a lato dell'immagine indicano i livelli ISO/OSI. L'eNodeB ha due stack protocollari distinti in quanto deve parlare con entrambi i lati (UE e MME).
+
+MME ha invece un'unico stack che gestisce sia la comunicazione con l'UE che quella con l'eNodeB.
+
 
 === Livelli del Control Plane
 
@@ -69,7 +320,7 @@ L'eNodeB implementa un *dual stack*:
 
 L'eNodeB funge da *gateway* tra i due domini, convertendo i messaggi tra le due interfacce.
 
-*Interfaccia S1-MME*:
+Interfaccia S1-MME:
 - Utilizza il protocollo S1-AP sopra SCTP/IP
 - Gli indirizzi IP sono *interni alla rete dell'operatore* (IP dell'MME e IP dell'eNodeB)
 - Non c'è visibilità dall'esterno: si tratta di una rete privata gestita dall'operatore
@@ -77,106 +328,98 @@ L'eNodeB funge da *gateway* tra i due domini, convertendo i messaggi tra le due 
 
 === SCTP: Motivazioni
 
-Perché LTE utilizza *SCTP* invece di TCP per il control plane? Analizziamo le limitazioni di TCP nel contesto LTE.
-
-*Problemi di TCP per il control plane*:
-
+LTE utilizza *SCTP* invece di TCP per il control plane. In quanto TCP in ambito LTE sarebbe limitante per diversi motivi: 
 + *Stream-oriented vs Message-oriented*:
-  - TCP è *stream-oriented*: i dati sono visti come un flusso continuo di byte
-  - Le applicazioni devono aggiungere *marker* (delimitatori) per identificare i confini dei messaggi
-  - Questo introduce *overhead superfluo* in termini di processing e banda
+  - TCP è *stream-oriented*: i dati sono visti come un flusso continuo di byte. Di conseguenza, le applicazioni devono aggiungere *marker* (delimitatori) per identificare i confini dei messaggi, introducendo *overhead superfluo* in termini di processing e banda
   - Nel control plane LTE, i messaggi hanno confini ben definiti (es. "Handover Request", "Attach Request")
 
 + *Mancanza di Multi-homing*:
-  - TCP crea una connessione univoca tra due endpoint (IP:porta sorgente ↔ IP:porta destinazione)
-  - Se uno degli endpoint fallisce, la connessione si interrompe
-  - In LTE, un'area è servita da *più MME* per ridondanza e bilanciamento del carico
-  - Vogliamo che l'eNodeB possa connettersi a più MME simultaneamente per *fault tolerance*
+  - TCP crea una connessione univoca tra due endpoint (IP:porta sorgente <-> IP:porta destinazione). Se uno degli endpoint fallisce, la connessione si interrompe
+  - In LTE, un'area è servita da *più MME* per ridondanza e bilanciamento del carico. Per garantire la *fault tolerance* (gestione dei guasti), vogliamo che l'eNodeB possa connettersi a più MME simultaneamente.
 
 + *Head-of-Line (HOL) Blocking*: problema critico per il multiplexing di messaggi di controllo
 
 #nota()[
-  Non è possibile usare UDP perché non fornisce *affidabilità*. Il control plane deve garantire la consegna corretta di tutti i messaggi di segnalazione.
+  *Non* è possibile usare *UDP* perché non fornisce *affidabilità*. Il control plane deve garantire la consegna corretta di tutti i messaggi di segnalazione essendo fondamentali per il funzionamento della rete.
 ]
 
 ==== Problema del HOL Blocking in TCP
 
-Il *Head-of-Line (HOL) Blocking* è una limitazione fondamentale di TCP quando si multiplexano messaggi indipendenti.
+Il *Head-of-Line (HOL) Blocking* è una limitazione fondamentale di TCP quando si multiplexano messaggi indipendenti. In quanto TCP garantisce la consegna *in ordine* dei byte, se un segmento viene perso, tutti i segmenti successivi vengono bloccati fino a quando il segmento perso non viene ritrasmesso e ricevuto correttamente (i messaggi da consegnare sono tenuti in buffer).
 
 #esempio()[
   Scenario: trasmissione di 3 segmenti TCP
   + Il segmento $1$ viene perso durante la trasmissione
   + I segmenti $2$ e $3$ arrivano correttamente a destinazione
   + I segmenti $2$ e $3$ *non possono essere consegnati* all'applicazione finché il segmento $1$ non viene ritrasmesso e ricevuto
-  
-  *Problema*: TCP garantisce la consegna *in ordine* → tutto ciò che segue un segmento perso viene bloccato nel buffer
+
 ]
 
-*Impatto in LTE*:
+In LTE TCP potrebbe portare a situazioni di HOL blocking molto gravi, soprattutto considerando che i messaggi di controllo sono *indipendenti* tra loro e hanno *requisiti di latenza stringenti*. In particolare, se ci sono più UE collegati alla stessa eNodeB, l'ack comulativo di TCP potrebbe bloccare messaggi di controllo importanti per un UE a causa di un messaggio perso per un altro UE.
 
-Supponiamo di avere 3 UE diversi (A, B, C) con messaggi di controllo multiplexati su un unico stream TCP:
-- UE A: messaggio di handover
-- UE B: messaggio di context setup  
-- UE C: messaggio di bearer modification
+#esempio()[
+  Supponiamo di avere $3$ UE diversi ($A$, $B$, $C$) collegati alla stessa eNodeB, con messaggi di controllo inviati su un unico stream TCP:
+  - UE A: messaggio di handover
+  - UE B: messaggio di context setup  
+  - UE C: messaggio di bearer modification
 
-Se il pacchetto TCP contenente il messaggio di A viene perso, *anche i messaggi di B e C sono bloccati*, anche se sono completamente indipendenti!
+Se il pacchetto TCP contenente il messaggio di A viene perso, *anche i messaggi di B e C sono bloccati*, anche se sono completamente indipendenti. I messaggi $B$ e $C$ vengono inseriti in un buffer, non possono essere consegnati a livello applicazione
+]
 
-*Possibili soluzioni con TCP*:
+Per risolvere questi scenari di _blocco_, ci possono essere diverse soluzioni:
 
-*Soluzione 1*: Una connessione TCP per ogni UE
-- *Problema*: overhead insostenibile
-- Un eNodeB serve centinaia di UE → centinaia di connessioni TCP
-- L'MME serve decine di eNodeB → migliaia di connessioni TCP
-- *Non scala*: troppo overhead di memoria e processing
+- Una connessione TCP per ogni UE. Il *$mr("problema")$* è un overhead insostenibile
+  - Un eNodeB serve centinaia di UE $->$ centinaia di connessioni TCP
+  - L'MME serve decine di eNodeB $->$ migliaia di connessioni TCP
 
-*Soluzione 2*: Usare SCTP → *approccio adottato da LTE*
+  Questa soluzione *non scala*, troppo overhead di memoria e processing
+
+- Usare SCTP → *approccio adottato da LTE*
 
 ==== SCTP: Multi-Streaming
 
 SCTP risolve il problema HOL attraverso il *multi-streaming*.
 
-*Concetto*:
-- Una singola connessione SCTP può contenere *più stream logici* indipendenti
-- Ogni stream ha il proprio *ordinamento FIFO* interno
-- I messaggi di stream diversi *non si bloccano a vicenda*
-- L'ordine è *parziale* tra stream, ma *totale* all'interno di ogni stream
+L'idea è che una singola connessione SCTP possa contenere *più stream logici* indipendenti, ciascuno con il proprio ordinamento FIFO. In questo modo, se un messaggio in uno stream viene perso, solo quello stream è bloccato, mentre gli altri stream possono continuare a consegnare i loro messaggi normalmente.
+
+#nota()[
+  L'ordine è *parziale* tra stream, ma *totale* all'interno di ogni stream
+]
+
+SCTP aggiunge uno *Stream ID* nell'header di ogni messaggio, che identifica a quale stream appartiene. Il ricevitore mantiene buffer separati per ogni stream e consegna i messaggi all'applicazione in modo indipendente per ciascuno stream.
 
 #esempio()[
   Configurazione SCTP con 3 stream:
-  - Stream 0: messaggi per UE A
-  - Stream 1: messaggi per UE B  
-  - Stream 2: messaggi per UE C
+  - Stream 0: messaggi per UE $A$
+  - Stream 1: messaggi per UE $B$
+  - Stream 2: messaggi per UE $C$
   
   Se un messaggio nello Stream 0 viene perso:
   - Stream 0 attende la ritrasmissione (HOL blocking *locale*)
   - Stream 1 e 2 continuano a consegnare i loro messaggi normalmente
   
-  Risultato: i messaggi degli UE B e C non sono bloccati dal problema dell'UE A
+  Risultato: i messaggi degli UE $B$ e $C$ non sono bloccati dal problema dell'UE $A$
 ]
-
-*Implementazione*:
-- SCTP aggiunge un *Stream ID* nell'header di ogni messaggio
-- Il ricevitore mantiene buffer separati per ogni stream
-- Consegna indipendente per stream
 
 ==== SCTP: Multihoming
 
 SCTP supporta il *multihoming*: un endpoint può avere *più indirizzi IP* associati alla stessa connessione.
 
 *In TCP*:
-- Connessione identificata da: (IP_src, Port_src, IP_dst, Port_dst)
-- Se IP_dst diventa irraggiungibile → connessione fallisce
+- Connessione identificata da: 
+  `(IP_src, Port_src, IP_dst, Port_dst)`
+- Se `IP_dst` diventa irraggiungibile → connessione fallisce
 
 *In SCTP*:
-- Connessione identificata da: ({IP_src1, IP_src2, ...}, Port_src, {IP_dst1, IP_dst2, ...}, Port_dst)
-- Se IP_dst1 fallisce → SCTP passa automaticamente a IP_dst2
+- Connessione identificata da: `({IP_src1, IP_src2, ...}, Port_src, {IP_dst1, IP_dst2, ...}, Port_dst)`
+- Se `IP_dst1` fallisce → SCTP passa automaticamente a `IP_dst2`
 - *Failover trasparente*: l'applicazione non si accorge del cambio
 
-*Applicazione in LTE*:
-- Un eNodeB può avere una connessione SCTP verso *più MME*
+In LTE, il multihoming è fondamentale per garantire la *ridondanza* e l'affidabilità del control plane. 
+
+Un dispositivo *eNodeB* può essere configurato con *più indirizzi IP* per connettersi a più MME:
 - MME primario: gestisce il traffico normale
 - MME secondario: subentra in caso di failure del primario
-- Ridondanza e alta disponibilità
 
 #nota()[
   Il multihoming introduce un piccolo *overhead nell'header* SCTP per specificare gli indirizzi multipli, ma i benefici in termini di affidabilità superano ampiamente questo costo.
@@ -184,45 +427,139 @@ SCTP supporta il *multihoming*: un endpoint può avere *più indirizzi IP* assoc
 
 ==== SCTP: Message-Oriented
 
-A differenza di TCP, SCTP è *message-oriented*:
+A differenza di TCP, SCTP è *message-oriented* invece di *stream-oriented*. Ciò significa che SCTP preserva i confini dei messaggi inviati dall'applicazione, senza richiedere un delimitatore esplicito.
+
+#figure[
+  #align(center)[
+    #import "@preview/cetz:0.3.2": canvas, draw
+    #canvas(length: 1cm, {
+      import draw: *
+      
+      // Colori
+      let color-red = rgb("#E74C3C")
+      let color-blue = rgb("#3498DB")
+      let color-light-blue = rgb("#5DADE2")
+      
+      // Funzione per disegnare un message box
+      let msg-box(x, y, width, height, label, color) = {
+        rect((x, y), (x + width, y + height), fill: color, stroke: 1.5pt + black, radius: 0.1)
+        content((x + width/2, y + height/2), text(size: 7pt, fill: white, weight: "bold", label))
+      }
+      
+      // ============ PARTE TCP (stream-oriented) ============
+      let tcp-y = 5
+      
+      // Titolo TCP
+      content((5, tcp-y + 2.8), text(size: 12pt, weight: "bold", "TCP (Stream-Oriented)"))
+      
+      // Application A (sinistra)
+      rect((0, tcp-y + 0.8), (2, tcp-y + 2.5), stroke: 2pt + black, radius: 0.15)
+      content((1, tcp-y + 2.3), text(size: 9pt, weight: "bold", "Application A"))
+      
+      // Messaggi in A
+      msg-box(0.2, tcp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
+      msg-box(0.2, tcp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
+      msg-box(0.2, tcp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
+      
+      // Application B (destra)
+      rect((8, tcp-y + 0.8), (10, tcp-y + 2.5), stroke: 2pt + black, radius: 0.15)
+      content((9, tcp-y + 2.3), text(size: 9pt, weight: "bold", "Application B"))
+      
+      // Messaggi in B (stesso ordine ma arrivano come stream)
+      msg-box(8.2, tcp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
+      msg-box(8.2, tcp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
+      msg-box(8.2, tcp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
+      
+      // Label "Application Level"
+      content((5, tcp-y + 2.5), text(size: 8pt, style: "italic", fill: gray, "Application Level"))
+      
+      // Frecce da A al transport layer
+      line((1, tcp-y + 0.8), (1, tcp-y + 0.4), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
+      
+      // Transport Layer TCP - byte stream continuo
+      let tcp-stream-y = tcp-y + 0.1
+      rect((2.5, tcp-stream-y - 0.3), (7.5, tcp-stream-y + 0.3), stroke: 2pt + black, radius: 0.1)
+      
+      // Stream continuo di colori (senza separazioni)
+      let segment-width = 5 / 9
+      for i in range(9) {
+        let color = if i < 3 { color-red } else if i < 6 { color-blue } else { color-light-blue }
+        rect((2.5 + i * segment-width, tcp-stream-y - 0.25), 
+             (2.5 + (i + 1) * segment-width, tcp-stream-y + 0.25), 
+             fill: color, stroke: 0.5pt + white)
+      }
+      
+      // Label Transport Level
+      content((5, tcp-stream-y - 0.7), text(size: 8pt, weight: "bold", "Transport Level (TCP)"))
+      content((5, tcp-stream-y - 1.1), text(size: 9pt, style: "italic", fill: black, "Byte stream continuo - nessun confine tra messaggi"))
+      
+      // Frecce da transport layer a B
+      line((9, tcp-stream-y), (9, tcp-y + 0.8), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
+      
+      // ============ PARTE SCTP (message-oriented) ============
+      let sctp-y = 1
+      
+      // Titolo SCTP
+      content((5, sctp-y + 2), text(size: 12pt, weight: "bold", "SCTP (Message-Oriented)"))
+      
+      // Application A (sinistra)
+      rect((0, sctp-y + 0.8), (2, sctp-y + 2.5), stroke: 2pt + black, radius: 0.15)
+      content((1, sctp-y + 2.3), text(size: 9pt, weight: "bold", "Application A"))
+      
+      // Messaggi in A
+      msg-box(0.2, sctp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
+      msg-box(0.2, sctp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
+      msg-box(0.2, sctp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
+      
+      // Application B (destra)
+      rect((8, sctp-y + 0.8), (10, sctp-y + 2.5), stroke: 2pt + black, radius: 0.15)
+      content((9, sctp-y + 2.3), text(size: 9pt, weight: "bold", "Application B"))
+      
+      // Messaggi in B
+      msg-box(8.2, sctp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
+      msg-box(8.2, sctp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
+      msg-box(8.2, sctp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
+        
+      // Frecce da A al transport layer
+      line((1, sctp-y + 0.8), (1, sctp-y + 0.4), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
+      
+      // Transport Layer SCTP - messaggi separati
+      let sctp-stream-y = sctp-y + 0.1
+      
+      // Messaggi SCTP separati con gap
+      let msg-width = 1.4
+      let gap = 0.2
+      
+      msg-box(2.5, sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 1", color-red)
+      msg-box(2.5 + msg-width + gap, sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 2", color-blue)
+      msg-box(2.5 + 2*(msg-width + gap), sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 3", color-light-blue)
+      
+      // Label Transport Level
+      content((5, sctp-stream-y - 0.7), text(size: 8pt, weight: "bold", "Transport Level (SCTP)"))
+      content((5, sctp-stream-y - 1.1), text(size: 9pt, style: "italic", fill: black, "I confini dei messaggi sono preservati"))
+      
+      // Frecce da transport layer a B
+      line((9, sctp-stream-y), (9, sctp-y + 0.8), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
+    })
+  ]
+]
 
 *TCP (stream-oriented)*:
-- Applicazione scrive: "MessageA", "MessageB", "MessageC"
-- TCP invia: "MessageAMessageBMessa" | "geCM" | ... (segmentazione arbitraria)
-- Ricevitore deve ricostruire i confini dei messaggi
+- L'Applicazione scrive: _MessageA_, _MessageB_, _MessageC_
+- TCP invia: _MessageAMessageBMessa_ | _geCM_ | ... (segmentazione arbitraria)
+- Il Ricevitore deve ricostruire i confini dei messaggi
 
 *SCTP (message-oriented)*:
-- Applicazione scrive: "MessageA", "MessageB", "MessageC"
+- Applicazione scrive: _MessageA_, _MessageB_, _MessageC_
 - SCTP garantisce: ogni messaggio viene consegnato *intero* e *delimitato*
-- Ricevitore riceve esattamente: "MessageA", poi "MessageB", poi "MessageC"
+- Ricevitore riceve esattamente: _MessageA_, poi _MessageB_, poi _MessageC_
 - *Nessun overhead* per delimitazione applicativa
 
-*Vantaggi in LTE*:
+$mg("Vantaggi")$ in LTE:
 - Ogni messaggio S1-AP è un'unità atomica (es. "Handover Request")
 - Processing più efficiente: non serve parsing per trovare i confini
 - Riduzione delle risorse computazionali richieste
 
-=== Confronto TCP vs SCTP
-
-#align(center)[
-  #table(
-    columns: 3,
-    align: (left, center, center),
-    table.header([*Caratteristica*], [*TCP*], [*SCTP*]),
-    [Affidabilità], [✓], [✓],
-    [Controllo di flusso], [✓], [✓],
-    [Controllo di congestione], [✓], [✓],
-    [Orientamento], [Stream], [Message],
-    [Multi-streaming], [✗], [✓],
-    [Multi-homing], [✗], [✓],
-    [HOL Blocking], [Sì (globale)], [No (tra stream)],
-    [Consegna fuori ordine], [✗], [✓ (tra stream)],
-  )
-]
-
-#informalmente()[
-  SCTP combina i *vantaggi di TCP* (affidabilità, controllo di flusso) con i *vantaggi di UDP* (message-oriented, consegna non bloccante), aggiungendo funzionalità uniche come multi-streaming e multi-homing.
-]
 
 == User Plane: Stack Protocollare
 
