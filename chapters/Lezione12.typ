@@ -1,18 +1,17 @@
 #import "../template.typ": *
 
-= Lezione 12
 
-== E-UTRAN collegamento core network
+=== E-UTRAN collegamento core network
 
 Le varie base station possono non usare la rete core per comunicare, ma possono comunicare in modo peer to peer.
 
 Si tratta di *comunicazione logiche* dipende dal deployment della rete. Nell'immagine può essere realizzata tramite punti radio (canale diretto fisico) oppure usa la tranform network ip. Che è la stessa che porta da rete random a ip.
 
-== Tracking area
+=== Tracking area
 
 Ogni base station deve sapere i pull che gestiscono la base station.
 
-== Interfaccia X2
+=== Interfaccia X2
 
 L'interfaccia idue permette la comunicazione diretta tra E-Nodeb, si tratta di un modolo che aggiunge computazionalità aggiuntiva.
 
@@ -24,153 +23,543 @@ Le funzionalità aggiunte sono:
 
 + Evitare effetto ping-pong. Viene tenuto uno storico dei dispositivi già visti. Se accetto di nuovo un dispositivo giù visto in precedenza nona avvio la fase di handover.
 
-== Control Plane
+== Control Plane: Stack Protocollare
 
-SCTP = Gestita la parte di decisione (controllo) viene gestita a livello L3. Vengono inviate le misurazioni user-requiment.
-Gestisce la parte di risorse dati
+Il *control plane* gestisce tutta la segnalazione e il controllo della rete. Lo stack protocollare è organizzato in diversi livelli, ciascuno con funzionalità specifiche.
 
-PDCP = permette la convergenza del modno delle varie applicazioni, mappandole su canali fisici sottostanti. Conversione degli header IP (?)
+=== Livelli del Control Plane
 
-RLC = gestisce il link (non le risorse radio):
-- Corregre gli errori
-- Gestione di segmentazione e riassembalggio gei pacchetti
-- Gestisce la ritrasmissione
+*SCTP (Stream Control Transmission Protocol)*:
+- Gestisce il trasporto affidabile delle informazioni di controllo a livello L4
+- Trasporta i messaggi S1-AP tra eNodeB e MME
+- Invia misurazioni, richieste di risorse e comandi di gestione della mobilità
+- Fornisce affidabilità e supporto multi-homing
 
-L'idea è che quello che arriva da sopra viene impaccettato in un unità di trasmissione e lo invia a livello MAC. La base station trasmette un insieme di blocchi che possono mischaire traffico dati e controllo
+*S1-AP (S1 Application Protocol)*:
+- Protocollo a livello applicativo per l'interfaccia S1-MME
+- Gestisce procedure di: attach, detach, handover, paging, context management
 
-MAC (mediium access control): gestisce l'accesso a canale fisico
+*PDCP (Packet Data Convergence Protocol)*:
+- Permette la convergenza tra diverse applicazioni di livello superiore
+- Mappa i flussi applicativi sui canali radio sottostanti
+- Esegue compressione degli header IP (ROHC - Robust Header Compression)
+- Gestisce la cifratura e l'integrità dei dati
 
-Il mezzo è condiviso tra più utenti in modo ortogonale e deve gestire canali eterogenei. Per questo motivo c'è una collaborazione tra stack di protocolli. La parte a destra è quella radio.
+*RLC (Radio Link Control)*:
+- Gestisce il link radio (ma non le risorse fisiche)
+- *Correzione degli errori* tramite ARQ (Automatic Repeat Request)
+- *Segmentazione e riassemblaggio* dei pacchetti in unità di dimensione appropriata
+- *Gestione della ritrasmissione* di segmenti persi o corrotti
 
-=== E-Nodeb
-Si tratta di una dual stack, deve paralare sia clabata che via radio
-
-
-Sel $"S1"-"AP"$
-Ip sono interni alla rete dell'operature (ip MME e ip eNodeB). Non c'è visibilità all'esterno.
-
-
-=== SCTP Motivazioni
-
-Perchè non c'è TCP ma SCTP. Alcune parti vanno bene:
-- TCP è traffico di controllo. Sappiamo cosa viene trasmesso e deve essere meno impattante possibile e affidabile.
-
-TCP è stram oriented le applicazioni aggiungono marker specifici per delimitare i messaggi, si tradda di overhead superfluo che possiamo evitare per trasmettere più dati
-
-Inoltre TCP non supporta multi-homing. Avremo una connessione univoca tra eNodeB e MME. La connessione se una delle parti viene a mancare si rompe. Siccome un area è sertivta da MME vogliamo avere una connessione TCP con più MME per full-tollerance
-
+*MAC (Medium Access Control)*:
+- Gestisce l'accesso al canale fisico condiviso
+- Esegue lo *scheduling* delle risorse radio (allocazione PRB)
+- Multiplexa traffico dati e controllo
+- Gestisce l'HARQ (Hybrid ARQ) per ritrasmissioni rapide
 
 #nota()[
-  Non si può usare UDP in quanto non è affidabile
+  Il mezzo radio è condiviso tra più utenti in modo ortogonale (OFDMA). Lo stack protocollare deve coordinare l'accesso di utenti con canali eterogenei e requisiti QoS diversi.
 ]
 
-==== TCP - HOL BLock Problem
+=== Stack Protocollare dell'eNodeB
+
+L'eNodeB implementa un *dual stack*:
+- *Stack verso la rete core*: protocolli IP standard (S1-AP/SCTP/IP)
+- *Stack radio verso gli UE*: protocolli LTE (PDCP/RLC/MAC/PHY)
+
+L'eNodeB funge da *gateway* tra i due domini, convertendo i messaggi tra le due interfacce.
+
+*Interfaccia S1-MME*:
+- Utilizza il protocollo S1-AP sopra SCTP/IP
+- Gli indirizzi IP sono *interni alla rete dell'operatore* (IP dell'MME e IP dell'eNodeB)
+- Non c'è visibilità dall'esterno: si tratta di una rete privata gestita dall'operatore
+
+
+=== SCTP: Motivazioni
+
+Perché LTE utilizza *SCTP* invece di TCP per il control plane? Analizziamo le limitazioni di TCP nel contesto LTE.
+
+*Problemi di TCP per il control plane*:
+
++ *Stream-oriented vs Message-oriented*:
+  - TCP è *stream-oriented*: i dati sono visti come un flusso continuo di byte
+  - Le applicazioni devono aggiungere *marker* (delimitatori) per identificare i confini dei messaggi
+  - Questo introduce *overhead superfluo* in termini di processing e banda
+  - Nel control plane LTE, i messaggi hanno confini ben definiti (es. "Handover Request", "Attach Request")
+
++ *Mancanza di Multi-homing*:
+  - TCP crea una connessione univoca tra due endpoint (IP:porta sorgente ↔ IP:porta destinazione)
+  - Se uno degli endpoint fallisce, la connessione si interrompe
+  - In LTE, un'area è servita da *più MME* per ridondanza e bilanciamento del carico
+  - Vogliamo che l'eNodeB possa connettersi a più MME simultaneamente per *fault tolerance*
+
++ *Head-of-Line (HOL) Blocking*: problema critico per il multiplexing di messaggi di controllo
+
+#nota()[
+  Non è possibile usare UDP perché non fornisce *affidabilità*. Il control plane deve garantire la consegna corretta di tutti i messaggi di segnalazione.
+]
+
+==== Problema del HOL Blocking in TCP
+
+Il *Head-of-Line (HOL) Blocking* è una limitazione fondamentale di TCP quando si multiplexano messaggi indipendenti.
 
 #esempio()[
-  I segmenti $2 e 3$ arrivano a destinazine mentre $1$ no. I segmenti $2$ e $3$ non possono essere scaricati dal buffer di tcp, un quanto non è arrivato ancora il segmento $1$.
-
-  Tutto quello che c'è prima di me deve essere arrivato.
+  Scenario: trasmissione di 3 segmenti TCP
+  + Il segmento $1$ viene perso durante la trasmissione
+  + I segmenti $2$ e $3$ arrivano correttamente a destinazione
+  + I segmenti $2$ e $3$ *non possono essere consegnati* all'applicazione finché il segmento $1$ non viene ritrasmesso e ricevuto
+  
+  *Problema*: TCP garantisce la consegna *in ordine* → tutto ciò che segue un segmento perso viene bloccato nel buffer
 ]
 
-Supponiamo di avere 3 dispositivi, con i relativi messaggi di controllo con uno stream tcp. Se viene perso uno dei pacchetti di controllo anche gli altri messagi degli altri dispositivi all'interno dello stream tcp sono bloccati. anche se i dispositivi sono indipendenti.
+*Impatto in LTE*:
 
-Una prima idea potrebbe essere di fare 3 connessioni TCP diverse. Tuttavia la base station dovrebbe gestire molte connessioni TCP (pari al numero di dispositivi collegati) inoltre anche l'MME soffre. In quanto è condiviso tra più base station, non risce a scalare.
+Supponiamo di avere 3 UE diversi (A, B, C) con messaggi di controllo multiplexati su un unico stream TCP:
+- UE A: messaggio di handover
+- UE B: messaggio di context setup  
+- UE C: messaggio di bearer modification
 
-La soluzione è usare SCTP
+Se il pacchetto TCP contenente il messaggio di A viene perso, *anche i messaggi di B e C sono bloccati*, anche se sono completamente indipendenti!
 
-L'idea è avere un ordine parzile (2 stream), guardando tutti gli stream. All'interno di ciascuno stream è totale (FIFO), l'ordine con cui vengono trasmessi i byte dei messaggi deve essere mantenuto.
+*Possibili soluzioni con TCP*:
 
-Il protocollo quick mette dei marcatori di stream.
+*Soluzione 1*: Una connessione TCP per ogni UE
+- *Problema*: overhead insostenibile
+- Un eNodeB serve centinaia di UE → centinaia di connessioni TCP
+- L'MME serve decine di eNodeB → migliaia di connessioni TCP
+- *Non scala*: troppo overhead di memoria e processing
 
-==== SCTP Multihoming
+*Soluzione 2*: Usare SCTP → *approccio adottato da LTE*
 
-Fatto pagando un po di overhead nell'header. Una connessione non è più identificata dalla prima quadrupla ma abbiamo un insieme di indirizzi IP destinazine e indirizzi IP sorgenti. GLi IP destinazioni sono i vari MME che mi servono.
+==== SCTP: Multi-Streaming
 
-Se in TCP avenamo uno stram (blocchi verdi) può contenere diversi segmenti che contencono messaggi diversi, è computi dell'applicazioni inserire dei marcatori. I tempi possono essere molto elevati.\
-Supponiamo che questi messaggi siano di handover. Siccome le operazioni costose e abbiamo tanti dispositivi (lato BS) e tanti messaggi (lato MME) abbiamo molto overhead.
+SCTP risolve il problema HOL attraverso il *multi-streaming*.
 
-Tutti i segmenti del messaggio sono solamente di quel messagio. Non contengono altri messaggi. Abbassiamo le risorse computazionali richieste lato trasmissione e ricezione.
+*Concetto*:
+- Una singola connessione SCTP può contenere *più stream logici* indipendenti
+- Ogni stream ha il proprio *ordinamento FIFO* interno
+- I messaggi di stream diversi *non si bloccano a vicenda*
+- L'ordine è *parziale* tra stream, ma *totale* all'interno di ogni stream
 
-//aggiugnere tabella riassuntiva
-SCTP è message oriented come UDP e connectin roiented come TCP. La consegna può avvenire anche non in ordine a differenza di TCP:
-- è multi-streaming
-- è multi-homming
+#esempio()[
+  Configurazione SCTP con 3 stream:
+  - Stream 0: messaggi per UE A
+  - Stream 1: messaggi per UE B  
+  - Stream 2: messaggi per UE C
+  
+  Se un messaggio nello Stream 0 viene perso:
+  - Stream 0 attende la ritrasmissione (HOL blocking *locale*)
+  - Stream 1 e 2 continuano a consegnare i loro messaggi normalmente
+  
+  Risultato: i messaggi degli UE B e C non sono bloccati dal problema dell'UE A
+]
 
-== User Plane
+*Implementazione*:
+- SCTP aggiunge un *Stream ID* nell'header di ogni messaggio
+- Il ricevitore mantiene buffer separati per ogni stream
+- Consegna indipendente per stream
 
-Ci sono $3$ livelli ip diversi.
-- Primo livello: indirizzi interni assegnati con NAT e DHCP. Se tratta dell IP interno del P-GW con UE (non c'èentrano con quelli di servizio della rete).
+==== SCTP: Multihoming
 
-- Secondo livello: l'ip grande rappresentano i due IP pubblici.
+SCTP supporta il *multihoming*: un endpoint può avere *più indirizzi IP* associati alla stessa connessione.
 
-- Il terzo livello di IP sono gli indirizzi IP interni alla rete operatore utilizzati per fare routing tra gi elementi della rete.
+*In TCP*:
+- Connessione identificata da: (IP_src, Port_src, IP_dst, Port_dst)
+- Se IP_dst diventa irraggiungibile → connessione fallisce
 
-== GTP
+*In SCTP*:
+- Connessione identificata da: ({IP_src1, IP_src2, ...}, Port_src, {IP_dst1, IP_dst2, ...}, Port_dst)
+- Se IP_dst1 fallisce → SCTP passa automaticamente a IP_dst2
+- *Failover trasparente*: l'applicazione non si accorge del cambio
 
-Lo user equipement ha una sessione con un PGW.
-NB e SGW possono cambaire durante la durata delle sessione. Man mano che l'UE si sposta ho sempre più router che possono essere cambiati da questo cambiamento.
+*Applicazione in LTE*:
+- Un eNodeB può avere una connessione SCTP verso *più MME*
+- MME primario: gestisce il traffico normale
+- MME secondario: subentra in caso di failure del primario
+- Ridondanza e alta disponibilità
+
+#nota()[
+  Il multihoming introduce un piccolo *overhead nell'header* SCTP per specificare gli indirizzi multipli, ma i benefici in termini di affidabilità superano ampiamente questo costo.
+]
+
+==== SCTP: Message-Oriented
+
+A differenza di TCP, SCTP è *message-oriented*:
+
+*TCP (stream-oriented)*:
+- Applicazione scrive: "MessageA", "MessageB", "MessageC"
+- TCP invia: "MessageAMessageBMessa" | "geCM" | ... (segmentazione arbitraria)
+- Ricevitore deve ricostruire i confini dei messaggi
+
+*SCTP (message-oriented)*:
+- Applicazione scrive: "MessageA", "MessageB", "MessageC"
+- SCTP garantisce: ogni messaggio viene consegnato *intero* e *delimitato*
+- Ricevitore riceve esattamente: "MessageA", poi "MessageB", poi "MessageC"
+- *Nessun overhead* per delimitazione applicativa
+
+*Vantaggi in LTE*:
+- Ogni messaggio S1-AP è un'unità atomica (es. "Handover Request")
+- Processing più efficiente: non serve parsing per trovare i confini
+- Riduzione delle risorse computazionali richieste
+
+=== Confronto TCP vs SCTP
+
+#align(center)[
+  #table(
+    columns: 3,
+    align: (left, center, center),
+    table.header([*Caratteristica*], [*TCP*], [*SCTP*]),
+    [Affidabilità], [✓], [✓],
+    [Controllo di flusso], [✓], [✓],
+    [Controllo di congestione], [✓], [✓],
+    [Orientamento], [Stream], [Message],
+    [Multi-streaming], [✗], [✓],
+    [Multi-homing], [✗], [✓],
+    [HOL Blocking], [Sì (globale)], [No (tra stream)],
+    [Consegna fuori ordine], [✗], [✓ (tra stream)],
+  )
+]
+
+#informalmente()[
+  SCTP combina i *vantaggi di TCP* (affidabilità, controllo di flusso) con i *vantaggi di UDP* (message-oriented, consegna non bloccante), aggiungendo funzionalità uniche come multi-streaming e multi-homing.
+]
+
+== User Plane: Stack Protocollare
+
+L'*user plane* trasporta il traffico dati vero e proprio degli utenti. A differenza del control plane, utilizza il *tunneling GTP* per mantenere la sessione dati indipendente dalla mobilità.
+
+=== Livelli IP nell'User Plane
+
+Nell'architettura LTE esistono *tre livelli di indirizzamento IP* distinti:
+
+*Primo livello - IP dell'utente (UE ↔ P-GW)*:
+- Indirizzi IP assegnati agli UE tramite *DHCP* o configurazione statica
+- Gestiti dal P-GW con *NAT* (Network Address Translation)
+- Utilizzati per la comunicazione tra UE e Internet/servizi esterni
+- *Visibili solo* all'interno del tunnel GTP tra UE e P-GW
+- Esempio: `10.x.x.x` o `172.16.x.x` (IP privati)
+
+*Secondo livello - IP pubblici (P-GW ↔ Internet)*:
+- Indirizzi IP pubblici del P-GW verso Internet
+- Utilizzati per il traffico verso servizi esterni all'operatore
+- Soggetti a NAT se gli UE hanno IP privati
+- Visibili su Internet
+
+*Terzo livello - IP interni della rete operatore*:
+- Indirizzi IP utilizzati per il routing *interno* tra elementi della rete EPC
+- Esempi: IP degli eNodeB, IP degli S-GW, IP dei P-GW, IP degli MME
+- Utilizzati per stabilire i tunnel GTP (S1-U, S5/S8)
+- *Non visibili* dall'esterno: rete privata dell'operatore
+- Gestiti dall'operatore come rete privata separata
+
+#nota()[
+  La separazione tra i tre livelli IP permette *mobilità trasparente*: l'IP dell'UE (livello 1) rimane costante anche quando cambiano gli elementi della rete (livello 3) durante la mobilità.
+]
+
+== GTP: GPRS Tunneling Protocol
+
+Il *GTP (GPRS Tunneling Protocol)* è il protocollo fondamentale che permette di *incapsulare* il traffico dell'utente in tunnel logici attraverso la rete dell'operatore.
+
+*Motivazione*:
+- Lo User Equipment (UE) ha una *sessione dati* con un P-GW specifico
+- Durante la mobilità, l'UE cambia eNodeB e potenzialmente anche S-GW
+- Senza tunneling, dovremmo aggiornare *tutte le tabelle di routing* della rete ad ogni movimento
+- Con GTP: solo gli endpoint del tunnel vengono aggiornati
+
+*Vantaggi del tunneling*:
+- *Mobilità trasparente*: l'IP dell'UE rimane fisso durante tutta la sessione
+- *Routing semplificato*: i router intermedi inoltrano solo in base all'IP del tunnel
+- *Isolamento*: il traffico di ciascun UE è isolato nel proprio tunnel
+- *QoS end-to-end*: ogni tunnel può avere classi di servizio diverse
+
+#informalmente()[
+  Il tunnel GTP è come un "tubo virtuale" che collega l'UE al P-GW, passando attraverso eNodeB e S-GW. Anche se l'UE si muove, il tubo viene semplicemente "riattaccato" al nuovo eNodeB, senza dover ricostruire tutto.
+]
+
+=== Uplink: Incapsulamento GTP
+
+Vediamo nel dettaglio come funziona l'incapsulamento GTP per il traffico *uplink* (UE → Internet).
+
+*Step 1: UE → eNodeB*
+
+Il pacchetto che parte dall'UE ha la seguente struttura:
+```
++----------------+
+|  Applicazione  | (es. dati HTTP)
++----------------+
+|   UDP/TCP      | (porta src/dst applicativa)
++----------------+  
+|      IP        | (IP_UE → IP_Server)
++----------------+
+|   PDCP/RLC     | (livelli LTE)
++----------------+
+|      MAC       |
++----------------+
+```
+
+L'UE trasmette il pacchetto via radio all'eNodeB. *Non c'è routing* a livello UE: tutto va all'eNodeB.
+
+*Step 2: eNodeB → S-GW (Interfaccia S1-U)*
+
+L'eNodeB riceve il pacchetto, rimuove i livelli radio (PDCP/RLC/MAC) ed *incapsula* il pacchetto IP in un tunnel GTP:
+
+```
++----------------+
+|  Applicazione  |
++----------------+
+|   UDP/TCP      |
++----------------+
+|      IP        | (IP_UE → IP_Server) ← Pacchetto originale
++----------------+
+| --- GTP-U ---  | (Tunnel ID)
++----------------+
+|      UDP       | (porta 2152)
++----------------+
+|      IP        | (IP_eNodeB → IP_SGW) ← Tunnel esterno
++----------------+
+```
+
+*Campi del tunnel GTP*:
+- *IP esterno*: `IP_eNodeB → IP_SGW` (livello 3: IP interni operatore)
+- *UDP*: porta 2152 (porta standard GTP-U per user plane)
+- *GTP Header*: contiene il *Tunnel ID* (TEID - Tunnel Endpoint Identifier)
+  - TEID univoco per identificare la sessione UE specifica
+  - Permette al S-GW di demultiplexare i pacchetti di diversi UE
+  - Mapping: `(eNodeB, TEID) ↔ (UE, Bearer)`
+
+*Step 3: S-GW → P-GW (Interfaccia S5/S8)*
+
+Il S-GW riceve il pacchetto, rimuove il tunnel GTP esterno e *crea un nuovo tunnel* verso il P-GW:
+
+```  
++----------------+
+|  Applicazione  |
++----------------+
+|   UDP/TCP      |
++----------------+
+|      IP        | (IP_UE → IP_Server) ← Pacchetto originale (invariato)
++----------------+
+| --- GTP-U ---  | (Tunnel ID 2)
++----------------+
+|      UDP       | (porta 2152)
++----------------+
+|      IP        | (IP_SGW → IP_PGW) ← Nuovo tunnel
++----------------+
+```
+
+*Nota*: il pacchetto IP originale dell'UE *non viene mai modificato* finché non raggiunge il P-GW.
+
+*Step 4: P-GW → Internet*
+
+Il P-GW:
+1. Riceve il pacchetto GTP
+2. *Decapsula*: estrae il pacchetto IP originale (IP_UE → IP_Server)
+3. Applica *NAT* se necessario: traduce IP_UE (privato) in IP_pubblico
+4. Applica *policy* (firewall, QoS)
+5. Inoltra il pacchetto verso Internet
+
+*Gestione della mobilità*:
+
+Se l'UE si sposta da eNodeB1 a eNodeB2:
+- Il *pacchetto IP interno* (IP_UE → IP_Server) rimane *identico*
+- Cambia solo l'*IP del tunnel esterno*: (IP_eNodeB2 → IP_SGW)
+- Il S-GW aggiorna il mapping: nuovo TEID per eNodeB2
+- Il P-GW *non* è coinvolto → l'IP dell'UE rimane stabile
+
+#attenzione()[
+  *Senza GTP*, ad ogni cambio di eNodeB dovremmo aggiornare tutte le tabelle di routing della rete dell'operatore per instradare i pacchetti verso il nuovo punto di attacco. *Con GTP*, basta aggiornare il Tunnel ID: il routing si basa sugli IP degli endpoint (che cambiano raramente).
+]
 
 
-=== Uplink
+== EPS Bearer: Gestione della QoS
 
-GPT iniza sulla parte che è rivolta verso la rete core dell'UE (sull UE non c'è routing). Il pacchetto che arriva (UE -> eNB) è dato da:
-- RLC
-- IP
-- UDP/TCP
-- DATA
+Gli *EPS Bearer* (Evolved Packet System Bearer) sono i meccanismi attraverso cui LTE garantisce la *qualità di servizio* (QoS) end-to-end tra l'UE e la rete esterna.
 
-A questo punto so l'identità dello UE e so quale S-GW sto gestendo. In realtà posso avere pià S-GW ma al momento è gestito da uno solo.
+=== Architettura degli EPS Bearer
 
-- RLC può essere totlo. Viene tenuto IP e la parte applicazione.
-- Il pacchetto viene incapsulato in un tunnerl GGP. Contiene:
-  - IP SGW. IP del serving gateway, serve ad arrivare un certo nodo della rete.
-  - UDP, porta UDP dell'SGW
-  - Tunnel-ID. Mappautura tra eNode <-> SGW.
+Un EPS Bearer è un *canale logico* con parametri QoS specifici che attraversa tutta la rete, dal dispositivo dell'utente fino al servizio esterno.
 
-Possiamo avere in questo modo le tabelle di routing interne, in quanto basta sapere ... (?) riguardare.
+*Componenti dell'EPS Bearer*:
 
-Il pacchetto dell'untente viene tenuto incapsulato vino a quando non raggiungiamo il livello P-GW:
-- Estre il pacchetto IP dentro il tunnel GPT
-- Viene mandato al server
+*1. External Bearer* (P-GW ↔ Servizio Esterno):
+- Connessione tra P-GW e server/servizio su Internet
+- QoS gestita tramite accordi con provider esterni o best-effort
+- Fuori dal controllo diretto dell'operatore mobile
 
-Una volta impostare le tabelle della rete operatore non cambio alcuna delle tabelle di routing, se il dipsositivo cambaisse BS basta che cambio il tunnel id. Se non ci fosse PT dovrei cambaire tali tabelle.
+*2. EPS Bearer interno* (UE ↔ P-GW):
+A sua volta suddiviso in tre segmenti:
 
+a) *Radio Bearer* (UE ↔ eNodeB):
+  - Gestisce la QoS a livello *radio*
+  - Allocazione dinamica di PRB (Physical Resource Blocks)
+  - Priorità di scheduling
+  - Modulazione adattiva in base al canale
 
-== LTE-EPS bearers
+b) *S1 Bearer* (eNodeB ↔ S-GW):
+  - Tunnel GTP attraverso la rete di backhaul
+  - QoS garantita tramite DiffServ o MPLS
+  - Interfaccia S1-U
 
-Permette di offrire qualità di servizio all'utente. Dal punto di vista dell'architettura abbiamo un
-- PGW Parte interna della rete operatore. A livello di GPT
-- External Bearer fino al servizio
+c) *S5/S8 Bearer* (S-GW ↔ P-GW):
+  - Tunnel GTP nella rete core
+  - QoS end-to-end all'interno della rete dell'operatore
 
-A sua volta all'interno della rete operatore è spezzato in diversi pezzi avendo 4 elementi:
-- Rafio bearre: Qualità di servizio a livello radio (3G)
-- bearrear tra S_GW e BS
-- bearer tra S-GW e P-GW
+#nota()[
+  Tutti i segmenti del bearer devono *cooperare* per garantire la QoS richiesta. Se il Radio Bearer è lento, gli altri segmenti devono compensare o bufferizzare. La QoS effettiva è limitata dal segmento più debole ("collo di bottiglia").
+]
 
-Tutti i moduli devono garantire la qualità di servizo. Se nella prima parte sono lento devo essere veloce nelle altre parti. Dipende da come è configurata la rete.
+=== Tipi di Bearer
 
-Ci possono essere attivi al massimo 8 bearer. Tale modalità di gestire la qualità di servizio viene amplificata in 5G tramite l'introduzione dei netkwork slice.
+Ogni UE può avere *al massimo 8 bearer attivi contemporaneamente*. I bearer si dividono in due categorie:
 
-tipi di bearrear:
-- bearrear creato con i P-GW, prende il nome di default bearrear. Ad ogni default bearrear può essere assegnato un IP (differente). Si tratta di un canale dati
+==== Default Bearer
 
-- Dalla parte di controllo viene negoziato un dedicat barrer. Si tratta dei fork sul default barrare con il PDN, in base alla qualità di servizo richiesta. Si usa lo stesso IP del default barrer ma la qualità di servizio è differente. Possiamoa avere la stessa PDN session ma qualità di servizo differenti
+Il *Default Bearer* viene creato automaticamente durante la procedura di *attach* (connessione iniziale alla rete).
 
-- è possibile collegarsi con un altro P-GW e creare un altro default barrer. Questo viene creato dopo la connessione iniziale. Anche qui abbiamo un altro indirizzo IP.
+*Caratteristiche*:
+- Creato durante l'attach dell'UE alla rete
+- Associato a una *PDN connection* (connessione a un P-GW specifico)
+- All'UE viene assegnato un *indirizzo IP* per questa PDN
+- Tipicamente ha QoS *best-effort* (QCI 9)
+- Rimane attivo finché l'UE è connesso alla rete
+- *Sempre presente*: non può essere rimosso senza disconnettere l'UE
 
-Possiamo avere diversi P-GW session apaerte con più default barrer e con altre fork per avere altre qualità di servizo. Il limite è $8$ (sommando sia defualt che dedicated) canali lato UE.
+#esempio()[
+  Quando accendi il telefono e ti connetti alla rete 4G:
+  + L'UE esegue la procedura di *attach*
+  + Viene creato un *Default Bearer* verso il P-GW dell'operatore
+  + Ti viene assegnato un IP (es. `10.123.45.67`)
+  + Puoi navigare su Internet con QoS best-effort
+]
 
-== Qos e EPS
+==== Dedicated Bearer
 
-La priorità viene scelta dalla User equipement.
+I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire QoS garantita a specifiche applicazioni.
 
-//recuperare parte di collegamento alla rete operatore.
+*Caratteristiche*:
+- Vengono creati *dopo* l'attach, quando necessario
+- Sono "fork" (derivazioni) del Default Bearer sulla stessa PDN connection
+- Utilizzano lo *stesso IP* del Default Bearer
+- Hanno *QoS superiore*: GBR (Guaranteed Bit Rate), latenza garantita, priorità
+- Vengono rilasciati al termine della sessione applicativa
 
-- La base station non può dire no, deve chiedere alla rete core
-- procedura di attach, viene contatta la rete core
+*Procedure di creazione*:
+- *Network-initiated*: la rete (PCRF/P-GW) decide di creare un Dedicated Bearer
+  - Esempio: chiamata VoLTE → IMS richiede al PCRF un bearer con QCI 1
+- *UE-initiated*: l'UE richiede QoS specifica (raro, spesso negato per policy)
 
-Se tutto va a buon fine, allora diventiamo mobiity register e connected register. EPC deve:
-- Fare pagind
-- Quando triggerare la procedura di handover
+#esempio()[
+  Scenario: videochiamata VoLTE
+  + Hai già un *Default Bearer* attivo per navigazione web (QCI 9)
+  + Avvii una videochiamata VoLTE
+  + L'IMS richiede al PCRF un *Dedicated Bearer* con:
+    - QCI 1 (voce, priorità 2, latenza < 100 ms, GBR)
+  + Il PCRF invia i comandi a P-GW, S-GW, eNodeB
+  + Viene creato un nuovo bearer sullo *stesso IP* del Default Bearer
+  + Il traffico VoLTE usa il Dedicated Bearer (bassa latenza)
+  + Il traffico web continua sul Default Bearer (best-effort)
+  + A fine chiamata, il Dedicated Bearer viene *rilasciato*
+]
 
-Nel caso UE rimanga inattivo allora 
+==== Multiple PDN Connections
+
+È possibile avere *più Default Bearer* contemporaneamente, ciascuno associato a una PDN connection diversa (P-GW diverso).
+
+*Motivazioni*:
+- Accesso a *servizi diversi*: Internet pubblica + APN aziendale privato
+- Separazione del traffico: dati personali vs dati aziendali
+- Multi-homing: connessione a più reti contemporaneamente
+
+*Allocazione IP*:
+- Ogni PDN connection ha il proprio *Default Bearer*
+- Ogni Default Bearer ha un *indirizzo IP diverso*
+- L'UE può avere quindi più IP simultanei
+
+#esempio()[
+  Smartphone aziendale:
+  + *PDN 1*: Internet pubblica → Default Bearer con IP `10.x.x.x`
+  + *PDN 2*: VPN aziendale → Default Bearer con IP `192.168.x.x`
+  + *PDN 2.1*: Dedicated Bearer per VoIP aziendale (QCI 1)
+  
+  Totale: 3 bearer attivi (2 default + 1 dedicated)
+]
+
+*Limitazioni*:
+- Massimo *8 bearer totali* per UE (somma di default e dedicated)
+- Ogni Default Bearer può avere più Dedicated Bearer associati
+- Configurazione tipica:
+  - 1-2 Default Bearer (Internet + eventuale APN privato)
+  - 0-6 Dedicated Bearer per applicazioni specifiche
+
+#nota()[
+  In 5G, il concetto di bearer viene sostituito dai *Network Slices*, che permettono una gestione ancora più granulare e flessibile della QoS, con la possibilità di creare "reti virtuali" dedicate per specifici servizi.
+]
+
+=== QoS Class Identifier (QCI)
+
+Ogni bearer è caratterizzato da un *QCI* che definisce i parametri di QoS:
+
+#align(center)[
+  #table(
+    columns: 6,
+    align: (center, center, center, center, center, left),
+    table.header([*QCI*], [*Tipo*], [*Priorità*], [*Delay*], [*Loss Rate*], [*Applicazione*]),
+    [1], [GBR], [2], [100 ms], [$10^(-2)$], [VoLTE],
+    [2], [GBR], [4], [150 ms], [$10^(-3)$], [Video call],
+    [3], [GBR], [3], [50 ms], [$10^(-3)$], [Gaming real-time],
+    [4], [GBR], [5], [300 ms], [$10^(-6)$], [Video streaming],
+    [5], [Non-GBR], [1], [100 ms], [$10^(-6)$], [IMS signaling],
+    [6], [Non-GBR], [6], [300 ms], [$10^(-6)$], [Video TCP],
+    [7], [Non-GBR], [7], [100 ms], [$10^(-3)$], [Voice, gaming],
+    [8], [Non-GBR], [8], [300 ms], [$10^(-6)$], [Web, email],
+    [9], [Non-GBR], [9], [-], [-], [Internet default],
+  )
+]
+
+== Procedure di Gestione EPS
+
+=== Attach Procedure
+
+Quando un UE si connette alla rete LTE, esegue la *procedura di attach*:
+
+*Step*:
++ L'UE invia un *Attach Request* all'eNodeB
++ L'eNodeB lo inoltra all'MME (l'eNodeB non può decidere autonomamente di accettare o rifiutare)
++ L'MME verifica con l'HSS:
+  - Autenticazione dell'utente
+  - Profilo di abbonamento
+  - Servizi autorizzati
++ L'MME contatta il P-GW appropriato
++ Viene creato il *Default Bearer*
++ All'UE viene assegnato un *indirizzo IP*
++ L'UE diventa *mobility registered* e *connected*
+
+*Stati dell'UE*:
+- *EMM-DEREGISTERED*: non connesso alla rete
+- *EMM-REGISTERED*: connesso, può ricevere paging
+  - *ECM-IDLE*: connesso ma senza risorse radio allocate
+  - *ECM-CONNECTED*: risorse radio attive, può trasmettere/ricevere
+
+=== Idle Mode e Paging
+
+Quando l'UE è inattivo (nessun traffico dati), passa in *Idle Mode* per risparmiare energia:
+
+*Caratteristiche Idle Mode*:
+- Le risorse radio vengono *rilasciate*
+- Il Default Bearer rimane *attivo logicamente*
+- L'MME sa in quale Tracking Area si trova l'UE
+- L'UE monitora i canali di *paging*
+
+*Procedura di Paging*:
++ Arriva traffico per l'UE (es. chiamata in arrivo)
++ Il P-GW inoltra i pacchetti all'S-GW
++ L'S-GW notifica l'MME
++ L'MME invia *paging* a tutti gli eNodeB della Tracking Area
++ L'UE risponde al paging
++ Viene riattivato l'ECM-CONNECTED
++ Le risorse radio vengono riallocate
++ Il traffico può fluire
+
+#informalmente()[
+  L'Idle Mode è come "mettere il telefono in standby": la connessione logica rimane attiva (ricevi paging), ma non consumi risorse radio (batteria). Quando arriva una notifica o una chiamata, la rete ti "sveglia" tramite paging.
+] 
