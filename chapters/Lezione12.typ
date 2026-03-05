@@ -854,45 +854,43 @@ Ogni bearer è caratterizzato da un *QCI* che definisce i parametri di QoS:
 
 === Attach Procedure
 
-Quando un UE si connette alla rete LTE, esegue la *procedura di attach*:
+Quando un dispositivo (UE) si accende (o almeno la radio) si trova in uno dei seguenti stati:
+- *EMM-DEREGISTERED*: non connesso alla rete, non registrato ad alcun MME (non può ricevere paging), la sua mobilità non è gestita
 
-*Step*:
-+ L'UE invia un *Attach Request* all'eNodeB
-+ L'eNodeB lo inoltra all'MME (l'eNodeB non può decidere autonomamente di accettare o rifiutare)
-+ L'MME verifica con l'HSS:
-  - Autenticazione dell'utente
-  - Profilo di abbonamento
-  - Servizi autorizzati
-+ L'MME contatta il P-GW appropriato
-+ Viene creato il *Default Bearer*
-+ All'UE viene assegnato un *indirizzo IP*
-+ L'UE diventa *mobility registered* e *connected*
+- *ECM-IDLE*: connesso alla rete, registrato all'MME, ma senza risorse radio allocate (non può trasmettere/ricevere dati, ma può ricevere paging), solo le comunicazioni di segnalazione sono possibili
 
-*Stati dell'UE*:
-- *EMM-DEREGISTERED*: non connesso alla rete
-- *EMM-REGISTERED*: connesso, può ricevere paging
-  - *ECM-IDLE*: connesso ma senza risorse radio allocate
-  - *ECM-CONNECTED*: risorse radio attive, può trasmettere/ricevere
+- *ECM-CONNECTED*: connesso alla rete, registrato all'MME, con risorse radio allocate (può trasmettere/ricevere dati)
 
-=== Idle Mode e Paging
+- *RRC-IDLE*: L'UE non è connesso ad alcun eNodeB. In questo stato, l'UE ha la radio in standby, modalità risparmio energetico
 
-Quando l'UE è inattivo (nessun traffico dati), passa in *Idle Mode* per risparmiare energia:
+Per un dispositivo esistono due modalità di selezione della rete a cui connettersi:
+- *Automatica*: La rete operatore è selezionata automaticamente in base alla SIM.
+- *Manuale*: L'utente seleziona manualmente la rete a cui connettersi (es. roaming)
 
-*Caratteristiche Idle Mode*:
-- Le risorse radio vengono *rilasciate*
+La procedura di *attach* (registrazione alla rete) è la prima fase che un UE deve completare per diventare *mobility registered* e *connected* alla rete.
+
+#nota()[
+  Una *femtocella* è una cella che presenta una *Closed Subscriber Group* (CSG), ovvero una lista di client che sono autorizzati all’accesso.
+]
+
+Sono previste le seguenti fasi:
+
++ *Selezione della cella*: Viene scelta la cella con cui iniziare la procedura di attach. Il criterio di selezione si basa su una serie di fattori:
+  - Potenza di trasmissione (UE)
+  - La potenza del segnale che UE riceve da eNodeB
+
++ *Contesa*: L'UE inizia la procedura di contesa per l'accesso allo scheduling della cella selezionata
+
++ *Configurazione*: `RCC connection setup`, configurazione dei livelli MAC e L1, configurazione dei canali radio per la trasmissione
+
++ *Attach*: Avvio della procedura di collegamento tra UE e la rete core, tramite messaggi di controllo scambiati con MME (Mobility Management Entity)
+
+==== Idle Mode e Paging
+
+Quando l'UE è inattivo (nessun traffico dati), passa in *Idle Mode* per risparmiare energia. Le risorse radio vengono *rilasciate*. Tuttavua, l'UE non si scollega dalla rete e continua ad eseguire le seguenti operazioni:
 - Il Default Bearer rimane *attivo logicamente*
 - L'MME sa in quale Tracking Area si trova l'UE
-- L'UE monitora i canali di *paging*
-
-*Procedura di Paging*:
-+ Arriva traffico per l'UE (es. chiamata in arrivo)
-+ Il P-GW inoltra i pacchetti all'S-GW
-+ L'S-GW notifica l'MME
-+ L'MME invia *paging* a tutti gli eNodeB della Tracking Area
-+ L'UE risponde al paging
-+ Viene riattivato l'ECM-CONNECTED
-+ Le risorse radio vengono riallocate
-+ Il traffico può fluire
+- L'UE monitora i canali di *paging*. Se arriva un messaggio diretto all'UE, l'eNoodeB lo tiene nel buffer e risveglia l'UE tramite paging, che può quindi tornare in modalità *connected* per ricevere i dati.
 
 #informalmente()[
   L'Idle Mode è come "mettere il telefono in standby": la connessione logica rimane attiva (ricevi paging), ma non consumi risorse radio (batteria). Quando arriva una notifica o una chiamata, la rete ti "sveglia" tramite paging.
