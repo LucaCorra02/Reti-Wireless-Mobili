@@ -15,13 +15,13 @@ Le base station (eNodeB), sono a loro volta organizzate in *tracking areas* (TAs
 
 L'interfaccia $"X"2$ permette la comunicazione diretta tra eNodeB, senza passare per la rete core. Tale interfaccia aggiunge una serie di funzionalità:
 
-- *Gestione degli handover*. Il traffico di controllo necessario per l'handover viene gestito tra i due eNodeB, senza coinvolgere larete core.
+- *Gestione degli handover*. Il traffico di controllo necessario per l'handover viene gestito tra i due eNodeB, *senza* coinvolgere la *rete core*.
 
 - *Self-Organized-Network* (SON). Esse servono per migliorare le prestazioni della rete in modo autonomo, ad esempio:
-  - *Load balancing*. Se un eNodeB è sovraccarico, può chiedere ai suoi vicini di spostare alcuni dispositivi verso di loro (handover) per bilanciare il carico.
+  - *Load balancing*. Se un *eNodeB* è *sovraccarico*, può chiedere ai suoi vicini di spostare alcuni dispositivi verso di loro (handover) per bilanciare il carico.
   - *Gestione delle interferenze*. Se un dispositivo sul bordo della cella subisce interferenza da celle vicine, l'eNodeB che lo gestisce può chiedere ai vicini di modificare la frequenza di trasmissione.
 
-- Evitare effetto *ping-pong*. Viene tenuto uno storico dei dispositivi già visti. Se un eNodeB accetta di nuovo un dispositivo già visto in precedenza, in un lasso di tempo troppo breve, non avvia la fase di handover.
+- Evitare effetto *ping-pong*. Viene tenuto uno *storico* dei dispositivi già visti. Se un eNodeB accetta di nuovo un dispositivo già visto in precedenza, in un lasso di tempo troppo breve, non avvia la fase di handover.
 
 == Architettura LTE
 
@@ -174,9 +174,7 @@ Il control plane controlla i seguenti moduli: UE, eNode, MME
   ]
 ]
 
-I numeri a lato dell'immagine indicano i livelli ISO/OSI. L'eNodeB ha due stack protocollari distinti in quanto deve parlare con entrambi i lati (UE e MME).
-
-MME ha invece un'unico stack che gestisce sia la comunicazione con l'UE che quella con l'eNodeB.
+I numeri a lato dell'immagine indicano i livelli ISO/OSI. L'eNodeB ha due stack protocollari distinti in quanto deve parlare con entrambi i lati (UE e MME). MME ha invece un'unico stack che gestisce sia la comunicazione con l'UE che quella con l'eNodeB.
 
 
 === Livelli del Control Plane
@@ -235,7 +233,7 @@ LTE utilizza *SCTP* invece di TCP per il control plane. In quanto TCP in ambito 
   - Nel control plane LTE, i messaggi hanno confini ben definiti (es. "Handover Request", "Attach Request")
 
 + *Mancanza di Multi-homing*:
-  - TCP crea una connessione univoca tra due endpoint (IP:porta sorgente <-> IP:porta destinazione). Se uno degli endpoint fallisce, la connessione si interrompe
+  - TCP crea una connessione univoca tra due endpoint (`IP:porta sorgente <-> IP:porta destinazione`). Se uno degli endpoint fallisce, la connessione si interrompe
   - In LTE, un'area è servita da *più MME* per ridondanza e bilanciamento del carico. Per garantire la *fault tolerance* (gestione dei guasti), vogliamo che l'eNodeB possa connettersi a più MME simultaneamente.
 
 + *Head-of-Line (HOL) Blocking*: problema critico per il multiplexing di messaggi di controllo
@@ -246,7 +244,7 @@ LTE utilizza *SCTP* invece di TCP per il control plane. In quanto TCP in ambito 
 
 ==== Problema del HOL Blocking in TCP
 
-Il *Head-of-Line (HOL) Blocking* è una limitazione fondamentale di TCP quando si multiplexano messaggi indipendenti. In quanto TCP garantisce la consegna *in ordine* dei byte, se un segmento viene perso, tutti i segmenti successivi vengono bloccati fino a quando il segmento perso non viene ritrasmesso e ricevuto correttamente (i messaggi da consegnare sono tenuti in buffer).
+Il *Head-of-Line (HOL) Blocking* è una limitazione fondamentale di TCP quando si multiplexano messaggi indipendenti. Siccome TCP garantisce la consegna *in ordine* dei byte, se un segmento viene perso tutti i segmenti successivi vengono bloccati fino a quando il segmento perso non viene ritrasmesso e ricevuto correttamente (i messaggi da consegnare sono tenuti in buffer).
 
 #esempio()[
   Scenario: trasmissione di 3 segmenti TCP
@@ -281,7 +279,7 @@ Per risolvere questi scenari di _blocco_, ci possono essere diverse soluzioni:
 
 SCTP risolve il problema HOL attraverso il *multi-streaming*.
 
-L'idea è che una singola connessione SCTP possa contenere *più stream logici* indipendenti, ciascuno con il proprio ordinamento FIFO. In questo modo, se un messaggio in uno stream viene perso, solo quello stream è bloccato, mentre gli altri stream possono continuare a consegnare i loro messaggi normalmente.
+L'idea è che una singola connessione SCTP possa contenere *più stream logici* indipendenti, ciascuno con il proprio ordinamento FIFO. In questo modo, se un messaggio in uno stream viene perso, solo quello stream è bloccato mentre gli altri stream possono continuare a consegnare i loro messaggi normalmente.
 
 #nota()[
   L'ordine è *parziale* tra stream, ma *totale* all'interno di ogni stream
@@ -490,7 +488,7 @@ Nell'architettura LTE esistono *tre livelli di indirizzamento IP* distinti:
   - Utilizzati per il traffico verso servizi esterni all'operatore
   - Soggetti a NAT se gli UE hanno IP privati
 
-- *Terzo livello - IP interni della rete operatore*: Indirizzi IP utilizzati per il *routing interno* tra elementi della rete EPC. Essi vengono gestiti dall'operatore come rete privata separata:
+- *Terzo livello - IP interni de lla rete operatore*: Indirizzi IP utilizzati per il *routing interno* tra elementi della rete EPC. Essi vengono gestiti dall'operatore come rete privata separata:
   - Utilizzati per stabilire i tunnel GTP (S1-U, S5/S8). *Non visibili* dall'esterno: rete privata dell'operatore
   - _Esempi_: IP degli eNodeB, IP degli S-GW, IP dei P-GW, IP degli MME
 
