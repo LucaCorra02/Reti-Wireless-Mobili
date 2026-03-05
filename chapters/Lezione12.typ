@@ -6,8 +6,8 @@
 Oltre ad essere collegate alla rete core tramite l'interfaccia S1, le base station, possono anche comunicare tra di loro tramite l'*interfaccia X2* in modo *peer-to-peer*.
 
 Le comunicazioni tra BS sono *comunicazione logiche* (dipendenti dal deployment della rete). Esse possono essere realizzate in diversi modi:
-  - Tramite punti radio (canale diretto fisico)
-  - Sfruttando la Transform Network (rete di backhaul) con tunnel dedicati
+- Tramite punti radio (canale diretto fisico)
+- Sfruttando la Transform Network (rete di backhaul) con tunnel dedicati
 
 Le base station (eNodeB), sono a loro volta organizzate in *tracking areas* (TAs), ovvero aree geografiche che raggruppano più celle. Ogni TA è identificata da un *Tracking Area Code* (TAC).
 
@@ -25,104 +25,6 @@ L'interfaccia $"X"2$ permette la comunicazione diretta tra eNodeB, senza passare
 
 == Architettura LTE
 
-#figure[
-  #align(center)[
-    #import "@preview/cetz:0.3.2": canvas, draw
-    #canvas(length: 1cm, {
-      import draw: *
-      
-      // Funzione per disegnare un dispositivo UE
-      let draw-ue(x, y, label) = {
-        // Schermo del dispositivo
-        rect((x, y), (x + 0.4, y + 0.7), fill: rgb("#E0E0E0"), stroke: 2pt + black, radius: 0.05)
-        // Linea superiore (notch)
-        line((x + 0.1, y + 0.6), (x + 0.3, y + 0.6), stroke: 2pt + gray)
-        // Schermo interno
-        rect((x + 0.05, y + 0.05), (x + 0.35, y + 0.55), fill: rgb("#FFFFFF"), stroke: 0.5pt + gray)
-        // Label
-        if label != "" {
-          content((x + 0.2, y - 0.3), text(size: 7pt, label))
-        }
-      }
-      
-      // Funzione per disegnare l'antenna eNodeB
-      let draw-enodeb(x, y) = {
-        // Base triangolare
-        line((x - 0.15, y), (x + 0.15, y), stroke: 3pt + black)
-        // Palo centrale
-        line((x, y), (x, y + 2), stroke: 3pt + black)
-        // Antenne laterali (3 per lato)
-        for i in range(3) {
-          let y-pos = y + 0.8 + i * 0.4
-          line((x, y-pos), (x - 0.3, y-pos - 0.1), stroke: 2pt + black)
-          line((x, y-pos), (x + 0.3, y-pos - 0.1), stroke: 2pt + black)
-        }
-        // Simbolo onde radio
-        content((x, y + 2.3), text(size: 14pt, "((•))"))
-      }
-      
-      // Disegna 3 UE a sinistra
-      let ue-positions = (
-        (0, 1.8),
-        (0, 0.9),
-        (0, 0)
-      )
-      
-      for (i, pos) in ue-positions.enumerate() {
-        let (ue-x, ue-y) = pos
-        draw-ue(ue-x, ue-y, "UE" + str(i + 1))
-        
-        // Linea tratteggiata verso eNodeB
-        line((ue-x + 0.4, ue-y + 0.35), (2, 1.3), 
-             stroke: (paint: gray, thickness: 1pt, dash: "dashed"))
-      }
-      
-      // Disegna eNodeB al centro
-      draw-enodeb(2.5, 0)
-      
-      // Label eNodeB
-      content((2.5, -0.5), text(size: 9pt, weight: "bold", "eNodeB"))
-      
-      // Stack S1-MME (box colorati)
-      let stack-x = 4.5
-      let stack-y = 0.8
-      let stack-width = 0.8
-      let stack-height = 0.4
-      
-      let colors = (rgb("#4A90E2"), rgb("#5AB9EA"), rgb("#7DCE94"), rgb("#A8DBA8"))
-      
-      for (i, color) in colors.enumerate() {
-        rect((stack-x + i * stack-width, stack-y), 
-             (stack-x + (i + 1) * stack-width, stack-y + stack-height), 
-             fill: color, stroke: 1pt + black)
-      }
-      
-      // Label S1-MME sopra i box
-      content((stack-x + 2 * stack-width, stack-y + stack-height + 0.3), 
-              text(size: 8pt, weight: "bold", "S1-MME"))
-      
-      // Linea da eNodeB a stack S1-MME
-      line((3, 1.3), (stack-x, 1.0), 
-           stroke: (paint: black, thickness: 2pt),
-           mark: (end: ">", scale: 0.8))
-      
-      // MME box a destra
-      let mme-x = 7
-      let mme-y = 0.5
-      rect((mme-x, mme-y), (mme-x + 1.5, mme-y + 1), 
-           fill: rgb("#FFD700"), stroke: 2pt + black, radius: 0.1)
-      content((mme-x + 0.75, mme-y + 0.5), 
-              text(size: 11pt, weight: "bold", "MME"))
-      
-      // Linea da stack S1-MME a MME
-      line((stack-x + 4 * stack-width, 1.0), (mme-x, 1.0), 
-           stroke: (paint: black, thickness: 2pt),
-           mark: (end: ">", scale: 0.8))
-    })
-  ]
-  caption: [Architettura semplificata di LTE: i dispositivi UE comunicano con l'eNodeB tramite l'interfaccia radio (LTE-Uu), mentre l'eNodeB si connette al core network (MME) tramite l'interfaccia S1-MME che utilizza uno stack protocollare basato su SCTP/IP.]
-]
-
 In LTE si ha una netta separazione tra *control plane* e *data plane*.
 
 === Control Plane: Stack Protocollare
@@ -136,7 +38,7 @@ Il control plane controlla i seguenti moduli: UE, eNode, MME
     #import "@preview/cetz:0.3.2": canvas, draw
     #canvas(length: 0.8cm, {
       import draw: *
-      
+
       // Parametri
       let box-width = 3.5
       let box-height = 0.7
@@ -145,18 +47,18 @@ Il control plane controlla i seguenti moduli: UE, eNode, MME
       let enb-x = ue-x + box-width + col-spacing
       let enb-s1-x = enb-x + box-width + 0.3
       let mme-x = enb-s1-x + box-width + col-spacing
-      
+
       // Funzione per disegnare un box dello stack
       let stack-box(x, y, width, height, label, color) = {
         rect((x, y), (x + width, y + height), fill: color, stroke: 1pt + black)
-        content((x + width/2, y + height/2), text(size: 9pt, weight: "bold", label))
+        content((x + width / 2, y + height / 2), text(size: 9pt, weight: "bold", label))
       }
-      
+
       // Titoli colonne
-      content((ue-x + box-width/2 - 0., 8), text(size: 11pt, weight: "bold", "UE"))
-      content((enb-x + box-width/2 + 2, 7.5), text(size: 11pt, weight: "bold", "eNodeB"))
-      content((mme-x + box-width/2, 8), text(size: 11pt, weight: "bold", "MME"))
-      
+      content((ue-x + box-width / 2 - 0., 8), text(size: 11pt, weight: "bold", "UE"))
+      content((enb-x + box-width / 2 + 2, 7.5), text(size: 11pt, weight: "bold", "eNodeB"))
+      content((mme-x + box-width / 2, 8), text(size: 11pt, weight: "bold", "MME"))
+
       // Etichette livelli ISO/OSI a sinistra
       let levels = (
         (7, "L7"),
@@ -168,107 +70,106 @@ Il control plane controlla i seguenti moduli: UE, eNode, MME
         (2.8, ""),
         (3.4, "L1"),
       )
-      
+
       for (y, label) in levels {
         if label != "" {
           content((-0.8, y + 0.35), text(size: 8pt, weight: "bold", label))
         }
       }
-      
+
       // Colori
-      let color-nas = rgb("#9ACD32")      // Verde oliva chiaro
-      let color-rrc = rgb("#87CEEB")      // Azzurro
-      let color-s1ap = rgb("#9ACD32")     // Verde
-      let color-pdcp = rgb("#87CEEB")     // Azzurro
-      let color-rlc = rgb("#87CEEB")      // Azzurro
-      let color-mac = rgb("#87CEEB")      // Azzurro
-      let color-phy = rgb("#9ACD32")      // Verde
-      let color-sctp = rgb("#FFB6C1")     // Rosa chiaro
-      let color-ip = rgb("#9ACD32")       // Verde
-      let color-l2 = rgb("#9ACD32")       // Verde
-      let color-l1 = rgb("#9ACD32")       // Verde
-      
+      let color-nas = rgb("#9ACD32") // Verde oliva chiaro
+      let color-rrc = rgb("#87CEEB") // Azzurro
+      let color-s1ap = rgb("#9ACD32") // Verde
+      let color-pdcp = rgb("#87CEEB") // Azzurro
+      let color-rlc = rgb("#87CEEB") // Azzurro
+      let color-mac = rgb("#87CEEB") // Azzurro
+      let color-phy = rgb("#9ACD32") // Verde
+      let color-sctp = rgb("#FFB6C1") // Rosa chiaro
+      let color-ip = rgb("#9ACD32") // Verde
+      let color-l2 = rgb("#9ACD32") // Verde
+      let color-l1 = rgb("#9ACD32") // Verde
+
       // Stack UE (colonna sinistra)
       let y-pos = 7
       stack-box(ue-x, y-pos, box-width, box-height, "NAS", color-nas)
-      
+
       y-pos = y-pos - box-height
       stack-box(ue-x, y-pos, box-width, box-height, "RRC", color-rrc)
-      
+
       y-pos = y-pos - box-height
       stack-box(ue-x, y-pos, box-width, box-height, "PDCP", color-pdcp)
-      
+
       y-pos = y-pos - box-height
       stack-box(ue-x, y-pos, box-width, box-height, "RLC", color-rlc)
-      
+
       y-pos = y-pos - box-height
       stack-box(ue-x, y-pos, box-width, box-height, "MAC", color-mac)
-      
+
       y-pos = y-pos - box-height
       stack-box(ue-x, y-pos, box-width, box-height, "PHY", color-phy)
-      
+
       // Stack eNodeB (colonna centrale) - parte radio
       y-pos = 7
       y-pos = y-pos - box-height
       stack-box(enb-x, y-pos, box-width, box-height, "RRC", color-rrc)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-x, y-pos, box-width, box-height, "PDCP", color-pdcp)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-x, y-pos, box-width, box-height, "RLC", color-rlc)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-x, y-pos, box-width, box-height, "MAC", color-mac)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-x, y-pos, box-width, box-height, "PHY", color-phy)
-      
-      
+
+
       // Stack eNodeB - parte S1
       y-pos = 6.3
       stack-box(enb-s1-x, y-pos, box-width, box-height, "S1-AP", color-s1ap)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-s1-x, y-pos, box-width, box-height, "SCTP", color-sctp)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-s1-x, y-pos, box-width, box-height, "IP", color-ip)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-s1-x, y-pos, box-width, box-height, "L2", color-l2)
-      
+
       y-pos = y-pos - box-height
       stack-box(enb-s1-x, y-pos, box-width, box-height, "L1", color-l1)
-      
+
       // Stack MME
       y-pos = 7
       stack-box(mme-x, y-pos, box-width, box-height, "NAS", color-nas)
-      
+
       y-pos = y-pos - box-height
       stack-box(mme-x, y-pos, box-width, box-height, "S1-AP", color-s1ap)
-      
+
       y-pos = y-pos - box-height
       stack-box(mme-x, y-pos, box-width, box-height, "SCTP", color-sctp)
-      
+
       y-pos = y-pos - box-height
       stack-box(mme-x, y-pos, box-width, box-height, "IP", color-ip)
-      
+
       y-pos = y-pos - box-height
       stack-box(mme-x, y-pos, box-width, box-height, "L2", color-l2)
-      
+
       y-pos = y-pos - box-height
       stack-box(mme-x, y-pos, box-width, box-height, "L1", color-l1)
-      
+
 
       // Etichette livelli a destra
-      content((mme-x + box-width + 1.2, 7 + box-height/2), text(size: 8pt, "L7 con UE"))
-      content((mme-x + box-width + 1.2, 6.3 + box-height/2), text(size: 8pt, "L7 con eNB"))
-      content((mme-x + box-width + 0.6, 5.6 + box-height/2), text(size: 8pt, "L4"))
-      content((mme-x + box-width + 0.6, 4.9 + box-height/2), text(size: 8pt, "L3"))
-      content((mme-x + box-width + 0.6, 4.2 + box-height/2), text(size: 8pt, "L2"))
-      content((mme-x + box-width + 0.6, 3.5 + box-height/2), text(size: 8pt, "L1"))
-      
+      content((mme-x + box-width + 1.2, 7 + box-height / 2), text(size: 8pt, "L7 con UE"))
+      content((mme-x + box-width + 1.2, 6.3 + box-height / 2), text(size: 8pt, "L7 con eNB"))
+      content((mme-x + box-width + 0.6, 5.6 + box-height / 2), text(size: 8pt, "L4"))
+      content((mme-x + box-width + 0.6, 4.9 + box-height / 2), text(size: 8pt, "L3"))
+      content((mme-x + box-width + 0.6, 4.2 + box-height / 2), text(size: 8pt, "L2"))
+      content((mme-x + box-width + 0.6, 3.5 + box-height / 2), text(size: 8pt, "L1"))
     })
   ]
 ]
@@ -328,7 +229,7 @@ Interfaccia S1-MME:
 
 === SCTP: Motivazioni
 
-LTE utilizza *SCTP* invece di TCP per il control plane. In quanto TCP in ambito LTE sarebbe limitante per diversi motivi: 
+LTE utilizza *SCTP* invece di TCP per il control plane. In quanto TCP in ambito LTE sarebbe limitante per diversi motivi:
 + *Stream-oriented vs Message-oriented*:
   - TCP è *stream-oriented*: i dati sono visti come un flusso continuo di byte. Di conseguenza, le applicazioni devono aggiungere *marker* (delimitatori) per identificare i confini dei messaggi, introducendo *overhead superfluo* in termini di processing e banda
   - Nel control plane LTE, i messaggi hanno confini ben definiti (es. "Handover Request", "Attach Request")
@@ -360,10 +261,10 @@ In LTE TCP potrebbe portare a situazioni di HOL blocking molto gravi, soprattutt
 #esempio()[
   Supponiamo di avere $3$ UE diversi ($A$, $B$, $C$) collegati alla stessa eNodeB, con messaggi di controllo inviati su un unico stream TCP:
   - UE A: messaggio di handover
-  - UE B: messaggio di context setup  
+  - UE B: messaggio di context setup
   - UE C: messaggio di bearer modification
 
-Se il pacchetto TCP contenente il messaggio di A viene perso, *anche i messaggi di B e C sono bloccati*, anche se sono completamente indipendenti. I messaggi $B$ e $C$ vengono inseriti in un buffer, non possono essere consegnati a livello applicazione
+  Se il pacchetto TCP contenente il messaggio di A viene perso, *anche i messaggi di B e C sono bloccati*, anche se sono completamente indipendenti. I messaggi $B$ e $C$ vengono inseriti in un buffer, non possono essere consegnati a livello applicazione
 ]
 
 Per risolvere questi scenari di _blocco_, ci possono essere diverse soluzioni:
@@ -393,11 +294,11 @@ SCTP aggiunge uno *Stream ID* nell'header di ogni messaggio, che identifica a qu
   - Stream 0: messaggi per UE $A$
   - Stream 1: messaggi per UE $B$
   - Stream 2: messaggi per UE $C$
-  
+
   Se un messaggio nello Stream 0 viene perso:
   - Stream 0 attende la ritrasmissione (HOL blocking *locale*)
   - Stream 1 e 2 continuano a consegnare i loro messaggi normalmente
-  
+
   Risultato: i messaggi degli UE $B$ e $C$ non sono bloccati dal problema dell'UE $A$
 ]
 
@@ -406,7 +307,7 @@ SCTP aggiunge uno *Stream ID* nell'header di ogni messaggio, che identifica a qu
 SCTP supporta il *multihoming*: un endpoint può avere *più indirizzi IP* associati alla stessa connessione.
 
 *In TCP*:
-- Connessione identificata da: 
+- Connessione identificata da:
   `(IP_src, Port_src, IP_dst, Port_dst)`
 - Se `IP_dst` diventa irraggiungibile → connessione fallisce
 
@@ -415,7 +316,7 @@ SCTP supporta il *multihoming*: un endpoint può avere *più indirizzi IP* assoc
 - Se `IP_dst1` fallisce → SCTP passa automaticamente a `IP_dst2`
 - *Failover trasparente*: l'applicazione non si accorge del cambio
 
-In LTE, il multihoming è fondamentale per garantire la *ridondanza* e l'affidabilità del control plane. 
+In LTE, il multihoming è fondamentale per garantire la *ridondanza* e l'affidabilità del control plane.
 
 Un dispositivo *eNodeB* può essere configurato con *più indirizzi IP* per connettersi a più MME:
 - MME primario: gestisce il traffico normale
@@ -434,110 +335,123 @@ A differenza di TCP, SCTP è *message-oriented* invece di *stream-oriented*. Ci�
     #import "@preview/cetz:0.3.2": canvas, draw
     #canvas(length: 1cm, {
       import draw: *
-      
+
       // Colori
       let color-red = rgb("#E74C3C")
       let color-blue = rgb("#3498DB")
       let color-light-blue = rgb("#5DADE2")
-      
+
       // Funzione per disegnare un message box
       let msg-box(x, y, width, height, label, color) = {
         rect((x, y), (x + width, y + height), fill: color, stroke: 1.5pt + black, radius: 0.1)
-        content((x + width/2, y + height/2), text(size: 7pt, fill: white, weight: "bold", label))
+        content((x + width / 2, y + height / 2), text(size: 7pt, fill: white, weight: "bold", label))
       }
-      
+
       // ============ PARTE TCP (stream-oriented) ============
       let tcp-y = 5
-      
+
       // Titolo TCP
       content((5, tcp-y + 2.8), text(size: 12pt, weight: "bold", "TCP (Stream-Oriented)"))
-      
+
       // Application A (sinistra)
       rect((0, tcp-y + 0.8), (2, tcp-y + 2.5), stroke: 2pt + black, radius: 0.15)
       content((1, tcp-y + 2.3), text(size: 9pt, weight: "bold", "Application A"))
-      
+
       // Messaggi in A
       msg-box(0.2, tcp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
       msg-box(0.2, tcp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
       msg-box(0.2, tcp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
-      
+
       // Application B (destra)
       rect((8, tcp-y + 0.8), (10, tcp-y + 2.5), stroke: 2pt + black, radius: 0.15)
       content((9, tcp-y + 2.3), text(size: 9pt, weight: "bold", "Application B"))
-      
+
       // Messaggi in B (stesso ordine ma arrivano come stream)
       msg-box(8.2, tcp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
       msg-box(8.2, tcp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
       msg-box(8.2, tcp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
-      
+
       // Label "Application Level"
       content((5, tcp-y + 2.5), text(size: 8pt, style: "italic", fill: gray, "Application Level"))
-      
+
       // Frecce da A al transport layer
       line((1, tcp-y + 0.8), (1, tcp-y + 0.4), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
-      
+
       // Transport Layer TCP - byte stream continuo
       let tcp-stream-y = tcp-y + 0.1
       rect((2.5, tcp-stream-y - 0.3), (7.5, tcp-stream-y + 0.3), stroke: 2pt + black, radius: 0.1)
-      
+
       // Stream continuo di colori (senza separazioni)
       let segment-width = 5 / 9
       for i in range(9) {
         let color = if i < 3 { color-red } else if i < 6 { color-blue } else { color-light-blue }
-        rect((2.5 + i * segment-width, tcp-stream-y - 0.25), 
-             (2.5 + (i + 1) * segment-width, tcp-stream-y + 0.25), 
-             fill: color, stroke: 0.5pt + white)
+        rect(
+          (2.5 + i * segment-width, tcp-stream-y - 0.25),
+          (2.5 + (i + 1) * segment-width, tcp-stream-y + 0.25),
+          fill: color,
+          stroke: 0.5pt + white,
+        )
       }
-      
+
       // Label Transport Level
       content((5, tcp-stream-y - 0.7), text(size: 8pt, weight: "bold", "Transport Level (TCP)"))
-      content((5, tcp-stream-y - 1.1), text(size: 9pt, style: "italic", fill: black, "Byte stream continuo - nessun confine tra messaggi"))
-      
+      content((5, tcp-stream-y - 1.1), text(
+        size: 9pt,
+        style: "italic",
+        fill: black,
+        "Byte stream continuo - nessun confine tra messaggi",
+      ))
+
       // Frecce da transport layer a B
       line((9, tcp-stream-y), (9, tcp-y + 0.8), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
-      
+
       // ============ PARTE SCTP (message-oriented) ============
       let sctp-y = 1
-      
+
       // Titolo SCTP
       content((5, sctp-y + 2), text(size: 12pt, weight: "bold", "SCTP (Message-Oriented)"))
-      
+
       // Application A (sinistra)
       rect((0, sctp-y + 0.8), (2, sctp-y + 2.5), stroke: 2pt + black, radius: 0.15)
       content((1, sctp-y + 2.3), text(size: 9pt, weight: "bold", "Application A"))
-      
+
       // Messaggi in A
       msg-box(0.2, sctp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
       msg-box(0.2, sctp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
       msg-box(0.2, sctp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
-      
+
       // Application B (destra)
       rect((8, sctp-y + 0.8), (10, sctp-y + 2.5), stroke: 2pt + black, radius: 0.15)
       content((9, sctp-y + 2.3), text(size: 9pt, weight: "bold", "Application B"))
-      
+
       // Messaggi in B
       msg-box(8.2, sctp-y + 1.8, 1.6, 0.35, "App message 1", color-red)
       msg-box(8.2, sctp-y + 1.35, 1.6, 0.35, "App message 2", color-blue)
       msg-box(8.2, sctp-y + 0.9, 1.6, 0.35, "App message 3", color-light-blue)
-        
+
       // Frecce da A al transport layer
       line((1, sctp-y + 0.8), (1, sctp-y + 0.4), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
-      
+
       // Transport Layer SCTP - messaggi separati
       let sctp-stream-y = sctp-y + 0.1
-      
+
       // Messaggi SCTP separati con gap
       let msg-width = 1.4
       let gap = 0.2
-      
+
       msg-box(2.5, sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 1", color-red)
       msg-box(2.5 + msg-width + gap, sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 2", color-blue)
-      msg-box(2.5 + 2*(msg-width + gap), sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 3", color-light-blue)
-      
+      msg-box(2.5 + 2 * (msg-width + gap), sctp-stream-y - 0.25, msg-width, 0.5, "SCTP msg 3", color-light-blue)
+
       // Label Transport Level
       content((5, sctp-stream-y - 0.7), text(size: 8pt, weight: "bold", "Transport Level (SCTP)"))
-      content((5, sctp-stream-y - 1.1), text(size: 9pt, style: "italic", fill: black, "I confini dei messaggi sono preservati"))
-      
+      content((5, sctp-stream-y - 1.1), text(
+        size: 9pt,
+        style: "italic",
+        fill: black,
+        "I confini dei messaggi sono preservati",
+      ))
+
       // Frecce da transport layer a B
       line((9, sctp-stream-y), (9, sctp-y + 0.8), stroke: 2pt + black, mark: (end: ">", scale: 0.8))
     })
@@ -625,7 +539,7 @@ Il pacchetto che parte dall'UE ha la seguente struttura:
 |  Applicazione  | (es. dati HTTP)
 +----------------+
 |   UDP/TCP      | (porta src/dst applicativa)
-+----------------+  
++----------------+
 |      IP        | (IP_UE → IP_Server)
 +----------------+
 |   PDCP/RLC     | (livelli LTE)
@@ -668,7 +582,7 @@ L'eNodeB riceve il pacchetto, rimuove i livelli radio (PDCP/RLC/MAC) ed *incapsu
 
 Il S-GW riceve il pacchetto, rimuove il tunnel GTP esterno e *crea un nuovo tunnel* verso il P-GW:
 
-```  
+```
 +----------------+
 |  Applicazione  |
 +----------------+
@@ -727,19 +641,19 @@ Un EPS Bearer è un *canale logico* con parametri QoS specifici che attraversa t
 A sua volta suddiviso in tre segmenti:
 
 a) *Radio Bearer* (UE ↔ eNodeB):
-  - Gestisce la QoS a livello *radio*
-  - Allocazione dinamica di PRB (Physical Resource Blocks)
-  - Priorità di scheduling
-  - Modulazione adattiva in base al canale
+- Gestisce la QoS a livello *radio*
+- Allocazione dinamica di PRB (Physical Resource Blocks)
+- Priorità di scheduling
+- Modulazione adattiva in base al canale
 
 b) *S1 Bearer* (eNodeB ↔ S-GW):
-  - Tunnel GTP attraverso la rete di backhaul
-  - QoS garantita tramite DiffServ o MPLS
-  - Interfaccia S1-U
+- Tunnel GTP attraverso la rete di backhaul
+- QoS garantita tramite DiffServ o MPLS
+- Interfaccia S1-U
 
 c) *S5/S8 Bearer* (S-GW ↔ P-GW):
-  - Tunnel GTP nella rete core
-  - QoS end-to-end all'interno della rete dell'operatore
+- Tunnel GTP nella rete core
+- QoS end-to-end all'interno della rete dell'operatore
 
 #nota()[
   Tutti i segmenti del bearer devono *cooperare* per garantire la QoS richiesta. Se il Radio Bearer è lento, gli altri segmenti devono compensare o bufferizzare. La QoS effettiva è limitata dal segmento più debole ("collo di bottiglia").
@@ -817,7 +731,7 @@ I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire Qo
   + *PDN 1*: Internet pubblica → Default Bearer con IP `10.x.x.x`
   + *PDN 2*: VPN aziendale → Default Bearer con IP `192.168.x.x`
   + *PDN 2.1*: Dedicated Bearer per VoIP aziendale (QCI 1)
-  
+
   Totale: 3 bearer attivi (2 default + 1 dedicated)
 ]
 
@@ -899,4 +813,4 @@ Quando l'UE è inattivo (nessun traffico dati), passa in *Idle Mode* per risparm
 
 #informalmente()[
   L'Idle Mode è come "mettere il telefono in standby": la connessione logica rimane attiva (ricevi paging), ma non consumi risorse radio (batteria). Quando arriva una notifica o una chiamata, la rete ti "sveglia" tramite paging.
-] 
+]
