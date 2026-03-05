@@ -695,108 +695,129 @@ L'incapsulamento applicato da GTP per il traffico *uplink* (UE $->$ Internet) è
 
 == EPS Bearer: Gestione della QoS
 
-Gli *EPS Bearer* (Evolved Packet System Bearer) sono i meccanismi attraverso cui LTE garantisce la *qualità di servizio* (QoS) end-to-end tra l'UE e la rete esterna.
+Gli *EPS Bearer* (Evolved Packet System Bearer) sono i meccanismi attraverso cui LTE garantisce la *qualità di servizio* (QoS) *end-to-end* tra l'UE e la rete esterna.
 
-=== Architettura degli EPS Bearer
 
-Un EPS Bearer è un *canale logico* con parametri QoS specifici che attraversa tutta la rete, dal dispositivo dell'utente fino al servizio esterno.
+Gli EPS Bearer sono *tunnel logici* che incapsulano il traffico dati dell'utente, con parametri di QoS specifici. Ogni bearer è associato a una sessione *PDN* e può essere configurato con diverse classi di servizio (QCI - QoS Class Identifier).
 
-*Componenti dell'EPS Bearer*:
+Segueno un'*architettura gerarchica*:
 
-*1. External Bearer* (P-GW ↔ Servizio Esterno):
-- Connessione tra P-GW e server/servizio su Internet
-- QoS gestita tramite accordi con provider esterni o best-effort
-- Fuori dal controllo diretto dell'operatore mobile
+#figure[
+  #align(center)[
+    #cetz.canvas(length: 1.2cm, {
+      import cetz.draw: *
 
-*2. EPS Bearer interno* (UE ↔ P-GW):
-A sua volta suddiviso in tre segmenti:
+      let y = 1.2
 
-a) *Radio Bearer* (UE ↔ eNodeB):
-- Gestisce la QoS a livello *radio*
-- Allocazione dinamica di PRB (Physical Resource Blocks)
-- Priorità di scheduling
-- Modulazione adattiva in base al canale
+      rect((0, y - 0.35), (0.24, y + 0.35), radius: 0.05, fill: rgb("#f4c542"), stroke: 0.6pt + rgb("#d39e00"))
+      rect((0.05, y - 0.22), (0.19, y + 0.2), radius: 0.02, fill: white, stroke: none)
 
-b) *S1 Bearer* (eNodeB ↔ S-GW):
-- Tunnel GTP attraverso la rete di backhaul
-- QoS garantita tramite DiffServ o MPLS
-- Interfaccia S1-U
+      line((1.5, y - 0.3), (1.65, y + 0.28), stroke: 0.8pt + black)
+      line((1.8, y - 0.3), (1.65, y + 0.28), stroke: 0.8pt + black)
+      line((1.56, y - 0.3), (1.74, y - 0.3), stroke: 0.8pt + black)
+      line((1.65, y + 0.3), (1.65, y + 0.48), stroke: 0.7pt + black)
+      arc((1.65, y + 0.55), start: 210deg, stop: 330deg, radius: 0.18, stroke: 0.7pt + black)
+      arc((1.65, y + 0.55), start: 220deg, stop: 320deg, radius: 0.28, stroke: 0.7pt + black)
 
-c) *S5/S8 Bearer* (S-GW ↔ P-GW):
-- Tunnel GTP nella rete core
-- QoS end-to-end all'interno della rete dell'operatore
+      rect((3.0, y - 0.35), (3.95, y + 0.35), radius: 0.12, fill: rgb("#ececec"), stroke: 0.6pt + black)
+      content((3.475, y), text(size: 9pt, "S-GW"))
+
+      rect((5.25, y - 0.35), (6.1, y + 0.35), radius: 0.12, fill: rgb("#ececec"), stroke: 0.6pt + black)
+      content((5.675, y), text(size: 9pt, "PGW"))
+
+      rect((7.45, y - 0.35), (9.1, y + 0.35), radius: 0.12, fill: rgb("#ececec"), stroke: 0.6pt + black)
+      content((8.275, y), text(size: 9pt, "Servizio"))
+
+      line((0.24, y), (1.5, y), stroke: 0.7pt + black, dash: "dotted")
+      line((1.8, y), (3.0, y), stroke: 0.7pt + black, dash: "dotted")
+      line((3.95, y), (5.25, y), stroke: 0.7pt + black)
+      line((6.1, y), (7.45, y), stroke: 0.7pt + black)
+
+      content((0.87, y + 0.52), text(size: 9pt, "Radio"))
+      content((0.87, y + 0.2), text(size: 9pt, "bearer"))
+
+      content((2.4, y + 0.52), text(size: 9pt, "S1"))
+      content((2.4, y + 0.2), text(size: 9pt, "bearer"))
+
+      content((4.6, y + 0.52), text(size: 9pt, "S5/S8"))
+      content((4.6, y + 0.2), text(size: 9pt, "bearer"))
+
+      content((6.78, y + 0.52), text(size: 9pt, "External"))
+      content((6.78, y + 0.2), text(size: 9pt, "bearer"))
+    })
+  ]
+]
+Dove:
++ *External Bearer* (P-GW $<->$ Servizio Esterno): Connessione tra P-GW e server/servizio su Internet
+  - *QoS* gestita tramite accordi con provider esterni o best-effort
+  - Fuori dal controllo diretto dell'operatore mobile
+
++ *EPS Bearer interno* (UE $<->$ P-GW): A sua volta suddiviso in tre segmenti:
+
+  a) *Radio Bearer* (UE $<->$eNodeB): Gestisce la *QoS* a livello *radio*
+  - Allocazione dinamica di PRB (Physical Resource Blocks)
+  - Priorità di scheduling
+  - Modulazione adattiva in base al canale
+
+  b) *`S1` Bearer* (eNodeB $<->$ S-GW): Tunnel GTP attraverso la rete di backhaul
+  - *QoS* garantita tramite DiffServ o MPLS
+  - Interfaccia `S1-U`
+
+  c) *`S5/S8` Bearer* (S-GW $<->$ P-GW): Tunnel GTP nella rete core
+  - *QoS* end-to-end all'interno della rete dell'operatore
 
 #nota()[
-  Tutti i segmenti del bearer devono *cooperare* per garantire la QoS richiesta. Se il Radio Bearer è lento, gli altri segmenti devono compensare o bufferizzare. La QoS effettiva è limitata dal segmento più debole ("collo di bottiglia").
+  Tutti i segmenti del bearer devono *cooperare* per garantire la *QoS richiesta*. Se il `Radio Bearer` è lento, gli altri segmenti devono compensare o bufferizzare. La QoS effettiva è limitata dal segmento più debole (collo di bottiglia).
 ]
+
+Quando un certo UE cambia l’antenna di riferimento è necessario *aggiornare i bearer* per mantenere la sessione dati attiva. In particolare:
+- Sicuramente cambierà il `radio bearer` (l’antenna a cui è collegato è diversa)
+- Cambierà l’`S1 bearer` se l’antenna fa parte di una nuova BS
+- Il `bearer S5/S8` cambierà solo se la nuova BS fa parte di un alrto SGW
+- L’`external bearer` cambierà solo al cambiare del servizio utilizzato
 
 === Tipi di Bearer
 
-Ogni UE può avere *al massimo 8 bearer attivi contemporaneamente*. I bearer si dividono in due categorie:
+Per gestire le QoS diverse richieste dalle applicazioni, LTE utilizza *più bearer* contemporaneamente per lo stesso UE. In particolare i bearer si distinguono in due categorie principali:
+- *Default Bearer*
+- *Dedicated Bearer*
 
 ==== Default Bearer
 
-Il *Default Bearer* viene creato automaticamente durante la procedura di *attach* (connessione iniziale alla rete).
+Il *Default Bearer* viene creato automaticamente durante la procedura di *attach* (registrazion alla rete). Tale bearer è associato a una specifica *PDN connection* (connessione a un P-GW). All'UE viene assegnato un *indirizzo IP* per questa PDN, che rimane costante finché l'UE è connesso alla rete (ad ogni default bearer corrisponde un IP differente).
 
-*Caratteristiche*:
-- Creato durante l'attach dell'UE alla rete
-- Associato a una *PDN connection* (connessione a un P-GW specifico)
-- All'UE viene assegnato un *indirizzo IP* per questa PDN
-- Tipicamente ha QoS *best-effort* (QCI 9)
-- Rimane attivo finché l'UE è connesso alla rete
-- *Sempre presente*: non può essere rimosso senza disconnettere l'UE
+Tipicamente, il Default Bearer ha QoS *best-effort*, adatto per la maggior parte delle applicazioni generiche (navigazione web, email, social media).
 
-#esempio()[
-  Quando accendi il telefono e ti connetti alla rete 4G:
-  + L'UE esegue la procedura di *attach*
-  + Viene creato un *Default Bearer* verso il P-GW dell'operatore
-  + Ti viene assegnato un IP (es. `10.123.45.67`)
-  + Puoi navigare su Internet con QoS best-effort
+#nota()[
+  Il Default Bearer rimane attivo finché l'UE è connesso alla rete e *non* può essere rimosso senza disconnettere l'UE.
 ]
 
 ==== Dedicated Bearer
 
-I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire QoS garantita a specifiche applicazioni.
+I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire QoS garantita a specifiche applicazioni. Sono creati dopo la registrazione a un nuovo `P-GW` e sono delle *fork* del Default Bearer a cui fanno riferimento. Per questo motivo, condividono la *PDN connection* e utilizzano lo *stesso IP* del Default Bearer.
 
-*Caratteristiche*:
-- Vengono creati *dopo* l'attach, quando necessario
-- Sono "fork" (derivazioni) del Default Bearer sulla stessa PDN connection
-- Utilizzano lo *stesso IP* del Default Bearer
-- Hanno *QoS superiore*: GBR (Guaranteed Bit Rate), latenza garantita, priorità
-- Vengono rilasciati al termine della sessione applicativa
+I Dedicated Bearer vengono rilasciati al termine della sessione applicativa
 
-*Procedure di creazione*:
-- *Network-initiated*: la rete (PCRF/P-GW) decide di creare un Dedicated Bearer
-  - Esempio: chiamata VoLTE → IMS richiede al PCRF un bearer con QCI 1
-- *UE-initiated*: l'UE richiede QoS specifica (raro, spesso negato per policy)
+#nota()[
+  La differenza con il Default Bearer è che i Dedicated Bearer hanno parametri di *QoS specifici*, mentre il Default Bearer è best-effort.
 
-#esempio()[
-  Scenario: videochiamata VoLTE
-  + Hai già un *Default Bearer* attivo per navigazione web (QCI 9)
-  + Avvii una videochiamata VoLTE
-  + L'IMS richiede al PCRF un *Dedicated Bearer* con:
-    - QCI 1 (voce, priorità 2, latenza < 100 ms, GBR)
-  + Il PCRF invia i comandi a P-GW, S-GW, eNodeB
-  + Viene creato un nuovo bearer sullo *stesso IP* del Default Bearer
-  + Il traffico VoLTE usa il Dedicated Bearer (bassa latenza)
-  + Il traffico web continua sul Default Bearer (best-effort)
-  + A fine chiamata, il Dedicated Bearer viene *rilasciato*
+  Tuttavia i Dedicated Bear sono associati allo stesso PDN del Default Bearer, quindi *condividono lo stesso IP* e la stessa sessione dati.
 ]
 
-==== Multiple PDN Connections
-
-È possibile avere *più Default Bearer* contemporaneamente, ciascuno associato a una PDN connection diversa (P-GW diverso).
-
-*Motivazioni*:
+È possibile avere *più Default Bearer* contemporaneamente, ciascuno associato a una *PDN connection diversa* (P-GW diverso), per diversi motivi:
 - Accesso a *servizi diversi*: Internet pubblica + APN aziendale privato
 - Separazione del traffico: dati personali vs dati aziendali
 - Multi-homing: connessione a più reti contemporaneamente
 
-*Allocazione IP*:
-- Ogni PDN connection ha il proprio *Default Bearer*
-- Ogni Default Bearer ha un *indirizzo IP diverso*
-- L'UE può avere quindi più IP simultanei
+//todo fare disengo
+#align(center)[
+  #image("/assets/LTE-Bearer.png", width: 70%)
+]
 
+
+#attenzione()[
+  Ogni UE può avere *al massimo 8 bearer attivi contemporaneamente* (si sommano)
+]
 
 #esempio()[
   Smartphone aziendale:
@@ -807,16 +828,6 @@ I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire Qo
   Totale: 3 bearer attivi (2 default + 1 dedicated)
 ]
 
-*Limitazioni*:
-- Massimo *8 bearer totali* per UE (somma di default e dedicated)
-- Ogni Default Bearer può avere più Dedicated Bearer associati
-- Configurazione tipica:
-  - 1-2 Default Bearer (Internet + eventuale APN privato)
-  - 0-6 Dedicated Bearer per applicazioni specifiche
-
-#nota()[
-  In 5G, il concetto di bearer viene sostituito dai *Network Slices*, che permettono una gestione ancora più granulare e flessibile della QoS, con la possibilità di creare "reti virtuali" dedicate per specifici servizi.
-]
 
 === QoS Class Identifier (QCI)
 
