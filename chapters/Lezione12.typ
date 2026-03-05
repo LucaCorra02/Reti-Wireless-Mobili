@@ -479,29 +479,21 @@ $mg("Vantaggi")$ in LTE:
 
 L'*user plane* trasporta il traffico dati vero e proprio degli utenti. A differenza del control plane, utilizza il *tunneling GTP* per mantenere la sessione dati indipendente dalla mobilità.
 
-=== Livelli IP nell'User Plane
-
 Nell'architettura LTE esistono *tre livelli di indirizzamento IP* distinti:
 
-*Primo livello - IP dell'utente (UE ↔ P-GW)*:
-- Indirizzi IP assegnati agli UE tramite *DHCP* o configurazione statica
-- Gestiti dal P-GW con *NAT* (Network Address Translation)
-- Utilizzati per la comunicazione tra UE e Internet/servizi esterni
-- *Visibili solo* all'interno del tunnel GTP tra UE e P-GW
-- Esempio: `10.x.x.x` o `172.16.x.x` (IP privati)
+- *Primo livello - IP dell'utente (UE $<->$ P-GW)*: Si tratta di indirizzi IP assegnati agli UE tramite *DHCP* o configurazione statica. Vengono utilizzati per la comunicazione tra UE e Internet/servizi esterni:
+  - Gestiti dal P-GW con *NAT* (Network Address Translation)
+  - *Visibili solo* all'interno del tunnel *GTP* tra UE e P-GW
+  - _Esempio_: `10.x.x.x` o `172.16.x.x` (IP privati)
 
-*Secondo livello - IP pubblici (P-GW ↔ Internet)*:
-- Indirizzi IP pubblici del P-GW verso Internet
-- Utilizzati per il traffico verso servizi esterni all'operatore
-- Soggetti a NAT se gli UE hanno IP privati
-- Visibili su Internet
+- *Secondo livello - IP pubblici (P-GW $<->$ Internet)*: Si tratta di *indirizzi IP pubblici*, assegnati al P-GW per comunicare con Internet:
+  - Utilizzati per il traffico verso servizi esterni all'operatore
+  - Soggetti a NAT se gli UE hanno IP privati
 
-*Terzo livello - IP interni della rete operatore*:
-- Indirizzi IP utilizzati per il routing *interno* tra elementi della rete EPC
-- Esempi: IP degli eNodeB, IP degli S-GW, IP dei P-GW, IP degli MME
-- Utilizzati per stabilire i tunnel GTP (S1-U, S5/S8)
-- *Non visibili* dall'esterno: rete privata dell'operatore
-- Gestiti dall'operatore come rete privata separata
+- *Terzo livello - IP interni della rete operatore*: Indirizzi IP utilizzati per il *routing interno* tra elementi della rete EPC. Essi vengono gestiti dall'operatore come rete privata separata:
+  - Utilizzati per stabilire i tunnel GTP (S1-U, S5/S8). *Non visibili* dall'esterno: rete privata dell'operatore
+  - _Esempi_: IP degli eNodeB, IP degli S-GW, IP dei P-GW, IP degli MME
+
 
 #nota()[
   La separazione tra i tre livelli IP permette *mobilità trasparente*: l'IP dell'UE (livello 1) rimane costante anche quando cambiano gli elementi della rete (livello 3) durante la mobilità.
@@ -511,116 +503,195 @@ Nell'architettura LTE esistono *tre livelli di indirizzamento IP* distinti:
 
 Il *GTP (GPRS Tunneling Protocol)* è il protocollo fondamentale che permette di *incapsulare* il traffico dell'utente in tunnel logici attraverso la rete dell'operatore.
 
-*Motivazione*:
-- Lo User Equipment (UE) ha una *sessione dati* con un P-GW specifico
-- Durante la mobilità, l'UE cambia eNodeB e potenzialmente anche S-GW
-- Senza tunneling, dovremmo aggiornare *tutte le tabelle di routing* della rete ad ogni movimento
-- Con GTP: solo gli endpoint del tunnel vengono aggiornati
+La connessione logica tra UE e P-GW è identificata da una sessione *Packet Data Network (PDN)*. L'UE è libero di muoversi all'interno della rete e possedere un proprio *IP* unico *mantenuto costante* per tutta la durata della sessione, indipendentemente da dove si trovi.
 
-*Vantaggi del tunneling*:
+//todo fare disegno
+#align(center)[
+  #image("/assets/GTP-LTE.png", width: 80%)
+]
+
+#nota[
+  L'UE ha una sessione dati con un P-GW specifico. Durante la mobilità, l'UE cambia eNodeB e potenzialmente anche S-GW:
+
+  - *Senza GTP*, dovremmo aggiornare tutte le *tabelle di routing* della rete ad ogni movimento
+
+  - *Con GTP*, solo gli endpoint del tunnel vengono aggiornati
+]
+
+$mg("Vantaggi")$ del tunneling:
 - *Mobilità trasparente*: l'IP dell'UE rimane fisso durante tutta la sessione
 - *Routing semplificato*: i router intermedi inoltrano solo in base all'IP del tunnel
-- *Isolamento*: il traffico di ciascun UE è isolato nel proprio tunnel
-- *QoS end-to-end*: ogni tunnel può avere classi di servizio diverse
+- Isolamento: il traffico di ciascun UE è isolato nel proprio tunnel
+- QoS end-to-end: ogni tunnel può avere classi di servizio diverse
 
-#informalmente()[
-  Il tunnel GTP è come un "tubo virtuale" che collega l'UE al P-GW, passando attraverso eNodeB e S-GW. Anche se l'UE si muove, il tubo viene semplicemente "riattaccato" al nuovo eNodeB, senza dover ricostruire tutto.
+=== Incapsulamento GTP
+#align(center)[
+  #image("/assets/DataPlane-LTE.png", width: 70%)
 ]
 
-=== Uplink: Incapsulamento GTP
 
-Vediamo nel dettaglio come funziona l'incapsulamento GTP per il traffico *uplink* (UE → Internet).
+L'incapsulamento applicato da GTP per il traffico *uplink* (UE $->$ Internet) è il seguente:
 
-*Step 1: UE → eNodeB*
++ *UE $<->$ eNodeB* (interfaccia `Uu`): Il pacchetto IP originale dell'UE viene trasmetto via radio all'eNodeB senza modifiche, esso avrà  i seguenti livelli:
 
-Il pacchetto che parte dall'UE ha la seguente struttura:
-```
-+----------------+
-|  Applicazione  | (es. dati HTTP)
-+----------------+
-|   UDP/TCP      | (porta src/dst applicativa)
-+----------------+
-|      IP        | (IP_UE → IP_Server)
-+----------------+
-|   PDCP/RLC     | (livelli LTE)
-+----------------+
-|      MAC       |
-+----------------+
-```
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
 
-L'UE trasmette il pacchetto via radio all'eNodeB. *Non c'è routing* a livello UE: tutto va all'eNodeB.
+        let box-width = 2
+        let box-height = 0.8
+        let spacing = 0.1
 
-*Step 2: eNodeB → S-GW (Interfaccia S1-U)*
 
-L'eNodeB riceve il pacchetto, rimuove i livelli radio (PDCP/RLC/MAC) ed *incapsula* il pacchetto IP in un tunnel GTP:
+        // Rettangolo 1
+        rect((0, 0), (box-width, box-height), stroke: 1pt + black, fill: rgb("#e8f4ff"))
+        content((box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "RLC"))
 
-```
-+----------------+
-|  Applicazione  |
-+----------------+
-|   UDP/TCP      |
-+----------------+
-|      IP        | (IP_UE → IP_Server) ← Pacchetto originale
-+----------------+
-| --- GTP-U ---  | (Tunnel ID)
-+----------------+
-|      UDP       | (porta 2152)
-+----------------+
-|      IP        | (IP_eNodeB → IP_SGW) ← Tunnel esterno
-+----------------+
-```
+        // Rettangolo 2
+        let x2 = box-width + spacing
+        rect((x2, 0), (x2 + box-width, box-height), stroke: 1pt + black, fill: rgb("#d0e8ff"))
+        content((x2 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x2 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "IP"))
 
-*Campi del tunnel GTP*:
-- *IP esterno*: `IP_eNodeB → IP_SGW` (livello 3: IP interni operatore)
-- *UDP*: porta 2152 (porta standard GTP-U per user plane)
-- *GTP Header*: contiene il *Tunnel ID* (TEID - Tunnel Endpoint Identifier)
-  - TEID univoco per identificare la sessione UE specifica
-  - Permette al S-GW di demultiplexare i pacchetti di diversi UE
-  - Mapping: `(eNodeB, TEID) ↔ (UE, Bearer)`
+        // Rettangolo 3
+        let x3 = x2 + box-width + spacing
+        rect((x3, 0), (x3 + box-width, box-height), stroke: 1pt + black, fill: rgb("#b8dcff"))
+        content((x3 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x3 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "UDP/TCP"))
 
-*Step 3: S-GW → P-GW (Interfaccia S5/S8)*
+        let x4 = x3 + box-width + spacing
+        rect((x4, 0), (x4 + box-width, box-height), stroke: 1pt + black, fill: rgb("#b8dcff"))
+        content((x4 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x4 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "DATA"))
+      })
+    ]
+  ]
 
-Il S-GW riceve il pacchetto, rimuove il tunnel GTP esterno e *crea un nuovo tunnel* verso il P-GW:
+  #nota()[
+    A questo livello *non* c'è routing: tutto il traffico va all'eNodeB
+  ]
 
-```
-+----------------+
-|  Applicazione  |
-+----------------+
-|   UDP/TCP      |
-+----------------+
-|      IP        | (IP_UE → IP_Server) ← Pacchetto originale (invariato)
-+----------------+
-| --- GTP-U ---  | (Tunnel ID 2)
-+----------------+
-|      UDP       | (porta 2152)
-+----------------+
-|      IP        | (IP_SGW → IP_PGW) ← Nuovo tunnel
-+----------------+
-```
++ *eNodeB $<->$ S-GW* (interfaccia `S1-U`): In questo momento il pacchetto IP originale viene *incapsulato* in un tunnel GTP, con un nuovo header IP che identifica il tunnel tra eNodeB e S-GW.\
+  Il `Tunnel ID (TEID)` corrisponde al identificatore tra *`eNodeB` $<->$ `S-GW`*.\
+  Il pacchetto avrà i seguenti livelli:
 
-*Nota*: il pacchetto IP originale dell'UE *non viene mai modificato* finché non raggiunge il P-GW.
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
 
-*Step 4: P-GW → Internet*
+        let box-width = 2
+        let box-height = 0.8
+        let spacing = 0.1
 
-Il P-GW:
-1. Riceve il pacchetto GTP
-2. *Decapsula*: estrae il pacchetto IP originale (IP_UE → IP_Server)
-3. Applica *NAT* se necessario: traduce IP_UE (privato) in IP_pubblico
-4. Applica *policy* (firewall, QoS)
-5. Inoltra il pacchetto verso Internet
+        // Rettangolo 1
+        rect((0, 0), (box-width, box-height), stroke: 1pt + black, fill: rgb("#e8f4ff"))
+        content((box-width / 2, box-height + 0.3), text(size: 8pt, "IP SGW"))
+        content((box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "IP"))
 
-*Gestione della mobilità*:
+        // Rettangolo 2
+        let x2 = box-width + spacing
+        rect((x2, 0), (x2 + box-width, box-height), stroke: 1pt + black, fill: rgb("#d0e8ff"))
+        content((x2 + box-width / 2, box-height + 0.3), text(size: 8pt, "UDP port SGW"))
+        content((x2 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "UDP"))
 
-Se l'UE si sposta da eNodeB1 a eNodeB2:
-- Il *pacchetto IP interno* (IP_UE → IP_Server) rimane *identico*
-- Cambia solo l'*IP del tunnel esterno*: (IP_eNodeB2 → IP_SGW)
-- Il S-GW aggiorna il mapping: nuovo TEID per eNodeB2
-- Il P-GW *non* è coinvolto → l'IP dell'UE rimane stabile
+        // Rettangolo 3
+        let x3 = x2 + box-width + spacing
+        rect((x3, 0), (x3 + box-width, box-height), stroke: 1pt + black, fill: rgb("#b8dcff"))
+        content((x3 + box-width / 2, box-height + 0.3), text(size: 8pt, "Tunnel ID (TEID)"))
+        content((x3 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "GTP"))
 
-#attenzione()[
-  *Senza GTP*, ad ogni cambio di eNodeB dovremmo aggiornare tutte le tabelle di routing della rete dell'operatore per instradare i pacchetti verso il nuovo punto di attacco. *Con GTP*, basta aggiornare il Tunnel ID: il routing si basa sugli IP degli endpoint (che cambiano raramente).
-]
+        // Rettangolo 4
+        let x4 = x3 + box-width + spacing
+        rect((x4, 0), (x4 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffe8e8"))
+        content((x4 + box-width / 2 + 0.7, box-height + 0.3), text(size: 8pt, "Pacchetto Utente"))
+        content((x4 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "IP"))
 
+        // Rettangolo 5
+        let x5 = x4 + box-width + spacing
+        rect((x5, 0), (x5 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffdddd"))
+        content((x5 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x5 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "UDP/TCP"))
+
+        // Rettangolo 6
+        let x6 = x5 + box-width + spacing
+        rect((x6, 0), (x6 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffd0d0"))
+        content((x6 + box-width / 2 - 0.7, box-height + 0.3), text(size: 8pt, "INCAPSULAMENTO GTP"))
+        content((x6 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "DATA"))
+      })
+    ]
+  ]
+  *Campi* el tunnel GTP:
+  - *IP esterno*: `IP_eNodeB → IP_SGW` (livello 3: IP interni operatore)
+  - *UDP*: porta 2152 (porta standard GTP-U per user plane)
+  - *GTP Header*: contiene il *Tunnel ID* (TEID - Tunnel Endpoint Identifier)
+    - TEID univoco per identificare la sessione UE specifica
+    - Permette al S-GW di demultiplexare i pacchetti di diversi UE
+    - Mapping: `(eNodeB, TEID) ↔ (UE, Bearer)`
+
++ *S-GW $->$ P-GW* (Interfaccia `S5/S8`): L'S-GW riceve il pacchetto, rimuove il tunnel GTP esterno e *crea un nuovo tunnel* verso il P-GW. In particolare vengono cambiati i seguenti campi:
+  - `IP SGW` → `IP PGW`
+  - `UDP port SGW` → `UDP port PGW`
+  - `Tunnel ID (TEID)`: nuovo TEID per il tunnel `S-GW <-> P-GW`
+
+  #figure[
+    #align(center)[
+      #cetz.canvas(length: 1cm, {
+        import cetz.draw: *
+
+        let box-width = 2
+        let box-height = 0.8
+        let spacing = 0.1
+
+        // Rettangolo 1
+        rect((0, 0), (box-width, box-height), stroke: 1pt + black, fill: rgb("#e8f4ff"))
+        content((box-width / 2, box-height + 0.3), text(size: 8pt, "IP PGW", red))
+        content((box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "IP"))
+
+        // Rettangolo 2
+        let x2 = box-width + spacing
+        rect((x2, 0), (x2 + box-width, box-height), stroke: 1pt + black, fill: rgb("#d0e8ff"))
+        content((x2 + box-width / 2, box-height + 0.3), text(size: 8pt, "UDP port PGW", red))
+        content((x2 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "UDP"))
+
+        // Rettangolo 3
+        let x3 = x2 + box-width + spacing
+        rect((x3, 0), (x3 + box-width, box-height), stroke: 1pt + black, fill: rgb("#b8dcff"))
+        content((x3 + box-width / 2, box-height + 0.3), text(size: 8pt, "Tunnel ID (TEID)", red))
+        content((x3 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "GTP"))
+
+        // Rettangolo 4
+        let x4 = x3 + box-width + spacing
+        rect((x4, 0), (x4 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffe8e8"))
+        content((x4 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x4 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "IP"))
+
+        // Rettangolo 5
+        let x5 = x4 + box-width + spacing
+        rect((x5, 0), (x5 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffdddd"))
+        content((x5 + box-width / 2, box-height + 0.3), text(size: 8pt, ""))
+        content((x5 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "UDP/TCP"))
+
+        // Rettangolo 6
+        let x6 = x5 + box-width + spacing
+        rect((x6, 0), (x6 + box-width, box-height), stroke: 1pt + black, fill: rgb("#ffd0d0"))
+        content((x6 + box-width / 2 - 2, box-height + 0.3), text(size: 8pt, "INCAPSULAMENTO GTP"))
+        content((x6 + box-width / 2, box-height / 2), text(size: 9pt, weight: "bold", "DATA"))
+      })
+    ]
+  ]
+  #nota()[
+    Il pacchetto IP originale dell'UE *non viene mai modificato* finché non raggiunge il P-GW.
+  ]
+
++ *P-GW $<->$ Internet*: Il PGW una volta aver ricevuto il pacchetto sull'interfaccia `S5/S8` *decapsula il tunnel GTP*, rimuovendone l'header e recuperando il pacchetto IP originale dell'UE. In particolare:
+  1. Riceve il pacchetto GTP
+  2. *Decapsula*: estrae il pacchetto IP originale (`IP_UE → IP_Server`)
+  3. Applica *NAT* se necessario: traduce `IP_UE` (privato) in `IP_pubblico`
+  4. Applica *policy* (firewall, QoS)
+  5. Inoltra il pacchetto verso Internet
 
 == EPS Bearer: Gestione della QoS
 
@@ -725,6 +796,7 @@ I *Dedicated Bearer* sono bearer aggiuntivi creati *su richiesta* per fornire Qo
 - Ogni PDN connection ha il proprio *Default Bearer*
 - Ogni Default Bearer ha un *indirizzo IP diverso*
 - L'UE può avere quindi più IP simultanei
+
 
 #esempio()[
   Smartphone aziendale:
