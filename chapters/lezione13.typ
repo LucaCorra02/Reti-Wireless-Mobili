@@ -2,75 +2,164 @@
 
 == LTE handover
 
-Solo hard harad-handover in LTE. Non esiste un nodo centralizzato tra eNB. Siamo collegati a una solo base station per volta. In base al bearer in cui siamo possamo usare tipi di handover diversi
+#attenzione()[
+  In LTE esiste solo *hard-handover*
+]
 
-Esistono due tipi di handover (
-Sono due approcci diversi e usati per traffici diversi)
-- *Seamless handover*. Traffico voip, permette di perdere traffico ma garantisce una bassa latenza (frame persi ma bassa latenza).
+Non esiste un nodo centralizzato tra eNodeB. Ogni UE è collegato a una solo base station per volta. In base al bearer in cui siamo possamo usare tipi di handover diversi:
+
+- *Seamless handover*: ammette la perdità di traffico ma garantisce una bassa latenza. Usato ad esempio per traffico _voip_. Caratteristiche:
   - Minore latenza
   - Ammette ritrasmissioni
 
-- *Lossless handover*. Traffico HTTP/FTP. Garantisce che i pacchetti non vengano persi, se viene perso qualcosa deve essere ritrasmesso. A livello di handvoer non possiamo affidarci a nessun protocollo di radio link controller (perdità a livello 2). La perdità verrà individuata a livello 4. La perdità viene gestita tra le due eNB tramite un protocollo apposito.
-- Maggiore latenza
-- Riduce la perità dei pacchetti
+- *Lossless handover*: Garantisce che i pacchetti *non* vengano persi, se viene perso un messaggio *deve essere ritrasmesso*. A livello di handover non possiamo fare riferimento a nessun protocollo di radio link controller (livello 2). La perdità verrà gestita a livello $4$. Un esempio di traffico è _HTTP/FTP_
 
-=== LTE lossless handover S1
+=== LTE lossless handover
 
-Si attua quando c'è un flusso di download. Il flusso di download va perso il basso. S-GW invia pacchetti alla posizione vecchia del dispositivo che però si è spostato. Tramite l'interfaccia x2 viene tenuto un buffer dentro la base station precedente. Dopo l'handover tutto il traffico che non ha ricevuto un ACK viene trasferito alla nuova base station in modo tale che raggiunga il dipsositivo che si è spostato.
+Supponiamo che un UE a cui sta venendo inviato un *flusso di download* da parte del S-GW, si sposti da un'eNodeB a un'altro. Il Service Gatawey continuera a mandare pacchetti alla vecchia posizione del dispostivo.
 
-Viene effettuato un *
-cordinamento tra le due base station (partenza-arrivo)* sfruttando il collegamento. Se non sfruttassimo tale collegamento avremo una perdita
+Tramite l'`interfaccia X2` viene tenuto un buffer dentro la base station precedente $"eNB" 1$ in modo da non perdere i pacchetti in download.
 
-Sequence diagram (in rosso sono due moduli della rete RUN in blue due modili della rete CORE). Il source MME (modulo che gestisce la mobilità) gesiste l'EU corrente.
-
-L'assunzione è che è già stato deciso di passare la gestione dello UE da nodeB target a nodeB sorgente:
-+ Da `SRC NB` a `SRC MME` che sta gestendo quell'UE specifico. Si chiama `handover-request`. La base station che sta gestendo il dispositivo lo chiede di rillocare.
-
-+ `SRC MME` inoltra la richiesta di handover all' `DEST MME`, si tratta del MME che avrà in carico il trafffico di controllo dell UE al termine della procedura
-
-+ `DST MME` manda la `handover-request` al `DST NB`, ovvero al nodeB che avrà in gestione il dispositivo al termine della richiesta.
-
-  #nota()[
-    Tutti e 4 gli attori ora sono avvisati della procedura di handover.\
-    Inoltre, vengono tenuti traccia dei bearer attivi e con quali QoS. Essi andranno ricreati alla fine dell'handover.
-  ]
-+ `Dst Nb` prepara le risorse, a livello di resource control, per ospitare il dispositivo (UE)
-
-+ il `node B dst` manca una `handover-request ACK` a `DST MME`. Per confermare che le risorse sono state allocato. Tale messagio viaggia sulla rete back-bone dell'operatore (non viaggia via radio ma protocollo scp).
-
-
-+ L'handover può avvenire in quanto `DST MME` sa che è tutto pronto. `DST MME` manda una `fw handover repsonse` alla `SORG MME`. Il comando di handover può essere inviato al dispositivo coinvolto
-
-+ `SRC MME` manda un messaggio a `SRC NB`. Il messagio è di `handover command`.
-
-+ il comando di handover viene inviato dal `soruce node-b` allo UE finale, si tratta di un messaggio `handover comando`.
-
-+ Una volta avvisato lo Use equipment può essere iniziato il cambiamento di stato. Viene invitato l'MME che ha incatico lo EU uno *status transfer*.
-
-+ la linea trattegiata viene effetuata per fare il trasferimento di dati (oozionale)
-
-+ viene inviato un `MME status-transfer` da `DST NB` con l'ospitant `Source node B`.
-
-+ La conferma del nuovo hand over viene inviato da UE a `DST NB`. Il messsaggio prende il nome di `DST nB`.
-
-+ Una volta fatto l'handover può informare il suo $"MME"$ dell'avvenuta procedura di un handover con un messaggio `handover - notify`
-
-+ `DEST MME` invia al vecchio `MME SRC` che la procedura di hadover è andato apposto. Infine l'MME sorgente invierà un ACK.
-
-+ Lo UE chiede un `tracking area update`. Il messaggio va direttamente da `MME B` (in realtà passa da `SRC NodeB`).
-
-+ Tutto quello che aveva in gestione dello UE può essere buttata via, deve avere la conferma del piano di controllo. Il `SRC MME` manda un messaggio al `SRC node B` (stazione che aveva i gestione il vecchio disposistivo) dicendo `release resource`
+Una volta che l'handover è completato, la base station precedente manda i pacchetti bufferizzati alla nuova base station $"eNB" 2$ che li manda al dispositivo. In questo modo non si perdono pacchetti e il download può continuare senza interruzioni.
 
 #nota()[
-  Siccome la procedura è di handover non posso tenere i _piedi in due scarpe_ la risposta dell'handover viene data sulla nuova destinazione.
+  L'handover viene effettuato tramite un *cordinamento tra le due base station (partenza-arrivo)*, sfruttando il collegamento tra di esse.
+]
+
+=== Handover S1 vs Handover X2
+
+Prendiamo in considerazione il sequence diagram di una procedura di handover _vecchio_, ovvero quella che *coinvolge la rete core* (`interfaccia S1`).
+
+#figure(
+  align(center)[
+    #cetz.canvas(length: 0.9cm, {
+      import cetz.draw: *
+
+      let x-ue = 0.8
+      let x-src-enb = 4.0
+      let x-dst-enb = 7.2
+      let x-src-mme = 10.4
+      let x-dst-mme = 13.6
+
+      let y-bottom = 0.6
+      let y-top = 11.2
+      let box-h = 0.7
+
+      let lifeline-color = 0.8pt + gray
+      let head-fill = luma(225)
+      let band-fill = rgb("#9FD7E8")
+
+      // Header + lifeline per ogni attore
+      let actor(x, w, label) = {
+        rect((x - w / 2, y-top), (x + w / 2, y-top + box-h), fill: head-fill, stroke: black)
+        content((x, y-top + box-h / 2), text(size: 8pt, label))
+        line((x, y-bottom), (x, y-top), stroke: lifeline-color)
+      }
+
+      actor(x-ue, 2.1, "UE")
+      actor(x-src-enb, 3.1, "Source eNodeB")
+      actor(x-dst-enb, 3.1, "Destination eNodeB")
+      actor(x-src-mme, 2.8, "Source MME")
+      actor(x-dst-mme, 2.8, "Destination MME")
+
+      // Evidenziazione gruppi RAN (rosso) e core (blu), come nell'immagine
+      rect(
+        (x-src-enb - 1.7, y-top - 0.15),
+        (x-dst-enb + 1.7, y-top + box-h + 0.25),
+        stroke: red + 1.6pt,
+      )
+      rect(
+        (x-src-mme - 1.5, y-top - 0.15),
+        (x-dst-mme + 1.5, y-top + box-h + 0.25),
+        stroke: blue + 1.6pt,
+      )
+
+      let msg(y, from, to, label, dashed: false) = {
+        let s = if dashed { (paint: black, thickness: 1pt, dash: "dashed") } else { 1pt + black }
+        line((from, y), (to, y), stroke: s, mark: (end: ">", fill: black))
+        content((calc.min(from, to) + 0.1, y + 0.12), text(size: 8.4pt, label), anchor: "west")
+      }
+
+      // Banda 1: decisione iniziale (come nell'immagine)
+      rect((x-ue, 9.3), (x-src-mme + 0.4, 10.1), fill: band-fill, stroke: none)
+      content(
+        (5.0, 9.7),
+        text(size: 8.5pt, "1. Decision to trigger a relocation via S1"),
+        anchor: "west",
+      )
+
+      // Banda 2: setup risorse
+      rect((x-src-enb + 1.0, 6.6), (x-src-mme - 1.0, 7.4), fill: band-fill, stroke: none)
+      content((7.0, 7.0), text(size: 9pt, "5. Resource setup"))
+
+      // Messaggi della procedura S1
+      msg(8.75, x-src-enb, x-src-mme, "2. Handover Required")
+      msg(8.10, x-src-mme, x-dst-mme, "3. Forward Relocation Request")
+      msg(7.45, x-dst-mme, x-dst-enb, "4. Handover Request")
+      msg(6.35, x-dst-enb, x-dst-mme, "6. Handover Request ACK")
+      msg(5.70, x-dst-mme, x-src-mme, "7. Forward Relocation Response")
+      msg(5.05, x-src-mme, x-src-enb, "8. Handover command")
+      msg(4.40, x-src-enb, x-ue, "9. Handover command")
+      msg(3.75, x-src-enb, x-src-mme, "10. eNodeB Status Transfer")
+      msg(3.25, x-src-enb, x-dst-enb, "10b. Only for direct forwarding of data", dashed: true)
+      msg(2.80, x-dst-mme, x-dst-enb, "11. MME Status Transfer")
+      msg(2.25, x-ue, x-dst-enb, "12. Handover Confirm")
+      msg(1.70, x-dst-enb, x-dst-mme, "13. Handover Notify")
+      msg(1.20, x-dst-mme, x-src-mme, "14a. Forward Relocation Complete")
+      msg(0.85, x-src-mme, x-dst-mme, "14b. Forward Relocation Complete ACK")
+      msg(0.45, x-ue, x-dst-mme, "15. Tracking Area Update Request")
+    })
+  ],
+  caption: [Schema della procedura di handover LTE su `interfaccia S1`],
+)
+
+Il source MME (modulo che gestisce la mobilita) gestisce l'UE corrente. L'assunzione è che sia già stato deciso di passare la gestione dell' UE da `eNodeB target` a `eNodeB sorgente`:
+
+2. Da $mr("SRC")$ eNB a $mr("SRC")$ MME, viene fatta una `handover-request`. La base station che sta gestendo il dispositivo chiede al MME di rillocarlo.
+
++ $mr("SRC")$ MME inoltra la richiesta di handover all' $mb("DST")$ MME. La destinazione è l'MME che avrà in carico il traffico di controllo dell'UE al termine della procedura di handover.
+
++ $mb("DST")$ MME manda la `handover-request` al $mb("DST")$ eNB, ovvero al eNodeB che avrà in gestione il dispositivo al termine della richiesta.
+  #nota()[
+    Tutte le $4$ entità in gioco, sono ora avvisate della procedura di handover. Inoltre, si tiene traccia dei bearer attivi (con i QoS relativi). Essi andranno ricreati alla fine dell'handover.
+  ]
+
++ $mb("DST")$ eNB prepara le risorse a livello di resource control, per ospitare il dispositivo (UE)
+
++ Il $mb("DST")$ eNB invia una `handover-request ACK` a $mb("DST")$ MME per confermare l'allocazione delle risorse. Tale messagio viaggia sulla rete *back-bone* dell'operatore (non viaggia via radio ma tramite protocollo scp).
+
++ $mb("DST")$ MME sa che è tutto pronto. $mb("DST")$ MME manda una `forward- handover-repsonse` alla $mr("SRC")$ MME. Il comando di handover può essere inviato al dispositivo coinvolto, raggiunge
+
++ $mr("SRC")$ MME manda un messaggio a $mr("SRC")$ eNB. Il messagio è di `handover command`.
+
++ il comando di handover viene inviato dal $mr("SRC")$ eNB all'UE finale, si tratta di un messaggio di `handover command`.
+
++ Una volta che l'UE è stato avvisato, può iniziare il cambiamento di stato. $mr("SRC")$ MME viene notificato del cambiamento di stato `status transfer` da parte del $mr("SRC")$ eNB.
+
+  #nota()[
+    La freccia tratteggiata serve in caso di *losless handover*, in questo caso il $mr("SRC")$ eNB deve trasferire anche i pacchetti bufferizzati al $mb("DST")$ eNB per evitare perdite di pacchetti.
+  ]
+
++ Viene inviato un `MME status-transfer` da $mb("DST")$ MME a $mr("SRC")$ eNB.
+
++ l'`UE` invia una `handover confirm` a $mb("DST")$ eNB per confermare che è arrivato alla nuova base station.
+
++ Una volta fatto l'handover $mb("DST")$ eNB avvisa $mb("DST")$ MME dell'avvenuta procedura di un handover con un messaggio di `handover-notify`.
+
++ $mb("DST")$ MME invia al vecchio $mr("SRC")$ MME una conferma dell'avvenuta procedura di hadover. Inoltre, il $mr("SRC")$ MME invia un ACK.
+
++ L'`UE` chiede un `tracking-area-update`. Il messaggio va direttamente da `Target MME` (in realtà passa da $mr("SRC")$ eNB). Questo messaggio serve per *notificare alla rete core* che il dispositivo è ora sotto la *gestione di un nuovo MME*. In questo modo, la rete core sa che deve mandare i pacchetti al nuovo MME e non al vecchio.
+
++ Una volta che la procedura è completata $mr("SRC")$ MME (vecchio MME) manda un messaggio al $mr("SRC")$ eNB (stazione che aveva in gestione il disposistivo) per *rilasciare le risorse* `release-resource`
+
+#nota()[
+  Siccome la procedura è di handover è hard, L'UE *non* può tenere i _piedi in due scarpe_. La risposta dell'handover viene data sulla nuova destinazione.
 ]
 
 #attenzione()[
-  La parte di gestione e preparazione è tutta affidata alla rete e non all'UE.
+  La parte di gestione e preparazione alla procedura di handover è *affidata interamente alla rete* e non all'UE.
 
-  è importante sapere che quando la decisione di hadover viene presa il dispositivo UE viene contattato all'ultimo e inoltre viene contattato solo quando si è sicuri che quando la procedura di hadover inizia vada a buon fine e che le risorse siano già pronte in modo da non avere interruzioni del servizio (fino a quando non viene ricevuto `handover request ACK` la procedura di handover non parte)
-
-  La decisione dell'handover è presa dalla rete e non dal dispositivo
+  Prima di contattare il dispositivo UE per notificare l'handover, bisogna essere sicuri che, una volta iniziata la procedura di hadover, vada a buon fine. Inoltre, le risorse necessarie devono essere già pronte, in modo da non avere interruzioni del servizio (fino a quando non viene ricevuto un `handover-request-ACK`, la procedura di handover non parte)
 ]
 
 === Handover X2
