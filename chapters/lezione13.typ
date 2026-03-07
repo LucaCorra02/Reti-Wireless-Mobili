@@ -289,111 +289,211 @@ Procedura (supponendo di aver scelto di fare handover):
 
 = 5G
 
-Si tratta di usi della rete cellulare per calcoli molto complessi. L'idea è usare la rete internet per fa comunicare tanti dispositivi, in grad di eseguire calcoli e task complessi.
+La rete 5G è stata progettata per supportare una grande varietà di casi d'uso, con requisiti molto diversi tra di loro.
 
-I casi d'uso vengono incastrati in alcune specifiche. In particolare esistono 3 macro categorie:
-- emBB:
+I casi d'uso possono essere divisi in $3$ macro categorie, in basei ai requisiti: 
+- *eMBB* (enhanced Mobile Broadband)
   - Servizi orientati alle persone
-  - elevata banda
-  - straming HD
+  - Elevata Banda
+  - Ad esempio _streaming_
 
-- uRLLC:
-  - Servizi orientati alle industrie
-  - Bassisima latenza e affidabilità (sia perdità che realibity della rete $99.99%$)
-  - Controllo remoto e guida autonoma
+- *uRLLC* (ultra Reliable Low Latency Communication)
+  - Servizi orientati alle industire
+  - La banda occupata è meno importante, ma è fondamentale garantire una bassa latenza e un'elevata affidabilità
+  - Ad esempio controllo remoto e guida autonoma
 
-- mMTC:
+- *mMTC* (massive Machine Type Communication)
   - Alta densità di connessioni
   - Smart Cities / Smart Agricuture
 
-Principali direzioni di 5g:
-- Maggiore efficienza spettare QUAM più alte
+Le principali direzioni di sviluppo di 5G sono:
+- Maggiore efficianza spettrale e QUAM più alte
 - Riuso spaziale (celle più dense)
-- Softwarizzazione della rete. Abbiamo una convergenza tra ICT e IT.
+- *Softwarizzazione* della rete. Abbiamo una convergenza tra ICT e IT.
 
-Tecnologie principali di 5G:
-- Software difined Network SDN
-- Network Function Virtualizazion (NFV)
-- Centralieze-RAN (C-RAN) e Virtual-RAN
-- Edge computing
+== Software Defined Network (SDN)
 
-== Software Defined Networking
+Fino ad ora abbiamo visto che la rete è composta da dispositivi in cui la parte di controllo e la parte dati sono *accoppiate*. Ad esempio, sui dispositivi di rete (router, switch) è presente sia la parte di controllo (algoritmi di controllo, scambio dati con altri dispositivi), sia la parte di forwarding (scambio di pacchetti).
 
-Abbiamo una rete con le seguenti caratteristiche:
-- Sui dispostivi di rete c'è sia una parte di algoritmi di controllo (scambi dati con altri dispsotivi) sia le regole di forwarding (scambio di pacchetti)
+L'idea di *SDN* è separare queste due parti, *isolando la parte di controllo* (control plane) in un layer a parte. Tale layer prende il nome di *controller* e si occupa di gestire la rete. Esso ha una visione globale della rete e può prendere decisioni in maniera centralizzata.
 
-- Tradizionalmente le parti dati e controllo sono sullo stesso dispositivo. Attraverso SDN togliamo la logica di controllo dai dispostivi e la meddiamo nel layer SDN  (algoritmi di controllo). Ha visione globale della rete ed è centralizzato. Ogni controller può controllare diversi dispositivi.
+La parte di data plane rimane sui dispositivi di rete, ma è *controllata* dal controller (o da più controller)
 
-- C'è una unica network application per quello che è estenro alla rete. E uuna interfacia verso gli switch
+#figure(
+  align(center)[
+    #cetz.canvas(length: 0.7cm, {
+      import cetz.draw: *
+
+      // Coordinate layers
+      let y-app = 8.5
+      let y-control = 5.5
+      let y-data = 1.5
+
+      // Larghezze
+      let app-w = 5.0
+      let controller-w = 3.5
+
+      // App Layer
+      content((0, y-app + 1.2), text(size: 10pt, weight: "bold", "App Layer"), anchor: "west")
+      rect((-0.5, y-app - 0.5), (app-w, y-app + 0.5), stroke: black + 1pt, radius: 0.3, fill: white)
+      content((app-w / 2 - 0.25, y-app), text(size: 9pt, "Network application"))
+
+      // Linea separatrice tratteggiata sotto app layer
+      line((-1.5, y-app - 1.3), (9, y-app - 1.3), stroke: (paint: gray, thickness: 0.8pt, dash: "dotted"))
+
+      // Control Layer
+      content((-1.9, y-control + 1.2), text(size: 10pt, weight: "bold", "Control Layer"), anchor: "west")
+      
+      // SDN Controller
+      rect((-0.5, y-control - 0.5), (controller-w, y-control + 0.5), stroke: black + 1pt, radius: 0.3, fill: red.lighten(80%))
+      content((controller-w / 2 - 0.25, y-control), text(size: 9pt, "SDN Controller/s"))
+
+      // Icona controller piccola a destra
+      rect((controller-w + 0.5, y-control - 0.3), (controller-w + 1.3, y-control + 0.3), stroke: black + 1pt, radius: 0.2, fill: red.lighten(80%))
+
+      // Linea separatrice tratteggiata sotto control layer
+      line((-1.5, y-control - 1.3), (9, y-control - 1.3), stroke: (paint: gray, thickness: 0.8pt, dash: "dotted"))
+
+      // Data Layer
+      content((-2, y-data + 1.2), text(size: 10pt, weight: "bold", "Data Layer"), anchor: "west")
+
+      // Funzione per disegnare uno switch
+      let draw-switch(x, y, w: 1.0, h: 0.6) = {
+        // Corpo dello switch (prospettiva isometrica semplificata)
+        let pts = ((x - w/2, y), (x + w/2, y), (x + w/2 + 0.15, y + h), (x - w/2 + 0.15, y + h))
+        line(..pts, close: true, fill: blue.lighten(60%), stroke: black + 0.8pt)
+        // Linee interne per dettaglio
+        line((x - w/4, y), (x - w/4 + 0.15, y + h), stroke: black + 0.5pt)
+        line((x + w/4, y), (x + w/4 + 0.15, y + h), stroke: black + 0.5pt)
+      }
+
+      // Posizioni degli switch nel data layer
+      let switches = (
+        (0.5, y-data),
+        (2.2, y-data - 0.3),
+        (3.9, y-data + 0.2),
+        (2.2, y-data + 0.7),
+        (5.6, y-data - 0.1),
+        (5.6, y-data + 0.8),
+      )
+
+      // Disegna gli switch
+      for pos in switches {
+        draw-switch(pos.at(0), pos.at(1))
+      }
+
+      // Collegamenti tra switch (linee blu)
+      let connections = (
+        (switches.at(0), switches.at(1)),
+        (switches.at(0), switches.at(3)),
+        (switches.at(1), switches.at(2)),
+        (switches.at(1), switches.at(3)),
+        (switches.at(2), switches.at(4)),
+        (switches.at(2), switches.at(5)),
+        (switches.at(3), switches.at(4)),
+        (switches.at(4), switches.at(5)),
+      )
+
+      for conn in connections {
+        line(conn.at(0), conn.at(1), stroke: blue + 1pt)
+      }
+
+      // Frecce da App a Controller (nera continua)
+      line((app-w / 2 - 0.25, y-app - 0.5), (controller-w / 2 - 0.25, y-control + 0.5), 
+           stroke: black + 1pt, mark: (end: ">", fill: black))
+
+      // Frecce da Controller agli switch (rosse tratteggiate)
+      for pos in switches.slice(0, 4) {
+        line((controller-w / 2 - 0.25, y-control - 0.5), pos, 
+             stroke: (paint: red, thickness: 1pt, dash: "dashed"), mark: (end: ">", fill: red))
+      }
+
+      // Legenda in alto a destra
+      let legend-x = 6.5
+      let legend-y = y-app + 0.8
+      
+      content((legend-x, legend-y), text(size: 8pt, "Configurazione"), anchor: "west")
+      line((legend-x - 0.8, legend-y), (legend-x - 0.2, legend-y), stroke: black + 1pt)
+      
+      content((legend-x, legend-y - 0.5), text(size: 8pt, "Flusso Controllo"), anchor: "west")
+      line((legend-x - 0.8, legend-y - 0.5), (legend-x - 0.2, legend-y - 0.5), 
+           stroke: (paint: red, thickness: 1pt, dash: "dashed"))
+      
+      content((legend-x, legend-y - 1.0), text(size: 8pt, "Flusso Dati"), anchor: "west")
+      line((legend-x - 0.8, legend-y - 1.0), (legend-x - 0.2, legend-y - 1.0), stroke: blue + 1pt)
+
+      // Etichette laterali
+      content((7.2, y-app), text(size: 8pt, fill: gray, []), anchor: "west")
+      
+      content((5.5, y-control), text(size: 8pt, fill: red, [Algoritmi di\ controllo]), anchor: "west")
+    })
+  ],
+  caption: [Architettura Software Defined Networking (SDN)],
+)
 
 #nota()[
-  Tramite il software definiamo il corpontamento della rete.
+  Tramite il software (comportamento del controller) andiamo a definire il corpontamento della rete. 
 ]
 
-=== Evouzioni SDN
+=== Evouzioni di SDN
 
-Prima imamgine: Tradizionale, Control Plane e Data Plane assime. Possiamo configurare solo Control Plane
 
-Seconda immagine: SDN ha staccato e separato il control plane rendendolo programabile. Tuttavia le funzionalità del Data plane sono fissate
+SDN nel corso degli anni si è evoluta:
 
-Terza immagine: Data plane e control plane programmabile. Possiamo programmare e gestire il dataplane (creazione di header custom, attraverso parser ad hoc)
++ *Struttura tradizionale*: Control Plane e Data Plane sono situate nello stesso dispositivo.
+
++ *Prima separazione*: Il control plane è separat dal data plane, ma quest'ultimo è ancora fisso e non programmabile. Il controller può solo configurare il control plane.
+
++ *Seconda separazione*: Il control plane è completamente separato dal data plane e diventa programmabile. Il data plane può essere gestito in modo più flessibile e dinamico (creazione di header custom, attraverso parser ad hoc).
 
 #esempio()[
-  PISA: Possiamo programamre:
-  - Parser
-  - Mathc-action table
-  - Traffic manager fa operazioni base della rete
-  - programmare il deparser (serializza il pacchetto e lo manda in rete)
-  Potrebbe essere mappato un random forest per fare inferneza in line sul tipo di traffico direttmente nello switch (training fuori dallo switch e inferenza sullo switch)
+  Potrebbe essere creato un modello di machine learning per classificare il traffico in base al tipo. Tale modello potrebbe essere addestrato offline e successivamente inserito all'interno dello switch per fare inferenza in linea, modificando le decisioni di forwarding. 
 ]
 
-== SDN
+I $mg("vantaggi")$ offerti dalle SDN sono: 
+- Flessibilità nella gestione della rete
+- La visione centralizzata permette un ottimizzazione del routing
+- Tesitng e configurazione di nuovi protocolli di rete più semplice e veloce
 
-Visione centralizzata -> ottimizzazione dei routing
-
-Tesitng e configurazione di nuovi protocolli di rete più semplice e veloce
-
-Le sfide sono:
-- Controller punto debole dell'architettura
-- Bisogna essere in grado di reagire in maniera real-time
+Le $mr("sfide")$ sono:
+- *Controller punto debole dell'architettura*. In caso di guasto del controller, la rete potrebbe non funzionare correttamente. Inoltre, il controller *deve essere* progettato per essere *scalabile* e *resiliente*.
+- Reazione ai cambiamenti della rete in maniera real-time
 - Ottimizzazione del numero di regole:
   - Gestione ottimizzata delle tabelle di forwarding
-  - Gestione e faranzia dell'isolamento di reti. Il traffico di reti diverse deve essere separato (come se fossero delle VLAN diverse).
+  - Gestione e garanzia dell'*isolamento di reti*. Il traffico di reti diverse deve essere separato (come se fossero delle VLAN diverse).
+- *Sicurezza*: Prendere il possesso del controller permette di controllare la rete.
 
-- Sicurezza:
-  - Controllare il controller
+== Network Function Virtualization (NFV)
 
-== Network Function Virtualization
+Nelle reti viste fino ad adesso i vari moduli sono _predefiniti_, adempiono agli scopi per cui sono stati costruiti. Tuttavia, questo richiede di avere molti dispositivi hardware specifici (investimento non sempre ripagato).
 
-Abbiamo dei moduli standard che fanno quello per cui sono stati costruiti. Problematiche:
-- Hardware costoso e viene poco utilizzato
-- Hardware poco costoso ma rete molto utilizzata e non basta
+Ad oggi, esistono i Cloud as a Service. Basta pagare un abbonamento mensile per usufruire di certi servizi, non richiede hardware specifico. 
 
-Ora esistono i cloud as a service. Basta pagare l'abbonamento senza avere hardware specifico.
+L'idea è avere una separazione tra *hardware* (che esegue la funzionalità) ed il *software* (che implementa le funzionalità di rete). Dal dispositivo di rete viene estratto il firmware, andando a creare una funzionalità di rete virtualizzata. 
 
-Tuttavia l'architettura precedente con hardware non prevede:
-- *Scalabilità verticale*: rendiamo più potente un certo elemento
-- *Scalabilità orizzontale*: repliche dello stesso servizio su macchine diverse. Se il trafffico su una macchina è intesa possiamo far partire un'altra istanza e bilanciare il traffico (vale anche per la compressione).
+Tale funzionalità virtualizzate gireranno su *hardware standard*. In questo modo potremmo andare ad istanziare più servizi dedicati senza bisongo di avere dispositivi hardware ad hoc.
 
+L'adozione di funzioni di rete virtualizzate, permette di aumentare la *scalabilità* e la *flessibilità*:
 
-Abbiamo una radio. Non può essere virtualizzata
+- *Scalabilità verticale*: permette di aggiungere o rimuovere risorse fisiche o virtuali a una singola istanza VNF. Andiamo a potenziare un certo nodo
 
-L'idea è separare quello che è il software (o il frimware) di un certo dispsositivo e ne creiamo una funzionalità software. L'idea è che tale software girerà su un hardware. L'idea è che in questo modo possiamo andare istanziare più servizi dedicati senza avere più dispositivi hardware dedicati.
+- *Scalabilità orizzontale*: *repliche dello stesso servizio* su macchine diverse. Se il trafffico su una macchina è inteso, possiamo creare un'altra istanza dello stesso servizo, andando a bilanciare il traffico.
 
-In questo modo possiamo avere più *scalabilità* e *Flessibilità*.
+#nota()[
+  Il problema è che nella rete cellulare, *non* tutte le funzionalità di rete possono essere virtualizzate. Ad esempio, la parte radio (RAN) è molto difficile da virtualizzare, a causa dei requisiti di latenza e banda. Tuttavia, molte funzionalità del core network possono essere virtualizzate senza problemi.
+]
 
-Il problema è che nella rete cellulare non può essere tutti virtualizzato (troppo latenza di percorso se lo accentriamo in un unico datacenter).
+La rete cellulare adotta un *NFV ibrida*, in cui alcune funzionalità sono virtualizzate (ad esempio MME, S-GW) mentre altre sono ancora basate su hardware dedicato (ad esempio eNodeB).
 
-L'ida è che vogliamo realizzare un certo data-plane in modo virtualizzato. Vogliamo servire degli utenti distributi geograficamente.
+Un certo servizio di rete può essere realizzato tramite più funzioni di rete virtualizzate (VNF). Il *Service Function Chain* (SFC) è una catena di VNF che realizza un certo servizio di rete. Per gestire tali catene, è necessario un modulo di orchestrazione che si occupa di gestire le VNF e le loro interconnessioni. Tale modulo prende il nome di *NFV orchestrator*. Esso è responsabile di:
 
-L'idea è utilizzatr un *NFV orchestrator*. Esso deve:
-- Identificare quali template (servizi) servono alla comunicazione
+- Identificare quali template (VNF) servono alla comunicazione
 
-- Vengono presi i template e vengono istanziati secondo i requisiti imposti dal data-plane. Ogni istanza possiede i requisiti necessari
+- I template vengono istanziati in base ai requisiti imposti dal data-plane. _Ad esempio_, se un certo servizio richiede una latenza di $10 "ms"$, l'orchestratore deve istanziare il servizio su un nodo che garantisce quella latenza.
 
-- Inoltre vogliamo anche trovare il migliore placment per la funzionalità che vogliamo realizzare. Ovvero dove e come istanziare i vari servizi. Ci serve sapere lo *stato fisico delle risorse* distribuite geograficamente sulla rete.
+- Identificare il *miglior placement* per le funzionalità che vogliamo realizzare. Ovvero dove e come istanziare i vari servizi. L'orchestratore deve essere a conoscenza dello *stato fisico delle risorse* distribuite geograficamente sulla rete.
   #nota()[
-    I vari servizi possono essere condivise tra più catene o essere addirittura istanziate sullo stesso nodo.
+    I vari servizi possono essere condivisi tra più catente o essere addirittura istanziati sullo stesso nodo.
   ]
 
 === NFV Architettura
