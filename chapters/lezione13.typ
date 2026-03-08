@@ -8,22 +8,22 @@
 
 Non esiste un nodo centralizzato tra eNodeB. Ogni UE è collegato a una solo base station per volta. In base al bearer in cui l'UE si trova può usare tipi di handover diversi:
 
-- *Seamless handover*: ammette la perdità di traffico ma garantisce una bassa latenza. Usato ad esempio per traffico _voip_. Caratteristiche:
+- *Seamless handover*: ammette la perdita di traffico ma garantisce una bassa latenza. Usato ad esempio per traffico _voip_. Caratteristiche:
   - Minore latenza
   - Ammette ritrasmissioni
 
-- *Lossless handover*: Garantisce che i pacchetti *non* vengano persi, se viene perso un messaggio *deve essere ritrasmesso*. A livello di handover non possiamo fare riferimento a nessun protocollo di radio link controller (livello 2). La perdità verrà gestita a livello $4$. Un esempio di traffico è _HTTP/FTP_
+- *Lossless handover*: Garantisce che i pacchetti *non* vengano persi, se viene perso un messaggio *deve essere ritrasmesso*. A livello di handover non possiamo fare riferimento a nessun protocollo di radio link controller (livello 2). La perdita verrà gestita a livello $4$. Un esempio di traffico è _HTTP/FTP_
 
 === LTE lossless handover
 
-Supponiamo che un UE, a cui sta venendo inviato un *flusso di download* (da parte del S-GW), si sposti da un'eNodeB a un'altro. Il Service Gateway continuerà a mandare pacchetti alla vecchia posizione del dispostivo.
+Supponiamo che un UE, a cui sta venendo inviato un *flusso di download* (da parte del S-GW), si sposti da un'eNodeB a un'altra. Il Service Gateway continuerà a mandare pacchetti alla vecchia posizione del dispositivo.
 
 Tramite l'`interfaccia X2` viene tenuto un buffer dentro la base station precedente ($"eNB" 1$), in modo da non perdere i pacchetti in download.
 
-Una volta che l'handover è completato, la base station precedente manda i pacchetti bufferizzati alla nuova base station $"eNB" 2$. I messaggi verranno mandati successivamente al dispositivo. In questo modo *non c'è perdità* di pacchetti, il download può continuare senza interruzioni.
+Una volta che l'handover è completato, la base station precedente manda i pacchetti bufferizzati alla nuova base station $"eNB" 2$. I messaggi verranno mandati successivamente al dispositivo. In questo modo *non c'è perdita* di pacchetti, il download può continuare senza interruzioni.
 
 #nota()[
-  L'handover viene effettuato tramite un *cordinamento tra le due base station (partenza-arrivo)*, sfruttando il collegamento tra di esse.
+  L'handover viene effettuato tramite un *coordinamento tra le due base station (partenza-arrivo)*, sfruttando il collegamento tra di esse.
 ]
 
 === Handover S1 vs Handover X2
@@ -113,9 +113,9 @@ Prendiamo in considerazione il sequence diagram di una procedura di handover tra
   caption: [Schema della procedura di handover LTE su `interfaccia S1`],
 )
 
-Il source MME (modulo che gestisce la mobilita) gestisce l'UE corrente. L'assunzione è che sia già stato deciso di passare la gestione dell' UE da `eNodeB target` a `eNodeB sorgente`:
+Il source MME (modulo che gestisce la mobilità) gestisce l'UE corrente. L'assunzione è che sia già stato deciso di passare la gestione dell'UE da `eNodeB sorgente` a `eNodeB target`:
 
-2. Da $mr("SRC")$ eNB a $mr("SRC")$ MME, viene fatta una `handover-request`. La base station che sta gestendo il dispositivo chiede al MME di rillocarlo.
+2. Da $mr("SRC")$ eNB a $mr("SRC")$ MME, viene fatta una `handover-request`. La base station che sta gestendo il dispositivo chiede all'MME di riallocarlo.
 
 + $mr("SRC")$ MME inoltra la richiesta di handover all' $mb("DST")$ MME. La destinazione è l'MME che avrà in carico il traffico di controllo dell'UE al termine della procedura di handover.
 
@@ -126,13 +126,13 @@ Il source MME (modulo che gestisce la mobilita) gestisce l'UE corrente. L'assunz
 
 + $mb("DST")$ eNB prepara le risorse a livello di resource control, per ospitare il dispositivo (UE)
 
-+ Il $mb("DST")$ eNB invia una `handover-request ACK` a $mb("DST")$ MME per confermare l'allocazione delle risorse. Tale messagio viaggia sulla rete *back-bone* dell'operatore (non viaggia via radio ma tramite protocollo scp).
++ $mb("DST")$ eNB invia una `handover-request ACK` a $mb("DST")$ MME per confermare l'allocazione delle risorse. Tale messaggio viaggia sulla rete *back-bone* dell'operatore (non viaggia via radio ma tramite protocollo scp).
 
-+ $mb("DST")$ MME sa che è tutto pronto. $mb("DST")$ MME manda una `forward- handover-repsonse` alla $mr("SRC")$ MME. Il comando di handover può essere ora inviato al dispositivo coinvolto.
++ $mb("DST")$ MME sa che è tutto pronto. $mb("DST")$ MME manda una `forward-handover-response` al $mr("SRC")$ MME. Il comando di handover può essere ora inviato al dispositivo coinvolto.
 
-+ $mr("SRC")$ MME manda un messaggio a $mr("SRC")$ eNB. Il messagio è di `handover command`.
++ $mr("SRC")$ MME manda un messaggio a $mr("SRC")$ eNB. Il messaggio è di `handover command`.
 
-+ il comando di `handover command` viene inoltrato da $mr("SRC")$ eNB all'UE finale.
++ Il comando di handover viene inoltrato da $mr("SRC")$ eNB all'UE finale.
 
 + Una volta che l'UE è stato avvisato, può iniziare il cambiamento di stato. $mr("SRC")$ MME viene notificato del cambiamento di stato `status transfer` da parte del $mr("SRC")$ eNB.
 
@@ -142,18 +142,18 @@ Il source MME (modulo che gestisce la mobilita) gestisce l'UE corrente. L'assunz
 
 + Viene inviato un `MME status-transfer` da $mb("DST")$ MME a $mr("SRC")$ eNB.
 
-+ l'`UE` invia una `handover confirm` a $mb("DST")$ eNB per confermare che è arrivato alla nuova base station.
++ L'`UE` invia una `handover confirm` a $mb("DST")$ eNB per confermare che è arrivato alla nuova base station.
 
-+ Una volta fatto l'handover $mb("DST")$ eNB avvisa $mb("DST")$ MME dell'avvenuta procedura di un handover con un messaggio di `handover-notify`.
++ Una volta fatto l'handover $mb("DST")$ eNB avvisa $mb("DST")$ MME dell'avvenuto handover con un messaggio di `handover-notify`.
 
-+ $mb("DST")$ MME invia al vecchio $mr("SRC")$ MME una conferma dell'avvenuta procedura di hadover. L' $mr("SRC")$ MME risponderà con un messaggio di ACK.
++ $mb("DST")$ MME invia al vecchio $mr("SRC")$ MME una conferma dell'avvenuta procedura di handover. Il $mr("SRC")$ MME risponderà con un messaggio di ACK.
 
 + L'`UE` chiede un `tracking-area-update`. Il messaggio è diretto all'`DST MME` (in realtà passa da $mr("SRC")$ eNB). Questo messaggio serve per *notificare alla rete core* che il dispositivo è ora sotto la *gestione di un nuovo MME*. In questo modo, la rete core, sa che deve mandare i pacchetti al nuovo MME e non al vecchio.
 
-+ Una volta che la procedura è completata $mr("SRC")$ MME (vecchio MME) manda un messaggio al $mr("SRC")$ eNB (stazione che aveva in gestione il disposistivo) per *rilasciare le risorse* `release-resource`
++ Una volta che la procedura è completata $mr("SRC")$ MME (vecchio MME) manda un messaggio al $mr("SRC")$ eNB (stazione che aveva in gestione il dispositivo) per *rilasciare le risorse* `release-resource`
 
 #nota()[
-  Siccome la procedura di handover è hard, L'UE *non* può tenere i _piedi in due scarpe_. La risposta dell'handover viene data sulla nuova destinazione.
+  Siccome la procedura di handover è hard, l'UE *non* può mantenere una connessione simultanea con entrambe le base station. La risposta dell'handover viene data sulla nuova destinazione.
 ]
 
 #attenzione()[
@@ -164,7 +164,7 @@ Il source MME (modulo che gestisce la mobilita) gestisce l'UE corrente. L'assunz
 
 === Handover tramite X2
 
-La procedura di handover, in questo caso, viene risolta tra le due base station e solo alla fine viene notificata alla rete core. 
+La procedura di handover, in questo caso, viene gestita tra le due base station e solo alla fine viene notificata alla rete core. 
 
 #attenzione()[
   Condizioni *necessarie* per usare questo tipo di handover:
@@ -267,7 +267,7 @@ La procedura di handover, in questo caso, viene risolta tra le due base station 
 Procedura (supponendo di aver scelto di fare handover):
 + L'$mb("SRC")$ `eNB` dialoga direttamente con la futura $mr("DST")$ `eNB`. *Non viene contatta la rete core*. Una volta che le due base station si sono accordate, la procedura di handover può partire.
 
-4. L'$mb("SRC")$ `eNB` iniva una `handover request` a $mr("DST")$ `eNB` per chiedere di ospitare il dispositivo. Il messaggio contiene anche i bearer attivi e i relativi QoS.
+4. L'$mb("SRC")$ `eNB` invia una `handover request` a $mr("DST")$ `eNB` per chiedere di ospitare il dispositivo. Il messaggio contiene anche i bearer attivi e i relativi QoS.
 
 6. Una volta che $mr("DST")$ `eNB` ha allocato le risorse necessarie per ospitare il dispositivo, invia una `handover request ACK` a $mb("SRC")$ `eNB` per confermare che è tutto pronto. A questo punto, la procedura di handover può essere notificata al dispositivo coinvolto.
 
@@ -291,23 +291,23 @@ Procedura (supponendo di aver scelto di fare handover):
 
 La rete 5G è stata progettata per supportare una grande varietà di casi d'uso, con requisiti molto diversi tra di loro.
 
-I casi d'uso possono essere divisi in $3$ macro categorie, in basei ai requisiti: 
+I casi d'uso possono essere divisi in $3$ macro categorie, in base ai requisiti: 
 - *eMBB* (enhanced Mobile Broadband)
   - Servizi orientati alle persone
   - Elevata Banda
   - Ad esempio _streaming_
 
 - *uRLLC* (ultra Reliable Low Latency Communication)
-  - Servizi orientati alle industire
+  - Servizi orientati alle industrie
   - La banda occupata è meno importante, ma è fondamentale garantire una bassa latenza e un'elevata affidabilità
-  - Ad esempio controllo remoto e guida autonoma
+  - Ad esempio il controllo remoto e la guida autonoma
 
 - *mMTC* (massive Machine Type Communication)
   - Alta densità di connessioni
-  - Smart Cities / Smart Agricuture
+  - Smart Cities / Smart Agriculture
 
 Le principali direzioni di sviluppo di 5G sono:
-- Maggiore efficianza spettrale e QUAM più alte
+- Maggiore efficienza spettrale e QUAM più alte
 - Riuso spaziale (celle più dense)
 - *Softwarizzazione* della rete. Abbiamo una convergenza tra ICT e IT.
 
@@ -432,17 +432,17 @@ La parte di data plane rimane sui dispositivi di rete, ma è *controllata* dal c
 )
 
 #nota()[
-  Tramite il software (comportamento del controller) andiamo a definire il corpontamento della rete. 
+  Tramite il software (comportamento del controller) andiamo a definire il comportamento della rete. 
 ]
 
-=== Evouzioni di SDN
+=== Evoluzioni di SDN
 
 
 SDN nel corso degli anni si è evoluta:
 
 + *Struttura tradizionale*: Control Plane e Data Plane sono situate nello stesso dispositivo.
 
-+ *Prima separazione*: Il control plane è separat dal data plane, ma quest'ultimo è ancora fisso e non programmabile. Il controller può solo configurare il control plane.
++ *Prima separazione*: Il control plane è separato dal data plane, ma quest'ultimo è ancora fisso e non programmabile. Il controller può solo configurare il control plane.
 
 + *Seconda separazione*: Il control plane è completamente separato dal data plane e diventa programmabile. Il data plane può essere gestito in modo più flessibile e dinamico (creazione di header custom, attraverso parser ad hoc).
 
@@ -452,8 +452,8 @@ SDN nel corso degli anni si è evoluta:
 
 I $mg("vantaggi")$ offerti dalle SDN sono: 
 - Flessibilità nella gestione della rete
-- La visione centralizzata permette un ottimizzazione del routing
-- Tesitng e configurazione di nuovi protocolli di rete più semplice e veloce
+- La visione centralizzata permette un'ottimizzazione del routing
+- Testing e configurazione di nuovi protocolli di rete più semplice e veloce
 
 Le $mr("sfide")$ sono:
 - *Controller punto debole dell'architettura*. In caso di guasto del controller, la rete potrebbe non funzionare correttamente. Inoltre, il controller *deve essere* progettato per essere *scalabile* e *resiliente*.
@@ -471,13 +471,13 @@ Ad oggi, esistono i Cloud as a Service. Basta pagare un abbonamento mensile per 
 
 L'idea è avere una separazione tra *hardware* (che esegue la funzionalità) ed il *software* (che implementa le funzionalità di rete). Dal dispositivo di rete viene estratto il firmware, andando a creare una funzionalità di rete virtualizzata. 
 
-Tali funzionalità virtualizzate gireranno su *hardware standard*. In questo modo potremmo andare ad istanziare più servizi dedicati senza bisongo di avere dispositivi hardware ad hoc.
+Tali funzionalità virtualizzate gireranno su *hardware standard*. In questo modo potremmo andare ad istanziare più servizi dedicati senza bisogno di avere dispositivi hardware ad hoc.
 
 L'adozione di funzioni di rete virtualizzate, permette di aumentare la *scalabilità* e la *flessibilità*:
 
 - *Scalabilità verticale*: permette di aggiungere o rimuovere risorse fisiche o virtuali a una singola istanza VNF. Andiamo a potenziare un certo nodo
 
-- *Scalabilità orizzontale*: *repliche dello stesso servizio* su macchine diverse. Se il trafffico su una macchina è inteso, possiamo creare un'altra istanza dello stesso servizo, andando a bilanciare il traffico.
+- *Scalabilità orizzontale*: *repliche dello stesso servizio* su macchine diverse. Se il traffico su una macchina è intenso, possiamo creare un'altra istanza dello stesso servizio, andando a bilanciare il traffico.
 
 #nota()[
   Il problema è che nella rete cellulare *non* tutte le funzionalità di rete possono essere virtualizzate. Ad esempio, la parte radio (RAN) è molto difficile da virtualizzare, a causa dei requisiti di latenza e banda. Tuttavia, molte funzionalità della rete core possono essere virtualizzate senza problemi.
@@ -493,7 +493,7 @@ Un certo servizio di rete può essere realizzato tramite più funzioni di rete v
 
 - Identificare il *miglior placement* per le funzionalità che vogliamo realizzare. Ovvero dove e come istanziare i vari servizi. L'orchestratore deve essere a conoscenza dello *stato fisico delle risorse* distribuite geograficamente sulla rete.
   #nota()[
-    I vari servizi possono essere condivisi tra più catente o essere addirittura istanziati sullo stesso nodo.
+    I vari servizi possono essere condivisi tra più catene o essere addirittura istanziati sullo stesso nodo.
   ]
 
 === NFV Architettura
@@ -627,14 +627,14 @@ L'architettura NFV ETSI è composta da $3$ strati principali:
 Caratteristiche:
 - *Flessibilità massima*: le varie funzionalità virtuali possono essere mappate dove vogliamo (ovviamente l'hardware deve essere disponibile)
 
-- *Indipendeza* hardware software
+- *Indipendenza* hardware software
 
 - La prototipazione di nuovi servizi è molto più veloce. 
 
-- *Uso delle risorse condiviso e ottimzzato*:
+- *Uso delle risorse condiviso e ottimizzato*:
   - *Multiprovider*: a seconda della necessità dell'applicazione, uso servizi di rete che offrono caratteristiche diverse
 
-  - *Multi-tenat*: ad ogni utente della rete devono essere assegnate le risorse richieste. Gli utenti non sanno con chi stanno condividendo le risorse
+  - *Multi-tenant*: ad ogni utente della rete devono essere assegnate le risorse richieste. Gli utenti non sanno con chi stanno condividendo le risorse
 
 === Cloud + NFV + SDN
 
@@ -644,7 +644,7 @@ La rete 5G nasce con l'idea di situarsi nell'intersezione tra Cloud, NFV e SDN.
 
 *Cloud + NFV*: I servi di rete sono realizzati tramite funzioni di rete virtualizzate geograficamente sparse. Estrema flessibilità e scalabilità.
 
-*Cloud + NFV + SDN*: 5G sfrutta *SDN* per *collegare tra di loro le varie funzioni di rete virtualizzate*, garantendo i requisiti desiderati (ad esempio latenza, banda ecc).
+*Cloud + NFV + SDN*: 5G sfrutta *SDN* per *collegare tra di loro le varie funzioni di rete virtualizzate*, garantendo i requisiti desiderati (ad esempio latenza, banda, ecc.).
 
 Ogni network function e ogni link presentano degli attributi ben definiti (banda, latenza, tempi computazionali). L'*orchestratore*, in base a questi attributi, decide dove allocare le varie funzioni di rete virtualizzate. Inoltre, grazie a SDN, istruisce i dispositivi di rete su come instradare il traffico tra le varie funzioni di rete virtualizzate, garantendo i requisiti desiderati.
 
