@@ -471,7 +471,7 @@ Ad oggi, esistono i Cloud as a Service. Basta pagare un abbonamento mensile per 
 
 L'idea è avere una separazione tra *hardware* (che esegue la funzionalità) ed il *software* (che implementa le funzionalità di rete). Dal dispositivo di rete viene estratto il firmware, andando a creare una funzionalità di rete virtualizzata. 
 
-Tale funzionalità virtualizzate gireranno su *hardware standard*. In questo modo potremmo andare ad istanziare più servizi dedicati senza bisongo di avere dispositivi hardware ad hoc.
+Tali funzionalità virtualizzate gireranno su *hardware standard*. In questo modo potremmo andare ad istanziare più servizi dedicati senza bisongo di avere dispositivi hardware ad hoc.
 
 L'adozione di funzioni di rete virtualizzate, permette di aumentare la *scalabilità* e la *flessibilità*:
 
@@ -480,12 +480,12 @@ L'adozione di funzioni di rete virtualizzate, permette di aumentare la *scalabil
 - *Scalabilità orizzontale*: *repliche dello stesso servizio* su macchine diverse. Se il trafffico su una macchina è inteso, possiamo creare un'altra istanza dello stesso servizo, andando a bilanciare il traffico.
 
 #nota()[
-  Il problema è che nella rete cellulare, *non* tutte le funzionalità di rete possono essere virtualizzate. Ad esempio, la parte radio (RAN) è molto difficile da virtualizzare, a causa dei requisiti di latenza e banda. Tuttavia, molte funzionalità del core network possono essere virtualizzate senza problemi.
+  Il problema è che nella rete cellulare *non* tutte le funzionalità di rete possono essere virtualizzate. Ad esempio, la parte radio (RAN) è molto difficile da virtualizzare, a causa dei requisiti di latenza e banda. Tuttavia, molte funzionalità della rete core possono essere virtualizzate senza problemi.
 ]
 
 La rete cellulare adotta un *NFV ibrida*, in cui alcune funzionalità sono virtualizzate (ad esempio MME, S-GW) mentre altre sono ancora basate su hardware dedicato (ad esempio eNodeB).
 
-Un certo servizio di rete può essere realizzato tramite più funzioni di rete virtualizzate (VNF). Il *Service Function Chain* (SFC) è una catena di VNF che realizza un certo servizio di rete. Per gestire tali catene, è necessario un modulo di orchestrazione che si occupa di gestire le VNF e le loro interconnessioni. Tale modulo prende il nome di *NFV orchestrator*. Esso è responsabile di:
+Un certo servizio di rete può essere realizzato tramite più funzioni di rete virtualizzate (VNF). La *Service Function Chain* (SFC) è una catena di VNF che realizza un certo servizio di rete. Per gestire tali catene, è necessario un modulo di orchestrazione che si occupa di gestire le VNF e le loro interconnessioni. Tale modulo prende il nome di *NFV orchestrator*. Esso è responsabile di:
 
 - Identificare quali template (VNF) servono alla comunicazione
 
@@ -498,43 +498,157 @@ Un certo servizio di rete può essere realizzato tramite più funzioni di rete v
 
 === NFV Architettura
 
-- Network Function Virsualitazion Infrastructure:
-  - Risorse Hardware
-  - Risorse virtualizzate. Rende le risorse hardware virtualizzate (ad esempio possibilità di usare GPU ecc).
+#figure(
+  align(center)[
+    #cetz.canvas(length: 0.8cm, {
+      import cetz.draw: *
 
-- Vitrual Network Functiom
-  - EMS: Moduli che servono per monitorare lo stato delle macchhine virtuali. Creare diverse istanze, eliminarle ecc. Serve per gestire le Virtual network function
+      // Colori
+      let color-bss = rgb("#87CEEB")
+      let color-mano = rgb("#FFB6C1")
+      let color-vnf = rgb("#98D8C8")
+      let color-infra = rgb("#F7DC6F")
+      let color-virtual = rgb("#AED6F1")
+      let color-hardware = rgb("#D5DBDB")
+
+      // BSS/OSS in alto
+      rect((5, 11), (11, 12.2), stroke: black + 1pt, fill: color-bss, radius: 0.2)
+      content((8, 11.95), text(size: 8pt, weight: "bold", [Business Support System (BSS)]))
+      content((8, 11.4), text(size: 9pt, [Operational Support System (OSS)]))
 
 
-- NFV MANO. Fa sia gestione che orchestrazione. Contiene:
-  - Virtual Infrastracture manager: Conosce lo stato dei link, lo stato delle risore, quali sono disponibili ecc..
+      // NFV MANO (destra)
+      rect((12, 3), (16.5, 10.5), stroke: red + 1.5pt, fill: color-mano.lighten(60%), radius: 0.2)
+      content((14.25, 10.1), text(size: 9pt, weight: "bold", "NFV MANO"), anchor: "center")
 
-  - Virtual Manger, gestisce le virtual networl function
+      // Orchestrator
+      rect((12.5, 8.8), (16, 9.8), stroke: black + 1pt, fill: color-mano, radius: 0.15)
+      content((14.25, 9.3), text(size: 7.5pt, weight: "bold", "Orchestrator"))
 
-  - Al di sopra abbiamo l'orchestratore. Ha collegamente sulle interfaccia di sotto:
-  - VIM: Sa quali sono le risorse disponibili
-  - VNFM: sa quali sono le istanze adattive
+      // VNF Manager (VNFM)
+      rect((12.5, 6.5), (16, 8.3), stroke: black + 1pt, fill: color-vnf.lighten(40%), radius: 0.15)
+      content((14.25, 7.85), text(size: 7.5pt, weight: "bold", "VNF Manager"))
+      content((14.25, 7.55), text(size: 6.5pt, "(VNFM)"))
+      content((14.25, 7.1), text(size: 6pt, [VNF1]))
+      content((14.25, 6.8), text(size: 6pt, [VNF2]))
 
-  Esso può prendere decisioni in base al servizion, NFV, infrastruttura, ecc..
+      // Virtual Infrastructure Manager (VIM)
+      rect((12.5, 3.5), (16, 6), stroke: black + 1pt, fill: color-infra.lighten(30%), radius: 0.15)
+      content((14.25, 5.5), text(size: 7.5pt, weight: "bold", [Virtual]))
+      content((14.25, 5.2), text(size: 7.5pt, weight: "bold", [Infrastructure]))
+      content((14.25, 4.9), text(size: 7.5pt, weight: "bold", [Manager]))
+      content((14.25, 4.5), text(size: 6.5pt, "(VIM)"))
+
+      // Virtual Network Functions (VNFs) - sinistra in alto
+      rect((0, 7.5), (10.5, 10.5), stroke: blue + 1.5pt, fill: white, radius: 0.2)
+      content((5.25, 10.1), text(size: 8pt, weight: "bold", [Virtual Network Functions (VNFs)]))
+
+      // EMS boxes dentro VNFs
+      let ems-y = 9.3
+      for i in range(3) {
+        let x-start = 0.8 + i * 3.2
+        rect((x-start, ems-y - 0.7), (x-start + 2.8, ems-y + 0.3), stroke: black + 0.8pt, fill: color-vnf, radius: 0.1)
+        content((x-start + 1.4, ems-y + 0.05), text(size: 7pt, weight: "bold", [EMS #(i + 1)]))
+        content((x-start + 1.4, ems-y - 0.35), text(size: 6pt, [VNF #(i + 1)]))
+      }
+
+      // Network Function Virtualization Infrastructure
+      rect((0, 0.5), (10.5, 7), stroke: green + 1.5pt, fill: white, radius: 0.2)
+      content((5.25, 6.6), text(size: 8pt, weight: "bold", [Network Function Virtualization Infrastructure]))
+
+      // Risorse Virtualizzate
+      rect((0.5, 4.8), (10, 6.2), stroke: black + 1pt, fill: color-virtual, radius: 0.15)
+      content((5.25, 5.9), text(size: 7.5pt, weight: "bold", [Risorse Virtualizzate]))
+      
+      let virt-items = ([Virtual\ CPUs], [Virtual\ Storage], [Virtual\ Network])
+      for (i, item) in virt-items.enumerate() {
+        let x-pos = 1.5 + i * 3.0
+        rect((x-pos - 0.7, 5.0), (x-pos + 0.7, 5.6), stroke: black + 0.6pt, fill: white, radius: 0.1)
+        content((x-pos, 5.3), text(size: 6pt, item), anchor: "center")
+      }
+
+      // Strato Virtualizzazione
+      rect((0.5, 3.9), (10, 4.6), stroke: black + 1pt, fill: color-infra, radius: 0.15)
+      content((5.25, 4.25), text(size: 7pt, weight: "bold", [Strato Virtualizzazione]))
+
+      // Risorse Hardware
+      rect((0.5, 1.0), (10, 3.6), stroke: black + 1pt, fill: color-hardware, radius: 0.15)
+      content((5.25, 3.3), text(size: 7.5pt, weight: "bold", [Risorse Hardware]))
+      
+      let hw-items = ([CPUs], [Storage], [Network])
+      for (i, item) in hw-items.enumerate() {
+        let x-pos = 1.5 + i * 3.0
+        rect((x-pos - 0.7, 1.4), (x-pos + 0.7, 2.8), stroke: black + 0.6pt, fill: white, radius: 0.1)
+        content((x-pos, 2.1), text(size: 8pt, item), anchor: "center")
+        // Icone stilizzate
+      }
+
+      // Connessioni e frecce
+      // BSS to Orchestrator
+      line((11, 11.6), (12.5, 9.3), stroke: black + 0.8pt, mark: (end: ">", fill: black))
+
+      // Orchestrator to VNFM
+      line((14.25, 8.8), (14.25, 8.3), stroke: black + 0.8pt, mark: (end: ">", fill: black))
+
+      // Orchestrator to VIM
+      line((14.25, 8.8), (14.25, 6.0), stroke: (paint: black, dash: "dashed", thickness: 0.8pt), mark: (end: ">", fill: black))
+
+      // VNFM to VNFs
+      line((12.5, 7.4), (10.5, 9.0), stroke: black + 0.8pt, mark: (end: ">", fill: black))
+
+      // VIM to Infrastructure
+      line((12.5, 4.8), (10.5, 5.5), stroke: black + 0.8pt, mark: (end: ">", fill: black))
+
+      // VNFs to Infrastructure
+      line((5.25, 7.5), (5.25, 6.2), stroke: (paint: blue, dash: "dotted", thickness: 0.8pt), mark: (end: ">", fill: blue))
+    })
+  ],
+  caption: [Architettura NFV ETSI],
+)
+
+L'architettura NFV ETSI è composta da $3$ strati principali: 
+- *Network Function Virtualization Infrastructure*. A sua volta comprende:
+  - _Risorse Hardware_: Cpu, Storage, Network
+  - _Risorse virtualizzate_: Rene le risorse hardware virtualizzate (ad esempio possibilità di usare GPU ecc).
+
+- *Virtual Network Function (VNFs)*
+  - _EMS_: Serve per gestire le Virtual Network Function. Ad esempi: crea diverse istanze, le ellimina ecc
+
+
+- *NFV MANO*: Si tratta di un modulo che esegue *orchestrazione* e controllo, a sua volta contiene:
+  - _Virtual Infrastracture manager (VIM)_: Conosce lo stato dei link, lo stato delle risore ecc $dots$
+
+  - _Virtual Manager (VNFM)_: gestisce le virtual network function
+
+  - _Orchestratore_: gestisce le istanze, decide dove allocare le funzionalità, ecc. Ha collegamenti con le interfacce sottostanti per prendere decisioni in base allo stato della rete:
+    - VIM: Sa quali sono le risorse disponibili
+    - VNFM: sa quali sono le istanze attive
 
 Caratteristiche:
-- Flessibilità massima: le varie funzionalità possono essere mappate dove vogliamo (ovviamente l'hardware deve essere disponibile)
-- Indipendeza hardware software
-- Prototipizzzare servizi
-- Uso delle risorse condiviso ottimzzato:
-  - Multiprovider: a secondo della necessità uso computazioni offerte diverse
-  - Multitenet: offro un infrastruttura e chiedo di usare le risorse, ad ogni utente deve essere assegnato le risorse richieste. Gli utenti non sanno con chi stanno condividendo le risorse
-  - SOluzione inride multi tenant-,ulti provider, tutti condividono con tutti (molti a molti)
+- *Flessibilità massima*: le varie funzionalità virtuali possono essere mappate dove vogliamo (ovviamente l'hardware deve essere disponibile)
 
-=== Cloud
+- *Indipendeza* hardware software
 
-Ogni network function e ogni link ha degli attributi. Possediamo la :
-- Banda
-- Latenza
-- Tempi computazionali
+- La prototipazione di nuovi servizi è molto più veloce. 
 
-Se ad esempio la funzionalità $5$ richiede $10"ms"$ verranno dati sufficienti risorse hardware per garantire quei tempi.
+- *Uso delle risorse condiviso e ottimzzato*:
+  - *Multiprovider*: a seconda della necessità dell'applicazione, uso servizi di rete che offrono caratteristiche diverse
 
-Le Network function possono essere allocate un pò dove vogiamo. Per collegarle tra di loro usiamo SDN. L'orchestratore deve rispettare un certo flusso e istruisce alcuni degli switch w router SDN per mettere in collegamente le varie network function. Garantendo le latenze desiderate.
+  - *Multi-tenat*: ad ogni utente della rete devono essere assegnate le risorse richieste. Gli utenti non sanno con chi stanno condividendo le risorse
 
-Unendo Cloud + NFV + SDN ho la flessibilità totale della rete.
+=== Cloud + NFV + SDN
+
+La rete 5G nasce con l'idea di situarsi nell'intersezione tra Cloud, NFV e SDN. 
+
+*Cloud*: 5G sfrutta il cloud per offrire servizi scalabili e flessibili. 
+
+*Cloud + NFV*: I servi di rete sono realizzati tramite funzioni di rete virtualizzate geograficamente sparse. Estrema flessibilità e scalabilità.
+
+*Cloud + NFV + SDN*: 5G sfrutta *SDN* per *collegare tra di loro le varie funzioni di rete virtualizzate*, garantendo i requisiti desiderati (ad esempio latenza, banda ecc).
+
+Ogni network function e ogni link presentano degli attributi ben definiti (banda, latenza, tempi computazionali). L'*orchestratore*, in base a questi attributi, decide dove allocare le varie funzioni di rete virtualizzate. Inoltre, grazie a SDN, istruisce i dispositivi di rete su come instradare il traffico tra le varie funzioni di rete virtualizzate, garantendo i requisiti desiderati.
+
+#esempio()[
+  Se una certa funzionalità richiede una latenza di $10 "ms"$, l'orchestratore deve allocare tale funzionalità su un nodo che garantisce quella latenza.
+]
+
