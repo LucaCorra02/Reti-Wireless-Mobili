@@ -201,11 +201,11 @@ L'ESTI ha proposto uno standard per l'architettura MEC
 
 == 3GPP
 
-Se in LTE la differenzazzione del traffico in base ai QoS avveniva tramite i bearer, in 5G vengono introdotti i *network slicing*
+Se in LTE la differenzazzione del traffico in base ai QoS avveniva tramite i bearer, in 5G vengono introdotti i *network slicing*.
 
 *Network slicing*: Si tratta di un concetto che trasforma la rete da un paradigma statico ad un *paradigma dinamico* dove le reti logiche vengono create on demand con risorse e topologie ottimizzate per servire uno scopo specifico/una categoria di servizi o singoli utenti.
 
-Nel 4G, per garantire una certa qualità del servizio (QoS), si utilizzavano i bearer senza modificare l'architettura della rete: L'infrastruttura, i nodi attraversati dai dati e la topologia della rete rimangono identici per tutti gli utenti. 
+Nel 4G, per garantire una certa qualità del servizio (QoS), si utilizzavano i bearer senza modificare l'architettura della rete. L'infrastruttura, i nodi attraversati dai dati e la topologia della rete rimangono identici per tutti gli utenti. 
 
 #nota()[
   I bearer sono solo dei tunnel logici.
@@ -218,87 +218,214 @@ In 5G l'introduzione dei network slicing permette di creare *reti logiche separa
 
 - *Funzioni di rete*: Quali protocolli di sicurezza o di instradamento attivare.
 
+Un'*istanza* di una network slice è un insieme di network function e risorse di rete (fisiche) che sono organizzate e configurate per fornire una rete logica che soddisfa certe caratteristiche.
 
-Un istanza di una network slice è un insieme di risorse di rete sia virtuali che fisiche che sono organizzate e configurate per fornire una rete logica che soddisfa certi servizi. Abbiamo un template configurato per un certo servizio o utente.
-
-//aggiugnere immagine
-In 5g creiamo delle fette che attraversano la rete, ciascuno con delle caratteristiche diverse. Per farlo usiamo le seguenti tecnologie:
-- SDN
-- NFV
-- MEC
-
-= LTE CUPS
-
-I PGW e i SGW vengono spezzati in due parti, data-plane e control-plane. Separiamo le operazioni di data palne a quello di controllo (traffico a template, gestione della mobilità, ecc.). In questo modo possiamo scalare in modo indipendente le due parti. Ad esempio se abbiamo un aumento del traffico dati, possiamo scalare solo la parte di data plane, senza dover scalare anche la parte di controllo.
-
-= 5G
-
-Il control plane deve garantire le seguenti funzionalità:
-- Gestione della mobilità
-- Gestione dei template
-- Gestione dell'accesso
-
-Lo user plane deve:
-- Garantire connettività cloud
-- Garantire scambia sia con cloud che con dispositivi edge
-
-== Dataplane
-
-In 5G abbiamo dei moduli che prendono il nome di UPF (user plane function). Essi possono essere configurati in modi diversi e possono aderire a compiti diversi.
-
-- UPF ULCL: (Uplink Classifier) decide il traffico in uplink che fa su un UPF cloud e quello che va verso un UPF edge.
-
-Il vantaggio è che abbbiamo il tempalte ULCL istanziato vicino alla base station in modo tale che tramite UPF edge usciamo verso il dataser (più vicino) mentre i bearer mappati sul cloud proseguono. Il traffico in uplink viene quindi smistato, generando due possibili percorsi dataplane.
-
-Il dataplane ha un unica modulo, ovvero UPF.
-
-== Control Plane
-
-C'è un nuovo modulo che deve gestire i network sliding.
-
-Ciascuno dei moduli UPF e core sono delle network servercing.
-
-N9 = interfaccia che permette di realizzare l'upf che si collega con un altro UPF. Anche in queesto caso abbiamo delle intergacce che si collgano uno a uno. TIpo N1 e N2
-
-I moduli AMF e SMF sono il vecchio MME. Prmettono di gestire la mobilità e la sessione.
-
-La comunicazinone non è punto a punto, ma è pub e server. Avviene un evento e chi deve gestire un evento lo serve (abbiamo un unico bus).
-
-Esiste il 5G standalone e il 5G non standalone:
-- Non standalone: la parte di rete dopo la (R)AN  compreso di user plane e controllo è uguale all'architettura di LTE.
-- Standalone è invecee quella dell'immagine sopra.
-
-Per ottenere i vantaggi di 5G serve 5G standalone
-
-La separazione permette di scalare, in modo tale da avere scalabilità orizzonatale sui singoli moduli.
-
-=== AMF (Access and Mobility Management Function)
-//aggiunger
-
-=== SMF (Session management function)
-Comunica direttamente lo USER plane. Il compito di questo modulo è gestire le sessioni, ovvero gestire i template
-
-=== PCF (Policy Control Function)
-Vecchio PRF, gestise le policy chi può fare che cosa
-=== AUSF (Authentication Server Function)
-Vecchio HSS, gestisce l'autenticazione degli utenti
-
-=== NSSF (Network Slice Selection Function)
-Permette di selezionare le network slice, ovvero selezionare la rete logica più adatta per un certo servizio o utente
-
-=== NEF (Network Exposure Function) & AF (Application Function)
-Sono due funzionalità nuove. Permettono al servizio esterno di entrare nella rete operatore e all'operatore di esporre le funzionalità della rete al servizio esterno.
-
-Possono essere messi in dialogo i due mondi. NEF (cosa la rete mostra) AF (come l'esterno comunica con la rete).
-
-#esempio()[
-  Chiamata truffa. L'operatore sa che si sta avendo una chiamata con la banca. L'applicazione della banca è esterna. Se questi due mondi potessero comunciare la rete potrebbe dire se l'utente che usa il dataplane per arrivare all'applicazione della banca potrebbero essere bloccate operazioni sospette.
+#informalmente()[
+  In 5g creiamo delle _fette_ che attraversano la rete, ciascuna con delle caratteristiche diverse. Per farlo, usiamo le seguenti tecnologie:
+  - SDN
+  - NFV
+  - MEC
 ]
 
-== UserPlane
+== Struttura Data Plane e Control Plane
 
-Possiamo avere più UPF attivve (tanto è una network function). La parte di dialogo è il SMF che istriusice ogni UPF.
+In 5G, la rete è divisa in due piani principali: *data plane* e *control plane*.
 
-Il downlink classifier non serve in quanto sappiamo già da non arriva, l'uplink classifier serve per capire dove instradare il traffico correttamente.
+=== LTE CUPS
 
-UPF rende componibile un servizio di rete che sia in grado di rispettare dei requisiti specifici di alcuni servizi. Dobbiamo poi capire come portare traffico da una parte all'altra
+Si tratta di una delle ultime evoluzioni di LTE, che ha introdotto la separazione tra data plane e control plane. In particolare, i nodi service gateway (SGW) e packet gateway (PGW) vengono divisi in due parti: una parte di data plane e una parte di control plane.
+
+Si crea quindi una *netta separazione* tra le operazioni di data plane (instradamento, gestione dei template) e le operazioni di controllo (gestione della mobilità, ecc..). Il vantaggio principale è che possiamo scalare in modo indipendente le due parti. Ad esempio, se abbiamo un aumento del traffico dati, possiamo scalare solo la parte di data plane, senza dover scalare anche la parte di controllo.
+
+#figure(
+  align(center)[
+    #cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let color-control = rgb("#4A90E2")
+      let color-external = rgb("#FF6B6B")
+      let color-user = rgb("#90EE90")
+      let color-signaling = gray
+      let color-data = red
+      let color-bus = rgb("#FFA500")
+
+      // Titoli dei piani
+      content((1.2, 5.2), text(size: 10pt, weight: "bold", "Control Plane"), anchor: "west")
+      content((1, 2.5), text(size: 10pt, weight: "bold", "User Plane"), anchor: "west")
+
+      // === CONTROL PLANE ===
+      
+      // Bus di comunicazione (Service-based Architecture Bus)
+      rect((2.5, 5.8), (14.8, 6.2), stroke: color-bus + 1.5pt, fill: color-bus.lighten(70%), radius: 0.1)
+      content((8.65, 6), text(size: 7pt, weight: "bold", "Service-based Architecture (SBA) Bus"), anchor: "center")
+      
+      // Prima riga Control Plane
+      rect((3, 6.5), (4.5, 7.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((3.75, 7), text(size: 8pt, weight: "bold", "NSSF"))
+
+      rect((5, 6.5), (6.5, 7.5), stroke: black + 1pt, fill: color-external, radius: 0.1)
+      content((5.75, 7), text(size: 8pt, weight: "bold", "NEF"))
+
+      rect((7, 6.5), (8.5, 7.5), stroke: black + 1pt, fill: color-external, radius: 0.1)
+      content((7.75, 7), text(size: 8pt, weight: "bold", "NRF"))
+
+      rect((9, 6.5), (10.5, 7.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((9.75, 7), text(size: 8pt, weight: "bold", "PCF"))
+
+      rect((11, 6.5), (12.5, 7.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((11.75, 7), text(size: 8pt, weight: "bold", "UDM"))
+
+      rect((13, 6.5), (14.5, 7.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((13.75, 7), text(size: 8pt, weight: "bold", "AF"))
+
+      // Connessioni al bus dalla prima riga
+      for x in (3.75, 5.75, 7.75, 9.75, 11.75, 13.75) {
+        line((x, 6.5), (x, 6.2), stroke: (paint: color-bus, thickness: 1pt))
+      }
+
+      // Seconda riga Control Plane (Nausf, Namf, Nsmf labels sotto)
+      content((5.75, 5.7), text(size: 7pt, "Nausf"), anchor: "center")
+      content((7.75, 5.7), text(size: 7pt, "Namf"), anchor: "center")
+      content((9.75, 5.7), text(size: 7pt, "Nsmf"), anchor: "center")
+      content((11.75, 5.7), text(size: 7pt, "Nudm"), anchor: "center")
+      content((13.75, 5.7), text(size: 7pt, "Nnef"), anchor: "center")
+
+      // AUSF, AMF, SMF
+      rect((5, 4.5), (6.5, 5.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((5.75, 5), text(size: 8pt, weight: "bold", "AUSF"))
+
+      rect((7, 4.5), (8.5, 5.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((7.75, 5), text(size: 8pt, weight: "bold", "AMF"))
+
+      rect((9, 4.5), (10.5, 5.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((9.75, 5), text(size: 8pt, weight: "bold", "SMF"))
+
+      // Connessioni al bus dalla seconda riga
+      for x in (5.75, 7.75, 9.75) {
+        line((x, 5.5), (x, 5.8), stroke: (paint: color-bus, thickness: 1pt))
+      }
+
+      // Linea di separazione tra Control Plane e User Plane
+      line((2, 4), (15, 4), stroke: (paint: black, thickness: 1.5pt, dash: "dashed"))
+
+      // === USER PLANE ===
+      
+      // UE
+      rect((3, 1.5), (4.5, 2.5), stroke: black + 1pt, fill: color-user, radius: 0.1)
+      content((3.75, 2), text(size: 8pt, weight: "bold", "UE"))
+
+      // (R)AN
+      rect((6, 1.5), (7.5, 2.5), stroke: black + 1pt, fill: color-user, radius: 0.1)
+      content((6.75, 2), text(size: 8pt, weight: "bold", "(R)AN"))
+
+      // UPF
+      rect((9, 1.5), (10.5, 2.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
+      content((9.75, 2), text(size: 8pt, weight: "bold", "UPF"))
+
+      // DN (Data Network)
+      rect((12, 1.5), (13.5, 2.5), stroke: black + 1pt, fill: color-user, radius: 0.1)
+      content((12.75, 2), text(size: 8pt, weight: "bold", "DN"))
+
+      // === CONNESSIONI ===
+      
+      // Collegamento dati: UE -> (R)AN (data - continua rossa)
+      line((4.5, 2), (6, 2), stroke: (paint: color-data, thickness: 1.5pt))
+      
+      // N1: UE -> AMF (segnalazione - tratteggiata)
+      line((3.75, 2.5), (3.75, 3.2), (7.75, 3.2), (7.75, 4.5), 
+           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      content((5, 3.5), text(size: 7pt, "N1"), anchor: "center")
+
+      // N2: (R)AN -> AMF (segnalazione - tratteggiata)
+      line((6.75, 2.5), (6.75, 3.5), (7.75, 3.5), (7.75, 4.5),
+           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      content((7, 3.8), text(size: 7pt, "N2"), anchor: "center")
+
+      // N3: (R)AN -> UPF (data - continua rossa)
+      line((7.5, 2), (9, 2), stroke: (paint: color-data, thickness: 1.5pt))
+      content((8.25, 2.3), text(size: 7pt, fill: color-data, "N3"), anchor: "center")
+
+      // N4: SMF -> UPF (controllo - tratteggiata)
+      line((9.75, 4.5), (9.75, 2.5), 
+           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      content((10.2, 3.5), text(size: 7pt, "N4"), anchor: "center")
+
+      // N6: UPF -> DN (data - continua rossa)
+      line((10.5, 2), (12, 2), stroke: (paint: color-data, thickness: 1.5pt))
+      content((11.25, 2.3), text(size: 7pt, fill: color-data, "N6"), anchor: "center")
+
+      // N9: Self-loop su UPF (interconnessione tra UPF)
+      line((9.0, 1.0), (10.5, 1.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))
+      line((8.9, 1.0), (8.9, 2.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))
+      line((10.6, 1.0), (10.6, 2.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))  
+      content((9.6, 1.2), text(size: 9pt, fill: black, "N9"), anchor: "west")
+
+      // Legenda
+      content((14, 3), text(size: 7pt, "Signaling"), anchor: "west")
+      line((15.5, 3), (16.5, 3), stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      
+      content((14, 2.5), text(size: 7pt, "Data"), anchor: "west")
+      line((15.5, 2.5), (16.5, 2.5), stroke: (paint: color-data, thickness: 1.5pt))
+
+    })
+  ],
+  caption: [Architettura 5G: Control Plane e User Plane con interfacce di rete],
+)
+
+=== Dataplane
+
+In 5G vengono introdotti dei moduli che prendono il nome di *User Plane Function* (UPF). Essi possono essere configurati in modi diversi, aderendo a compiti specifici. 
+
+Un modulo molto importante è L' *UPF ULCL* (Uplink Classifier). Esso decide dove *instradare il traffico in uplink*, distinzione tra traffico cloud e traffico verso un edge. Questa distinzione è fondamentale per sfruttare al meglio i vantaggi del MEC, evitando di mandare tutto il traffico verso il cloud e sfruttando invece le risorse più vicine all'utente finale.
+
+#nota[  
+  Il traffico in downlink non ha bisogno di un classifier, in quanto sappiamo già da dove arriva (il cloud o l'edge).
+]
+
+=== Control Plane
+
+Nella rete 5G, ognuna delle componenti della parte di controllo è una *VNF* (Virtual Network Function). 
+
+Ogni VNF implementa un *micro-servizio* che espone delle API rest. La comunicazione tra i vari moduli avviene tramite un *bus di comunicazione*, secondo un modello *Publish-Subscribe*. Quando avviene un evento viene notificato, il modulo che lo deve gestire risponde. 
+
+In realtà la comunicazione avviene in modo misto, in quanto alcuni moduli comunicano attraverso delle interfaccie punto a punto.\
+$"N9"$: Interfaccia che permette di realizzare interconnessioni tra UPF.
+
+*NRF (Network Repository Function)*: Questa network function permette di registrare servizi e renderli individuabili dalle altre network function.  
+
+*AMF (Access & Mobility Management Function)*: Gestisce la maggior parte del traffico di segnalazione per autenticazioe, registrazione e mobilità. Svolge alcune funzioni del vecchio MME, comunica con il data plane.
+
+#nota[
+  I moduli AMF e SMF sono il vecchio MME. Prmettono di gestire la mobilità e la sessione.
+]
+
+*SMF (Session management function)*: Gestisce il traffico di controllo relativo alla creazione di sessione dati. Dialoga con AMF per le ricezione e trasmissione dei messagi di controllo. Comunica direttamente con l' USER plane function (UPF).
+
+*PCF (Policy Control Function)*: Vecchio PRF, gestise le policy: chi può fare che cosa.
+
+*AUSF (Authentication Server Function)*: Vecchio HSS, gestisce tutto ciò che riguarda l'autenticazione e la generazione delle chiavi di cifratura.
+
+*NSSF (Network Slice Selection Function)*: Permette di selezionare le network slice, ovvero selezionare la rete logica più adatta per un certo servizio o utente.
+
+*NEF (Network Exposure Function) & AF (Application Function)*: Sono due funzionalità nuove. Permettono ai servizi esterni di _entrare_ nella rete operatore e all'operatore di esporre le funzionalità della rete ai servizi esterni. Possono essere messi in dialogo i due mondi. NEF (cosa la rete mostra) AF (come l'esterno comunica con la rete).
+
+#esempio()[
+  Supponiamo di ricevere una chiamata da un truffatore. Mentre siamo al telefono, il truffatore ci convince ad aprire l'app della banca e a disporre un bonifico verso un conto estero.
+
+  - Lato AF: Il server della banca (AF) riceve la richiesta di bonifico. I suoi algoritmi notano qualcosa di strano, ma non sono sicuri al 100% per bloccarlo.
+
+  - L'interrogazione (AF $->$ NEF): Il server della banca (AF) usa un'API per contattare la rete 5G dell'operatore telefonico tramite il NEF. La domanda è: _Il dispositivo con questo IP/numero di telefono è attualmente impegnato in una chiamata vocale_. _E se sì, il numero del chiamante è nella vostra blacklist_?
+
+  - Verifica interna (NEF $->$ Rete 5G): Il NEF riceve la richiesta, verifica che la banca sia autorizzata a chiederlo, e interroga i nodi interni del 5G.
+
+  - Risposta (NEF $->$ AF): Il NEF risponde alla banca: _Sì, l'utente è attualmente in chiamata attiva con un numero segnalato come probabile spam_.
+
+  - Ricevuta questa informazione vitale, l'AF della banca incrocia i dati e blocca istantaneamente il bonifico sull'app.
+]
+
+Esistono due _tipi_ di 5G: *5G standalone* e *5G non standalone*.
+- *Non standalone*: la parte di rete dopo la (R)AN  compresa di user plane e controllo è uguale all'architettura di LTE.
+
+- *Standalone*: L'architettura è invece quella dell'immagine sopra.
+
+Per ottenere i vantaggi offerti da 5G serve 5G standalone. La separazione permette scalabilità orizzontale sui singoli moduli. 
