@@ -287,6 +287,8 @@ Procedura (supponendo di aver scelto di fare handover):
   Anche in questo caso la *richiesta di handover parte dalla rete cellulare* (eNodeB). L'UE non può assolutamente far partire la richiesta ma si attiene alle direttive.
 ]
 
+#part("5G")
+
 = 5G
 
 La rete 5G è stata progettata per supportare una grande varietà di casi d'uso, con requisiti molto diversi tra di loro.
