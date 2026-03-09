@@ -1,7 +1,5 @@
 #import "../template.typ": *
 
-= Lezione 2
-
 == Trasmissione wireless
 
 === Trasmissione in banda base
