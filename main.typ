@@ -36,3 +36,4 @@
 #include "chapters/Lezione4.typ"
 #include "chapters/Lezione5.typ"
 #include "chapters/Lezione6.typ"
+#include "chapters/Lezione7.typ"
