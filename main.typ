@@ -40,3 +40,5 @@
 #include "chapters/Lezione8.typ" // e 9
 #part("Reti Mobili")
 #include "chapters/Lezione10.typ"
+#part("Da 2G a 4G")
+#include "chapters/Lezione11.typ"
