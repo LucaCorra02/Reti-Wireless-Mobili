@@ -132,7 +132,7 @@ Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo co
   })
 ]
 
-#nota[
+#note[
 Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche modo semplificare il tutto.
 ]
 
@@ -155,7 +155,7 @@ Dove:
 
 #pagebreak()
 
-#esempio[
+#example[
   Grafico $sin(t)$:
 
   #align(center)[
@@ -220,7 +220,7 @@ Dove:
 - $a_n, b_n ->$ sono i coefficienti che rappresentano l'ampiezza delle componenti (ovvero le armoniche);
 - $f_n ->$ frequenze multiple della frequenza fondamentale.
 
-#nota[
+#note[
   L'idea alla base della _Trasformata di Fourier_ è che ogni segnale, anche complesso, può essere scomposto nella somma di onde sinusoidali e cosinusoidali più semplici, passando da un dominio all'altro.
 ]
 
@@ -231,7 +231,7 @@ Nel momento in cui un segnale *analogico* arriva ad un ricevitore, quest'ultimo 
 
 Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale è necessario campionare un segnale (per poterlo ricostruire senza perdita di informazione): dev'essere almeno il *doppio* della massima frequenza presente nel segnale in ingresso.
 
-#esempio[
+#example[
   #align(center)[
     #cetz.canvas(length: 0.8cm, {
       import cetz.draw: *
@@ -306,7 +306,7 @@ Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale
 Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
 - *Fast Fourier Transform (FFT)*: Permette di passare dal dominio del tempo a quello delle frequenze. A partire dalla forma d'onda nel tempo, vengono restituite le componenti $a_n$ e $b_n$ (ampiezze delle sinusoidi e cosinoidi che compongono il segnale);
 
-#esempio[
+#example[
   Un'antenna che riceve un segnale, dapprima converte da analogico a digitale (grazie al _campionamento_) e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
   
   Informalmente, possiamo affermare che il ricevitore si chieda quali sinusoidi e cosinusoidi, sommate assieme, potrebbero passare esattamente per i punti campionati. Viene quindi restituita l'ampiezza di ogni frequenza trovata ("Ho trovato tanto segnale a 50 `Hz`, poco a 100 `Hz` e niente a 200 `Hz`").
@@ -314,13 +314,13 @@ Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
   Al termine della procedura, il ricevitore sa esattamente quali frequenze sono state trasmesse e con quale ampiezza, potendo così ricostruire i bit originari: se vede un picco sulla frequenza che il trasmettitore usa per il bit `1`, allora sa che quel bit è stato trasmesso come `1`, altrimenti come `0`.
 ]
 
-#nota[
+#note[
   Come detto a lezione, il rumore si presenta spesso come un "tappeto basso" su tutte le frequenze, mentre il segnale utile è tipicamente un picco alto e stretto. Nel dominio delle frequenze, il segnale utile dovrebbe quindi essere facilmente isolabile (al contrario, nel dominio del tempo, il rumore deforma l'onda rendendola praticamente illeggibile).
 ]
 
 - *Inverse Fast Fourier Transform (IFFT)*: Permette di passare dal dominio delle frequenze a quello del tempo. Partendo dalle componenti $a_n$ e $b_n$, viene restituita la forma d'onda nel tempo.
 
-#nota[
+#note[
   Sostanzialmente è una trasformazione che ha lo scopo opposto di quella trattata poc'anzi: nel momento in cui c'è bisogno di trasmettere e non di ricevere, i dati nell'aria devono viaggiare sotto forma *analogica*, per cui diventa essenziale passare dal dominio delle frequenze a quello del tempo. Senza *IFFT*, il trasmettitore non sarebbe dunque in grado di convertire i bit in un'onda elettromagnetica trasmissibile.
 ]
 
@@ -328,7 +328,7 @@ Queste trasformazioni sono veri e propri algoritmi implementati direttamente neg
 
 Per facilitare la "traduzione" di una forma d'onda, a partire dalla sua trasformata, è possibile utilizzare delle *lookup table*: delle tabelle precompilate che associano ad ogni possibile combinazione di ampiezza e frequenza un particolare bit o sequenza di bit. In questo modo, il ricevitore non deve calcolare ogni volta la trasformata inversa, ma può semplicemente cercare nella tabella il bit corrispondente alla combinazione trovata.
 
-#esempio[
+#example[
   #align(center)[
     #table(
       columns: (auto, auto),
@@ -410,10 +410,10 @@ Tra i concetti fondamentali per comprendere le prestazioni di un sistema di comu
 - *Bandwidth* $->$ Indica una misura fisica, espressa in `Hz`, che rappresenta la "larghezza del tubo" o lo spazio/ampiezza dello *spettro* delle frequenze che occupa il segnale;
 - *Data Rate* $->$ Indica la quantità di dati che possono essere trasmessi in un certo intervallo di tempo, espressa in `bps` (bit per secondo). Rappresenta la velocità effettiva con cui le informazioni vengono trasferite attraverso il canale di comunicazione.
 
-#nota[
+#note[
   È importante non confondere *Spettro* e *Bandwidth*: lo *spettro* è l'insieme di tutte le frequenze possibili, mentre la *Bandwidth* è una misura specifica della larghezza di banda occupata da un segnale all'interno di quello spettro.
 
-  #esempio[
+  #example[
     Ho un segnale composto da 3 frequenze: 100 `Hz`, 200 `Hz` e 300 `Hz`. Lo *spettro* di questo segnale comprende tutte e 3 le frequenze, mentre la *Bandwidth* è calcolata come la differenza tra la frequenza massima e minima, ovvero 300 `Hz` - 100 `Hz` = 200 `Hz`.
   ]
 ]
@@ -421,7 +421,7 @@ Tra i concetti fondamentali per comprendere le prestazioni di un sistema di comu
 === Relazione tra Bandwidth e Data Rate
 La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la seguente: per ottenere un *DR* più alto, è necessario disporre di una *BW* maggiore. Questo perché una maggiore larghezza di banda consente di trasmettere più informazioni in un dato intervallo di tempo.
 
-#esempio[
+#example[
   Supponiamo di avere un'onda quadrata:
   
   #align(center)[
@@ -605,9 +605,9 @@ Questo vale per segnali binari a 2 livelli di voltaggio. Per segnali multilivell
 $ C = 2B log_2(M) $
 Dove $M$ è il numero di livelli di voltaggio e $log_2(M)$ indica quanti bit corrispondono a ciascun livello.
 
-#nota[
+#note[
   Aumentre i livelli di voltaggio è essenziale per incrementare il *Data Rate* senza dover aumentare la *Bandwidth*, che spesso è limitata dalle caratteristiche fisiche del canale di comunicazione.
-  #esempio[
+  #example[
     Supponiamo di avere una larghezza di banda di 1000 `Hz`:
     - Avendo un numero di livello di voltaggio $M = 2$, la capacità del canale è \ 
       $C = 2 dot 1000 dot log_2(2) = 2000$ `bps`;
@@ -636,7 +636,7 @@ Dove $P_f$ è la potenza finale e $P_i$ è la potenza iniziale.
 
 Ci interessa sapere la misura di differenza relativa a quanto il segnale sia diventato più grande (guadagno) o più piccolo (attenuazione) rispetto a prima.
 
-#nota[
+#note[
   Per il *Decibel* tendendzialmente si interpreta il risultato utilizzando la regola del ±3:
   - -3 $->$ La potenza si è dimezzata;
   - +3 $->$ La potenza è raddoppiata.
@@ -647,7 +647,7 @@ Si tratta di una *misura assoluta*: ci dice esattamente quanta potenza abbiamo i
 $ d B m = 10 dot log_10(P/(1 m W)) $
 Dove $P$ è la potenza misurata.
 
-#nota[
+#note[
   Interpretazione del risultato:
   - 0 `dBm` $->$ Esattamente 1 `mW`;
   - 3 `dBm` $->$ Potenza raddoppiata rispetto a 1 `mW`;
@@ -678,7 +678,7 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
 - Aumentando la *Bandwidth* ($B$), rischiando di aumentare però di aumentare il rumore termico;
 - Migliorando il *SNR* (ad esempio, aumentando la potenza del segnale trasmesso), con il rischio di far aumentare *Intermodulation* e *Cross Talk Noise*.
 
-#esempio[
+#example[
   *Possibile esercizio d'esame*
   
   Dati:
@@ -725,7 +725,7 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
 == Multiplexing
 Nella maggior parte dei casi, la capacità del mezzo di trasmissione è superiore alla capacità richiesta da una singola trasmissione, di conseguenza è possibile condividere il mezzo tra più trasmissioni contemporanee. Questa tecnica prende il nome di *Multiplexing*.
 
-#nota[
+#note[
   Il motivo per cui si usa è il risparmio: posare cavi costa molto e, al posto di stendere 100 cavi per 100 persone, ha più senso stenderne uno solo e "grosso", usando poi il *Multiplexing* per farci passare dentro tutti i 100 segnali assieme (senza che si distirbino fra loro).
 ]
 

@@ -8,12 +8,12 @@
 
 La trasmissione in *banda base* ha uno spettro che va da $0$ all'ampiezza di banda massima $B$ del canale. 
 
-#nota[
+#note[
   La trasmissione in banda base è tipica dei cavi (Ethernet, USB). In generale, nel mondo dei computer, trasmettere in _banda base_ significa usare il cavo come se fosse una "_batteria con interruttore_":
   - Trasmetto 1 $->$ Sul cavo passano $5 "Volt"$;
   - Trasmetto 0 $->$ Sul cavo passano $0 "Volt"$. 
 
-  #esempio()[
+  #example()[
   Lo spettro sonoro è in banda base. Da 0 a $22"MHz"$.
 ]
 ]
@@ -91,13 +91,13 @@ Questo tipo di trasmissione, che va bene per la comunicazione via cavo, presenta
 - Problemi di *sicurezza*. Se tutte le trasmissioni via radio (Militare, Tv) usassero lo spettro radio $[0,B]$ *interferirebbero* tra di loro.
 
 - Più la frequenza è bassa, più *l'antenna* per ricevere il segnale deve essere *grande*. Essa deve avere una dimensione che sia almeno metà della lunghezza d'onda $tilde lambda / 2$ (dipolo). 
-  #esempio()[
+  #example()[
     Per una frequenza a $1 "MHz"$ servirebbe un'antenna di almeno $142 "cm"$.
   ]
 
 - Ogni range di radio frequenze possiede *diverse proprietà* di propagazione e attenuazione.  
 
-#attenzione()[
+#warning()[
   Il mezzo di trasmissione wireless è intrisicamente broadcast, tutti possono vedere le onde eletromagnitiche
 ]
 
@@ -108,7 +108,7 @@ Per *evitare* di avere *trasmissione sovrapposte* viene utilizzata la trasmissio
 Viene introdotta una fase intermedia chiamata *modulazione*. Essa agisce sulla *frequenza portante* $f_c$, in comune tra trasmettitore e ricevitore. 
 L'operazione di modulazione permette di spostare un segnale originale (in banda base) a frequenze più elevate. Il risultato è un segnale "passa banda", centrato attorno alla frequenza portante, che occupa una porzione specifica dello spettro. 
 
-#nota()[
+#note()[
   L'operazione di modulazione non intacca _Bandwidth_ e _Data Rate_. 
 ]
 
@@ -228,18 +228,18 @@ $mg("Vantaggi")$ della modulazione:
 
 Un *simbolo* è una forma d'onda, uno stato (livello di voltaggio) o una condizione significativa del canale che *persiste* per un certo *intervallo di tempo*. 
 
-#attenzione()[
+#warning()[
   Un symbol *non* è semplicemente del rumore sul canale, ma un qualcosa di ben definito.
 ]
 
 Il *Symbole rate* è il numero di simboli emessi dal livello fisico in un secondo, si misura in _Bd_ (_Baud_). 
 
-#esempio()[
+#example()[
   Il symbol rate può rappresentare quante volte il livello fisico è in grado di cambiare il voltaggio in un secondo (immaginiamo ad esempio un voltaggio di 3V che persiste per 1 secondo). 
 ]
 
 
-#attenzione()[
+#warning()[
  In generale un simbolo è un grado di *codificare più bit*, per questo motivo:
  *$
   "symbol rate" != "bit rate" \
@@ -427,13 +427,13 @@ Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un'onda* p
   caption: [Modulazione M-ASK: sequenza 00 01 10 11 01 00]
 )
 
-#informalmente()[
+#informally()[
   Quando il canale è disturbato, il trasmettitore smette di usare modulazioni complesse (tanti bit per simbolo) e passa a modulazioni semplici (meno bit per simbolo) per evitare errori, riducendo però la velocità di trasmissione.
 ]
 
 Se il segnale è pulito, possiamo andare a "riempire" un simbolo con più bit. Se c'è rumore, dobbiamo svuotarlo per essere sicuri che arrivi a destinazione. Seguendo questa idea una data *bandwidth* può supportare *diversi data rate* a seconda dell'abilità del ricevente di distinguere $0$ e $1$ in presenza di rumore. 
 
-#esempio()[
+#example()[
   Supponendo di usare una $4$-ASK (2 bit per simbolo, con $2^2=4$ livelli), vogliamo andare a creare $4$ livelli di ampiezza dove ogni livello corrisponde ad una coppia di bit: 
   - Ampiezza $100% -> 11$ 
   - Ampiezza $75% -> 10$
@@ -460,7 +460,7 @@ Anche le antenne si dividono in due tipi:
 
 - *Direzionale*: si vuole propagare il segale in una certa direzione, l'energia viene concentrata in un unico punto (line of site) sia per la trasmissione che per la ricezione.
 
-  #nota()[
+  #note()[
     L'antenna direzionale non è perfetta. Il segnale potrebbe essere propagato (con una potenza minore) anche in altre  direzioni rispetto alla _LOS_.
   ]
 
@@ -476,13 +476,13 @@ Durante la trasmissione radio, dobbiamo tenere in considerazione i seguenti *$mr
   Oltre ai segnali provenienti dalla via più breve, il ricevitore viene raggiunto da altri segmenti (percorrono spazi più lunghi con alla stessa velocità), causando così un'*interferenza*. 
 
 - *Effetto doppler*: shift di frequenza del segnale in base al movimento della sorgente, della destinazione o presenza di ostacoli. 
-  #nota()[
+  #note()[
     Lo shift aumenta in maniera proporzionale alla velocità di spostamento della sorgenete o destinazione.
   ]
 
 === Path Loss
 
-#informalmente()[
+#informally()[
   Quantifica la *perdità di potenza* del segnale trasmesso rispetto a quello ricevuto.
 
   Si misura in *decibel ($"dB"$)*.
@@ -500,7 +500,7 @@ Dove:
 - $P_r$: potenza di ricezione;
 - *$n$*: esponente della path loss (valore base = 2), man mano che aumentano gli ostacoli sale (*dipende dall'ambiente*).
 
-#nota()[
+#note()[
   La potenza di trasmissione ($P_t$) è in generale maggiore di quella di ricezione ($P_r$). 
 ]
 
@@ -516,19 +516,19 @@ Se aumentiamo la frequenza, la lunghezza d'onda $lambda$ diventa più piccola. C
 
 Un'antenna più piccola cattura meno segnale. 
 
-#nota()[
+#note()[
   A parità di distanza, maggiore è la frequenza, maggiore è il *path loss*.
 
   Con _free space loss_ si intende la perdita ideale in caso di spazio completamente libero, quindi con $d^n = d^2$ .
 ]
 
 
-#informalmente()[
+#informally()[
   La formula ci dice : 
   - Più il *ricevitore è lontano*, più la *potenza del segnale ricevuto è minore*;
   - *Dipende anche dalla frequenza* $f$. A parità di potenza, più la frequenza è alta, minore è il raggio di copertura.
 
-  #esempio()[
+  #example()[
     A parità di potenza, la copertura di un _access point_ è maggiore con una frequenza pari a $2.4"Ghz"$ rispetto a $5"Ghz"$.
   ]
 ]
@@ -670,7 +670,7 @@ Un'antenna più piccola cattura meno segnale.
 
 === Antenna Gain
 
-#informalmente()[
+#informally()[
   Il Gain ("_guadagno_") misura quanto è più forte il segnale nella direzione "giusta" rispetto all'antenna isotropica (ideale), la quale sparge il segnale in modo equo in tutte le direzioni. 
 
   Il Gain ci dice quanto l'antenna è _brava_ a concentrare il raggio:
@@ -751,7 +751,7 @@ Un'antenna più piccola cattura meno segnale.
   ]
 )
 
-#attenzione()[
+#warning()[
   L'antenna *non* è un amplificatore. Non crea energia dal nulla e non aggiunge potenza elettrica.
 
   Il Gain è puramente una questione di forma e direzione.
@@ -771,7 +771,7 @@ $
 $
 il *Gain* ovviamente viene sottratto in modo da diminure la loss/perdita. 
 
-#attenzione()[
+#warning()[
   Usare antenne direzionali (High Gain) è rischioso. Se non sono perfettamente allineate, c'è il rischio di finire nella _zona morta_ (fuori dal *beam*). In questo spicchio il segnale è peggiore, rispetto ad un antenna isotropica.
 ]
 
@@ -795,7 +795,7 @@ Questo accade quando più segnali vengono ricevuti in tempi diversi. Le interfer
 - *Costruttive*: le interferenze amplificano il segnale, suono _buone_.
 - *Distruttive*: il segnale ricevuto è stato modificato in modo imprevedibile.
 
-#nota()[
+#note()[
   *Non* si ha alcun controllo su come poter combinare in modo costruttivo le interferenze. 
 ] 
 
@@ -808,7 +808,7 @@ $
   f_D = underbrace(v/c, "velocità tra"\ T_x "e" R_x) underbrace(f_c,"frequenza portante")
 $
 
-#informalmente()[
+#informally()[
   Maggiore è la velocità a cui spostano $T_x$ e $R_x$ e maggiore è la frequenza $->$ Più il campionamento dovrà avvenire frequentemente. 
 ]
 
@@ -1056,11 +1056,11 @@ La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un d
   ]
 )
 
-#nota[
+#note[
   Maggiore è la distanza tra $T_X$ e $R_X$, più alta è la probabilità che si verifichi questo fenomeno. Trasmettendo meno simboli si ha un data rate minore, ma incrementandoli aumenta la probabilità di avere ISI.
 ]
 
-#esempio()[
+#example()[
   
   #figure(
   {
@@ -1272,7 +1272,7 @@ Uno schema di trasmissione radio presenta le seguenti fasi:
 
 === Modulazione e Codifica
 
-#informalmente()[
+#informally()[
   Vogliamo avere diverse tipologie di segnale andando a modificare le proprietà della sinusoide. Le tecniche possono essere combinate tra di loro.
 ]
 
@@ -1445,7 +1445,7 @@ $
   )
 $
 
-#informalmente()[
+#informally()[
   Nei dispositivi elettronici è molto più semplice vedere una discontinuità nella fase piuttosto che misurare il tempo.
  
   Se viene osservato un cambio nel voltaggio allora è stato trasmesso un $1$. Se c'è un proseguo allora è stato trasmesso uno $0$. 
@@ -1453,7 +1453,7 @@ $
 
 Rispetto alla PSK, *non* richiede un preciso allineamento degli oscillatori tra $T_X$ e $R_X$
 
-#nota()[
+#note()[
   Nella PSK classica, il ricevitore deve avere un _orologio_ perfettamente sincronizzato con quello del trasmettitore per capire la fase. Deve sapere esattamente dov'è situato lo zero gradi ($0 degree$). Se l'antenna si sposta leggermente o l'oscillatore del ricevitore ruota di poco, il ricevitore perde il riferimento, scambiando gli $1$ con gli $0$.
 ]
 
@@ -1572,11 +1572,11 @@ Gli estremi (punti $mr("rossi")$) sono i simboli che possiamo trasmettere:
   - Se il punto cade nel 1° quadrante ($x>0, y>0$) $-> 11$.
   - Se il punto cade nel 2° quadrante ($x<0, y>0$) $-> 01$
 
-#attenzione()[
+#warning()[
   Trasmettitore e ricevitore *devono* condividere la stessa costellazione
 ]
 
-#nota()[
+#note()[
   Viene utilizzata la *Codifica di Gray*: tra un punto e il suo vicino cambia solo $1$ bit alla volta.\
   Serve a *ridurre gli errori* in presenza di rumore. Permette al ricevitore di "sbagliare di poco" (confusione tra il punto $11$ e il vicino $01$), solo $1$ bit. 
   
@@ -1600,7 +1600,7 @@ Data una sequenza di bit da trasmettere viene calcolato:
 
 - *Modulazione*: Le componenti $I$ e $Q$ vengono sostiuite nella formula. Le due onde risultanti vengono sommate fisicamente. Il risultato $s(t)$ è un'onda unica che avrà una fase e un'ampiezza specifiche risultanti dalla somma vettoriale delle due componenti.
 
-#esempio()[
+#example()[
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 15pt,
@@ -1626,7 +1626,7 @@ Data una sequenza di bit da trasmettere viene calcolato:
   )
 ]
 
-#nota()[
+#note()[
   La $X-"QAM"$ permette di trasmettere *più bit nell'unità di tempo* (durata del simbolo). Tuttavia, a differenza di QPSK è *molto più fragile*. In caso di interferenza, il ricevitore può sbagliare quadrato più facilmente, perdendo i dati. 
   
   Quando il segnale è molto distrubato conviene  "rallentare" tornando alla modalità QPSK. In questo modo c'è meno probabilità di sbagliare.
@@ -1640,7 +1640,7 @@ Le curve di *Bit Error Rate (BER)* rappresentano la *probabilità di errore su u
 $
   "BER" = "func"(E_b/N_O)
 $  
-#nota()[
+#note()[
   Dalle curve di BER è possibile osservare che a partià di SNR e condizione del canale, *più è complicata la costellazione* (più è densa) *maggiore* è la *bonta* che il *canale* di trasmissione deve avere, altrimenti ci saranno più errori sul singolo bit. 
 ]
 A fronte di un canale molto rumoroso, il ricevitore fa fatica a determinare il quadrante della costellazione in cui ricade il segnale ricevuto. Più punti ci sono in un certo quadrante, maggiore è la propabilità di sbagliare un bit. 
@@ -1767,7 +1767,7 @@ A fronte di un canale molto rumoroso, il ricevitore fa fatica a determinare il q
   ]
 )
 
-#informalmente[
+#informally[
   Man mano che mi muovo sull'asse delle $x$ aumenta il rapporto $"segnale"/"rumore"$, il segnale diventa sempre più forte rispetto al rumore. Sull'asse delle $y$ ho la propabilità di errore di un bit. Parte da tutti i bit. 
 
   Mano mano che il segnale migliora, la probabilità di errore diminuisce (errore sul bit meno probabile). 
@@ -1786,7 +1786,7 @@ $
   "CodeWord"= underbrace(k,"dati"\ "utili") + underbrace((n-k),"ridondanza")
 $
 Il *coding rate* è definito come $R = k/n$.
-#esempio()[
+#example()[
    Rate $1/2$ significa che per ogni bit utile ne vengono spediti $2$ totali ($1$ utile + $1$ controllo). La dimensione del messaggio viene raddoppiata. 
 ]
 
@@ -1795,7 +1795,7 @@ A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema 
   - la codifica da utilizzare (BPSK, QAM, ecc)
   - Il coding rate (code redundacy), più il canale è rumoroso più bit di ridondanza vengono introdotti.
 
-#esempio()[
+#example()[
   - Canale pessimo: BPSK (robusto) con Rate $1/2$ (super protetto). La velocità di trasmissione è bassa, ma il messaggio arriva correttamente.
 
   - Canale ottimo: 64-QAM (veloce) con Rate $5/6$ (poco protetto). Velocità di trasmissione elevata.
@@ -1805,7 +1805,7 @@ A seconda delle condizioni del canale wirelss il trasmittente sceglie lo schema 
 #pagebreak()
 
 // Può capitare all'esame
-#esempio[
+#example[
   *Dati*:
   - *SNR* (_Signal to Noise Ratio_) = $8 "dB"$;
   - *BER* (_Target Bit Error Rate_) = $10^(-2)$.

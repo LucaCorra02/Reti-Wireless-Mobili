@@ -3,7 +3,7 @@
 == Orthogonal Frequency Division Multiplexing (OFDM)
 L'*OFDM* è un concetto di modulazione che tenta di risolvere il problema principale del *Frequency Division Multiplexing* (FDM), ovvero l'inefficienza spettrale dovuta alla necessità di inserire delle *guard bands* tra le diverse portanti per evitare interferenze.
 
-#esempio[
+#example[
   Informalmente, possiamo immaginare il *FDM* come un'autostrada (_banda_) in cui ogni macchinna (che rappresenta il _segnale_) viaggia in una corsia separata (_portante_). Per evitare incidenti (interferenze), è necessario lasciare delle corsie vuote (_guard bands_) tra le corsie occupate, il che riduce l'efficienza dell'autostrada.
 
   Questo bisogno degli _guard bands_ è necessario per evitare che le frequenze/auto delle diverse portanti si sovrappongano, causando interferenze e degradando la qualità del segnale ricevuto.
@@ -62,7 +62,7 @@ L'*OFDM* è una sorta di _"incastro perfetto"_: non si spreca spazio con le _gua
   caption: [Schema dell'Orthogonal Frequency Division Multiplexing.],
 )
 
-#nota[
+#note[
   A sinistra, possiamo vedere il "_flusso veloce_" $"R"_("bps")$, che corrisponde al flusso in entrata ad alta velocità (ad esempio, un video in streaming). Il problema nasce dal fatto che, se si provasse a trasmettere questo flusso così com'è e su una singola portante (es. canale largo $20"Mhz"$ con un solo segnale, di quasi $20"Mhz"$, usato per trasportare tutto), si rischierebbe di incorrere in problemi di interferenza e degrado del segnale a causa delle caratteristiche del canale wireless (ad esempio, fading, interferenze, ecc.).
 
   C'è poi un *convertitore* da seriale a parallelo, con lo scopo di far viaggiare il flusso di dati su più portanti in parallelo, riducendo così la velocità di trasmissione su ciascuna portante e mitigando gli effetti negativi del canale wireless.
@@ -121,7 +121,7 @@ L'ortogonalità permette di sovrapporre le portanti in modo che, nonostante si i
   ]
 )
 
-#nota[
+#note[
   La scelta della sotto-portante $f_b$ è dettata dalla durata $T$ dei simboli:
   $
     f_b = 1/T
@@ -142,7 +142,7 @@ In sintesi, la precisione matematica $Delta f = 1/T$ è il cuore di tutto e perm
 
 #pagebreak()
 
-#nota[
+#note[
   1. *Trasmettitore (parte alta)*:
   Il _Bit Stream_, come detto in precedenza, passa da *seriale* a *parallelo*, facendolo diventare un insieme di tanti flussi lenti per essere inviato alle varie sotto-portanti. Successivamente, si utilizza l'*IFFT* per passare dal dominio delle frequenze a quello del tempo e il risultato fa in modo tale da produrre un blocco di campioni digitali (*_Parallel to Serial_*) da spedire uno a uno. Infine, viene aggiunto un prefisso ciclico, che ha lo scopo di proteggere da "echi" che disturberebbero il segnale.
 
@@ -153,7 +153,7 @@ In sintesi, la precisione matematica $Delta f = 1/T$ è il cuore di tutto e perm
   Per prima cosa, viene rimosso il prefisso aggiunto al termine delle operazioni del trasmettitore. In seguito, la trasformazione *_Serial to Parallel_* prepara i campioni per l'elaborazione matmatica, grazie all'*FFT* e viene ricomposto infine il flusso di bit tramite la fase di *_Parallel to Serial_*.
 ]
 
-#attenzione[
+#warning[
   In generale, *Multiple Access* $!=$ *Multiplexing*: far passare più segnali contemporaneamente non significa far comunicare più utenti allo stesso tempo.
 ]
 
@@ -163,9 +163,9 @@ Tradotto letteralmente sarebbe "_Spettro Espanso_", questo perché è una tecnic
 - *Cifratura del segnale*: essendo una tecnica nata in ambito militare, la sicurezza collegata al segnale è di primaria importanza. Solo trasmettitore e ricevitore conoscono infatti il _codice di spreading_ e, anche se non si tratta di una vera e propria crittografia che protegge i dati matematicamente, è una sorta di "mimetismo fisico" che protegge la comunicazione.
 - *Accesso multiplo*: molti utenti possono utilizzare la stessa banda contemporaneamente senza interferenze.
 
-#nota[
+#note[
   Per quanto riguarda il concetto di *accesso multiplo*, ci si rifà al concetto di utilizzo di codici diversi per potersi sovrapporre, durante la comunicazione, senza disturbarsi.
-  #esempio[
+  #example[
     Un esempio informale e intuitivo per capire questo aspetto è il seguente: immaginiamo di essere in una stanza assieme ad altre persone e che tutte parlino allo stesso tempo. Supponiamo inoltre che queste persone siano divise in coppie e che ognuna di esse parli una lingua diversa. Il filtro linguistico permette di "non impazzire" (è il concetto di *ortogonalità*): se io sono il ricevitore della prima coppia, che parla in italiano, il mio cervello è settato per comprendere solo quella lingua. Tutto ciò che mi arriva in cinese o finlandese, ad esempio, lo percepirò solo come rumore di fondo e non rappresenta in alcun modo l'informazione.
   ]
 ]
@@ -193,7 +193,7 @@ Dallo schema, è possibile notare come la *Channel Table* debba essere la medesi
 
 Il vantaggio principale consiste nella resistenza al *rumore/jamming*: una frequenza sola compromessa, non compromette potenzialmente il deterioramente di tutta la trasmissione. È inoltre una tecnica particolarmente sicura poiché, se un utente malintenzionato volesse ascoltare la trasmissione, non disponendo della sequenza di _hopping_, potrebbe leggere solo alcuni pezzi di messaggi. 
 
-#esempio[
+#example[
   Come detto precedentemente, questa tecnica è stata fondamentale per lo sviluppo delle comunicazioni *Bluetooth*. Consiste infatti nella divisione della banda, da $2.4 "GHz"$, in 79 canali. Vengono effettuati 1600 salti al secondo; questo è il motivo grazie al quale, se ci si trova all'interno di una stanza molto affollata tra apparecchi e *Wi-Fi*, il segnale delle cuffie *Bluetooth* che sto utilizzando è un segnale praticamente impossibile da colpire in maniera continuativa per disturbarne la comunicazione.
 ]
 
@@ -208,7 +208,7 @@ Infine, si effettua lo `XOR` degli $n$ bit utilizzati trasformando il bit singol
 
 Un altro aspetto fondamentale è che, come ovvio che sia, ricevitore e trasmettitore conoscono la *sequenza do spreading* ed è così possibile, assieme all'inverso dello `XOR`, la decifratura del segnale trasmesso.
 
-#nota[
+#note[
   Schema di funzionamento ad alto livello:
   $
     "bit" -> "spread code" -> "M bit/Sequenza di chip" -> "bit" xor "Sequenza" -> "Info trasmessa"
@@ -217,7 +217,7 @@ Un altro aspetto fondamentale è che, come ovvio che sia, ricevitore e trasmetti
 
 #pagebreak()
 
-#esempio[
+#example[
   #align(center)[
     #table(
       columns: (auto, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em, 1.5em),
@@ -244,7 +244,7 @@ Basandosi sullo *Spread Spectrum*, questa tecnica prevede ovviamente che agli ut
 
 In questo caso si utilizza, al posto dello zero, il valore -1, per rendere più comodi i conti e le questioni legate proprio all'ortogonalità.
 
-#nota[
+#note[
   Due *codici di spreading* si dicono ortogonali se, sommati, la loro somma è zero per ogni bit che compone il risultato.
 ]
 
@@ -254,7 +254,7 @@ Esempi di *sequenze di spreading*:
 - *_Walsh_*: sono ortogonali e matematicamente "perfette". Non ci può quindi essere interferenza fra gli utenti nell'invio delle informazioni, ma allo stesso tempo il numero di queste sequenze è *limitato* ed è possibile generare solo 64 codici $!=$.
 - *_PN, Gold, Kasami_*: questi codici *non* sono ortogonali, ma sono quasi infiniti. Si utilizzano tipicamente nei casi in cui vi sono tantissimi utenti in un ambiente e si accetta di avere rumore/interferenze pur di connettere tutti.
 
-#attenzione[
+#warning[
   In questa tecnica, il trasmettitore è *anarchico*: si preoccupa solo di inviare le informazioni, senza preoccuparsi in alcun modo delle interferenze. È infatti compito del ricevitore di distinguere correttamente tutto ciò che gli arriva.
 ]
 
@@ -269,7 +269,7 @@ Dove:
 
 È possibile considerare questa formula come un "filtro matematico": i segnali che corrispondono effettivamente al codice che ha il trasmettitore, danno un risultato grande, altrimenti uno uguale o molto vicino a zero.
 
-#esempio[
+#example[
   Esempio con 3 utenti:
   #align(center)[
     #table(
@@ -325,6 +325,6 @@ Dove:
 
 Più è alto il numero di utenti, maggiore dev'essere lo *_spreading factor_* (la lunghezza del codice), riducendo al contempo sia il rischio di interpretazioni sbagliate delle informazioni arrivate che del _data rate_ del dispositivo.
 
-#nota[
+#note[
   Questo sistema funziona correttamente se i segnali ricevuti hanno circa la stessa potenza, altrimenti non verrebbero interpretati correttamente i segnali inviati; da qui nascono difficoltà di trasmissione per dispositivi che si trovano lontani. Per ovviare a questo problema, che prende il nome di *Near-Far Problem*, si utilizzano potenze diverse in base alla distanza (di contro, si consuma più batteria del dispositivo).
 ]
