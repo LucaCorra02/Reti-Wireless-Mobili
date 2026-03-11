@@ -269,10 +269,10 @@ Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un'onda* p
           fill: (col, row) => if row == 0 { luma(220) } else if col == 1 { rgb("#e0f2fe") },
           align: center,
           [*Bit*], [*Simbolo*],
-          [00], [-3 V],
+          [00], [3 V],
           [01], [-1 V],
           [10], [1 V],
-          [11], [3 V],
+          [11], [-3 V],
         )
         
         #v(-30pt)
@@ -320,11 +320,11 @@ Andiamo ad utilizzare come parametro la modulazione dell'*ampiezza di un'onda* p
           place(dx: 158pt, dy: 90pt, text(size: 7pt)[00])
           
           // Etichette voltaggio
-          place(dx: -15pt, dy: 17pt, text(size: 6pt)[-3V])
+          place(dx: -15pt, dy: 17pt, text(size: 6pt)[3V])
           place(dx: -15pt, dy: 32pt, text(size: 6pt)[1V])
           place(dx: -15pt, dy: 47pt, text(size: 6pt)[0V])
           place(dx: -15pt, dy: 62pt, text(size: 6pt)[-1V])
-          place(dx: -15pt, dy: 77pt, text(size: 6pt)[3V])
+          place(dx: -15pt, dy: 77pt, text(size: 6pt)[-3V])
         })
       ],
       [
