@@ -159,9 +159,47 @@ Supponiamo che il *canale di trasmissione sia libero*:
 
   - Se *è necessario l'ACK*, dopo aver trasmesso il frame, il sender attende un intervallo di *tempo SIFS*. Se riceve un ACK entro questo intervallo, considera la trasmissione avvenuta con successo. Se non riceve l'ACK, o se riceve un frame di controllo diverso, considera la trasmissione fallita e avvia la procedura di backoff.
 
+#attenzione()[
+  A differenza di ZigBee, in Wi-Fi, la *radio rimane accesa* durante l'attesa del DIFS e del backoff, eseguendo continuamente il carrier sensing. Questo permette di rilevare rapidamente quando il canale diventa occupato da un'altra stazione, ma comporta un consumo energetico maggiore (obbiettivo non primario).
+]
+
+Supponiamo che il *frame venga corrotto* prime della ricezione completa:
+
++ Il destinatario non riesce a decodificare correttamente il frame e quindi non invia un ACK.
+
++ Il sender attende un intervallo di tempo *SIFS*. Siccome non riceve ACK assume che la trasmissione non sia andata a buon fine, di conseguenza ritrasmette lo stesso frame subito. 
+
+#align(center)[
+  #image("../assets/CMDCA-WIFI.png", width: 60%)
+]
+
+#nota()[
+  Siccome il trasmettitore ha ottenuto l'*accesso esclusivo al canale*, aspetta un intervallo di tempo SIFS più breve rispetto al DIFS, garantendo così una risposta rapida e affidabile.
 
 
+  Il canale viene rilasciato una volta che la trasmissione viene completata. Da standard $802.11$ è previsto un massimo numero di tentativi 
+]
 
+Supponiamo che il *canale sia occupato* da un'altra stazione:
+
++ Il sender può rilevare che il canale è occupato durante due momenti: 
+  - CCA 
+  - Durante il periodo di attesa DIFS
+
+  In entrambi i casi, se il sender rileva che il canale è occupato, *rimane in ascolto* fino al termine della trasmissione corrente
+
++ Quando il canale è di nuovo libero, il sender esegue un CCA. Inoltre, rimane in ascolto per un periodo DIFS, PIFS o SIFS, in base alla *priorità del frame* che vuole trasmettere. Se durante questo periodo rileva che il canale è libero, esegue un'ulteriore CCA. 
+
++ Se l'ultima CCA conferma che il canale è libero, il sender *entra in contesa* con tutti gli altri dispositivi che stavano aspettando. Durante la contesa, il sender aspetta un numero casuale di _slot time_ (*Binary Exponential Backoff*) prima di tentare di trasmettere. Durante questo periodo, il sender continua a fare *carrier sensing*. 
+
+
+#align(center)[
+  #image("../assets/CMDCA-WIFI-2.png", width: 65%)
+]  
+
+Se durante il *perido di contesa* il canale *diventa occupato* ci sono due opzioni: 
+  + Il sender al prossimo ciclo riparte dalla contesa con un intervallo più ampio. Si trata di una soluzione *non equa* nei confronti delle stazioni che hanno _perso_ la contensa (rischio di starvation)
+  + Il sender blocca il timer al valore in cui è stato rilevato il canale occupato. Al ciclo successivo riparte da quel valore, garantendo così una maggiore equità tra le stazioni in contesa (soluzione più comune)
 
 == Point Coordination Function (PCF)
 
