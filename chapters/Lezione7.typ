@@ -206,7 +206,7 @@ Se durante il *perido di contesa* il canale *diventa occupato* ci sono due opzio
 Il PCF opera attraverso un *Point Coordinator (PC)*, tipicamente implementato nell'*Access Point* (AP), che controlla l'accesso al canale wireless interrogando sequenzialmente le stazioni che hanno richiesto di operare in modalità PCF.
 
 #nota[
-Il PCF è stato progettato per supportare applicazioni time-sensitive come VoIP o streaming video, garantendo accesso deterministico al mezzo.
+  Il PCF è stato progettato per supportare applicazioni *time-sensitive* come VoIP o streaming video, garantendo accesso deterministico al mezzo.
 ]
 
 Il funzionamento del PCF si basa su due fasi cicliche:
@@ -252,9 +252,8 @@ Il funzionamento del PCF si basa su due fasi cicliche:
 
 Il PCF utilizza un *PIFS (PCF Interframe Space)* più corto del DIFS utilizzato dal DCF. Questo permette al Point Coordinator di ottenere priorità nell'accesso al canale rispetto alle stazioni in modalità DCF.
 
-La gerarchia degli interframe spacing è:
+La *gerarchia degli interframe spacing* è:
 $ "SIFS" < "PIFS" < "DIFS" $
-
 dove:
 - $"SIFS"$ (Short IFS): ~10 μs, usato per ACK e risposte immediate
 - $"PIFS"$ (PCF IFS): ~30 μs, usato dal Point Coordinator
@@ -262,11 +261,11 @@ dove:
 
 === Processo di Polling
 
-Durante il CFP, il Point Coordinator:
+Durante il Content free period, il Point Coordinator:
 
-1. Attende un tempo PIFS dopo che il canale diventa libero
+1. Attende un tempo PIFS dopo che il canale diventa libero (CCA)
 2. Trasmette un frame *CF-Poll* alla stazione successiva nella polling list
-3. La stazione riceve il poll e può trasmettere un frame dati entro un tempo SIFS
+3. La stazione riceve il poll e può trasmettere un frame dati entro un *tempo SIFS*
 4. Se la stazione non ha dati da trasmettere, risponde con un *CF-Null*
 5. Il processo continua fino alla fine del CFP
 
@@ -297,15 +296,15 @@ Durante il CFP, il Point Coordinator:
 
       // CF-Poll to STA1
       line((2, y-pc), (3, y-sta1), mark: (end: ">"), stroke: (paint: blue, thickness: 1.5pt))
-      content((2.5, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
+      content((2.7, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
 
       // Data from STA1
       line((4, y-sta1), (5, y-pc), mark: (end: ">"), stroke: (paint: green, thickness: 1.5pt))
-      content((4.5, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: green)[Data])
+      content((4.7, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: green)[Data])
 
       // CF-Poll to STA2
       line((6, y-pc), (7, y-sta2), mark: (end: ">"), stroke: (paint: blue, thickness: 1.5pt))
-      content((6.5, (y-pc + y-sta2)/2), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
+      content((6.5, (y-pc + y-sta2)/2 + 0.4), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
 
       // CF-Null from STA2
       line((8, y-sta2), (9, y-pc), mark: (end: ">"), stroke: (paint: orange, thickness: 1.5pt))
@@ -327,29 +326,11 @@ Durante il CFP, il Point Coordinator:
   )
 ]
 
-=== Limitazioni del PCF
 
 #attenzione[
-Nonostante i vantaggi teorici, il PCF presenta diverse limitazioni che ne hanno limitato l'adozione pratica:
-- La maggior parte dei dispositivi 802.11 non implementa il PCF (è opzionale)
-- Difficoltà di coordinamento in presenza di stazioni DCF e PCF miste
-- Overhead significativo dovuto ai frame CF-Poll
-- Problemi con il "hidden node" che possono causare collisioni anche durante il CFP
+  Nonostante i vantaggi teorici, il PCF presenta diverse limitazioni che ne hanno limitato l'adozione pratica:
+  - La maggior parte dei dispositivi 802.11 non implementa il PCF (è *opzionale*)
+  - Difficoltà di coordinamento in presenza di *stazioni DCF e PCF miste*
+  - *Overhead significativo* dovuto ai frame CF-Poll
+  - Problemi con il "hidden node" che possono causare collisioni anche durante il CFP
 ]
-
-=== Superframe Structure
-
-Il PCF organizza il tempo in *superframe*, ciascuno composto da un CFP seguito da un CP. La durata del superframe è annunciata dal PC nei beacon frame.
-
-La struttura temporale è:
-$ "Superframe Duration" = "CFP Duration" + "CP Duration" $
-
-Il Point Coordinator annuncia l'inizio del CFP con un frame *Beacon* che contiene:
-- Timestamp
-- Durata massima del CFP (*CFP Max Duration*)
-- Parametri di configurazione
-
-#nota[
-Il CFP può terminare prima della durata massima se il PC ha completato il polling di tutte le stazioni. In questo caso, il PC trasmette un frame *CF-End* per terminare anticipatamente il CFP e permettere alle stazioni DCF di competere per il canale.
-]
-
