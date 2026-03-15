@@ -1,8 +1,6 @@
 #import "../template.typ": *
 
-== Lezione 6
-
-=== Problema del terminale nascosto
+== Problema del terminale nascosto
 
 Per capire il concetto alla base del problema, immaginiamo il seguente scenario:
 
@@ -203,7 +201,7 @@ Lo schema appena descritto è il seguente:
   ]
 )
 
-=== 802.11 Frammentazione
+== 802.11 Frammentazione
 Il canale radio è molto sensibile alle interferenze e al rumore, di conseguenza è ragionevole ridurre la dimensione della _frame MAC_ (_frame LLC_ suddivisa in frammenti più piccoli, la cui dimensione cambia in base alle condizioni del canale).
 
 #nota[
@@ -224,7 +222,7 @@ Chiaramente, per ogni frammento, è necessario aggiungere informazioni riguardo 
 
 Inoltre, la frammentazione e la correzione degli errori viene sempre effettuata a livello *MAC*, tra dispositivo e *Access Point*: lasciare la correzione dei dati a livelli superiori (come ad esempio il _TCP_), porterebbe inevitabilmente a ritardi e tempi di trasmissione allungati, poiché sarebbe il destinatario ad accorgersi dell'errore e a chiedere una nuova trasmissione.
 
-=== 802.11 con infrastruttura
+== 802.11 con infrastruttura
 
 #figure(
   image("../assets/802.11_infrastruttura.png", width: 70%)
@@ -475,7 +473,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
   ]
 )
 
-=== Formato frame MAC
+== Formato frame MAC
 
 #figure(
   align(center)[
@@ -620,7 +618,7 @@ Nello schema precedente, abbiamo citato i possibili 4 indirizzi che possono esse
   ]
 ]
 
-=== Orthogonal Frequency-Division Multiple Access in Wi-Fi 6
+== Orthogonal Frequency-Division Multiple Access in Wi-Fi 6
 Wi-Fi 6 utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5): i router non gestiscono più il traffico tramite sistema "uno alla volta", ma grazie ad uno "tutti insieme".
 
 Dal punto di vista grafico, possiamo visualizzare l'utilizzo di *OFDM (Orthogonal Frequency-Division Multiplexing)* con *TDMA (Time Division Multiple Access)* così:
@@ -691,4 +689,170 @@ Con *OFDMA*, la situazione sarebbe leggermente diversa:
   Come si può notare dalle 2 figure, la seconda ha vari quadretti colorati mischiati; di fatti, nello stesso lasso di tempo, in *OFDMA* vediamo colori diversi, ovvero utenti/dispositivi diversi. Tutto questo incrementa drasticamente l'efficienza della trasmissione.
 ]
 
-==== Resource Unit (RU)
+=== Resource Unit (RU)
+In *Wi-Fi 6 (802.11ax)*, il canale non viene piu visto come un unico blocco assegnato a un solo utente per volta, ma viene suddiviso in porzioni piu piccole dette *Resource Unit (RU)*.
+
+Una *RU* e quindi un insieme di sottoportanti OFDM contiguous assegnato a uno specifico terminale per una singola trasmissione.
+
+Le ampiezze piu comuni delle *RU* (espresse in numero di sottoportanti) sono:
+- *26-tone RU*: tipicamente usata per traffico leggero (telemetria, IoT, piccoli pacchetti);
+- *52-tone RU* e *106-tone RU*: compromesso tra efficienza e velocita;
+- *242-tone RU* (e superiori): usata quando un utente necessita di throughput maggiore.
+
+In modo intuitivo: piu grande e la *RU*, maggiore e la porzione di canale assegnata all'utente e quindi maggiore il bitrate potenziale.
+
+#nota[
+  L'idea centrale di *OFDMA* e ridurre il tempo di attesa medio: invece di fare trasmissioni lunghe e seriali per tanti dispositivi, l'*Access Point* puo servire molti utenti insieme, anche con porzioni di banda diverse.
+]
+
+=== OFDMA - Wi-Fi 6 (802.11ax)
+Con *OFDMA*, il coordinamento delle trasmissioni torna fortemente nelle mani dell'*AP*: e il livello *MAC* del punto di accesso a decidere chi trasmette, quando e con quale *RU*.
+
+I vantaggi principali sono:
+- riduzione della contesa sul canale, soprattutto in ambienti ad alta densita;
+- minore latenza per traffico a piccoli pacchetti;
+- migliore efficienza spettrale rispetto al meccanismo "uno alla volta".
+
+Dal punto di vista operativo, in 802.11ax convivono due modalita:
+- *DL-OFDMA (downlink)*: e l'*AP* che invia dati a piu stazioni nello stesso intervallo temporale;
+- *UL-OFDMA (uplink)*: e l'*AP* che sincronizza le trasmissioni di piu stazioni verso l'alto (tipicamente tramite *Trigger Frame*).
+
+#informalmente[
+  In reti affollate, *OFDMA* evita che tanti dispositivi "facciano a spallate" per parlare. L'*AP* distribuisce turni e porzioni di spettro in modo ordinato, come un controllore del traffico.
+]
+
+=== Assegnamento RU (MAC) - esempio
+Supponiamo che un *AP* debba servire quattro terminali con richieste diverse nello stesso intervallo:
+- *STA1*: pochi byte (sensore);
+- *STA2*: traffico web interattivo;
+- *STA3*: trasferimento file;
+- *STA4*: stream audio.
+
+Un possibile assegnamento *MAC* in un canale da 20 MHz puo essere:
+
+#align(center)[
+  #table(
+    columns: (1.1fr, 1fr, 1fr, 1.2fr),
+    align: center + horizon,
+    inset: 6pt,
+    stroke: 0.5pt + black,
+
+    [*Stazione*], [*Coda dati*], [*RU assegnata*], [*Obiettivo*],
+
+    [STA1], [Molto bassa], [26-tone], [Minimo overhead],
+    [STA2], [Media], [52-tone], [Bassa latenza],
+    [STA3], [Alta], [242-tone], [Massimo throughput],
+    [STA4], [Media], [106-tone], [Flusso regolare]
+  )
+]
+
+In questo esempio, il livello *MAC* non cerca di dare la stessa banda a tutti, ma assegna risorse in funzione del carico e del tipo di traffico.
+
+#esempio[
+  Se *STA1* inviasse un solo pacchetto di controllo ogni secondo, assegnarle una *RU* grande sarebbe inefficiente: meglio una *26-tone* e lasciare risorse a *STA3*, che ha una coda lunga.
+]
+
+=== OFDMA - Wi-Fi 6 (802.11ax) - DL-OFDMA
+Nel *DL-OFDMA* il flusso e centrato sull'*AP*:
+- l'*AP* costruisce una trasmissione multiutente;
+- divide il canale in piu *RU*;
+- mappa ogni *RU* su una stazione specifica;
+- tutte le stazioni destinatarie ricevono nello stesso istante, ciascuna sulla propria porzione di spettro.
+
+Questo approccio e molto efficace quando l'*AP* ha molte code downlink piccole o medie, perche evita di serializzare pacchetti corti su trasmissioni separate.
+
+Una sequenza tipica e:
+- pianificazione delle code al *MAC* dell'*AP*;
+- trasmissione *PPDU HE* con piu utenti in parallelo;
+- conferma ricezione (a seconda del caso, immediata o aggregata) e nuova schedulazione.
+
+#nota[
+  In pratica, il guadagno maggiore del *DL-OFDMA* non e solo il picco di velocita, ma la stabilita delle prestazioni quando molti dispositivi sono attivi contemporaneamente.
+]
+
+== 802.11 - canali banda 2.4 GHz (80MHz)
+La banda *2.4 GHz* copre circa 80 MHz utili (in realta poco piu di 80 MHz), ma i canali standard Wi-Fi hanno larghezza tipica di 20 MHz e risultano fortemente sovrapposti.
+
+Per questo motivo, nella pianificazione classica si usano canali non sovrapposti:
+- *Canale 1*;
+- *Canale 6*;
+- *Canale 11*.
+
+Con questa scelta si riducono interferenza co-canale e interferenza adiacente, migliorando la qualita media in ambienti domestici e aziendali.
+
+#attenzione[
+  Nella banda 2.4 GHz il problema principale non e solo il Wi-Fi vicino, ma anche il rumore di altri apparati (Bluetooth, dispositivi industriali, forni a microonde, ecc.).
+]
+
+== 802.11 - canali banda 5 GHz (500MHz)
+La banda *5 GHz* offre una disponibilita spettrale molto piu ampia (ordine di centinaia di MHz, tipicamente circa 500 MHz o piu a seconda del dominio regolatorio), quindi permette:
+- piu canali non sovrapposti;
+- maggiore probabilita di trovare un canale libero;
+- uso piu flessibile di canali larghi (40/80/160 MHz).
+
+In generale, rispetto a 2.4 GHz:
+- prestazioni medie superiori in ambienti densi;
+- minore portata a parita di potenza (attenuazione maggiore);
+- migliore riuso frequenziale tra celle vicine.
+
+#nota[
+  In molte reti reali si preferisce tenere i client ad alto traffico su 5 GHz e lasciare 2.4 GHz ai dispositivi legacy o a basso bitrate.
+]
+
+== IEEE 802.11 WLAN security (alto livello)
+La sicurezza in *IEEE 802.11* si basa su tre obiettivi principali:
+- *autenticazione*: verificare l'identita del terminale e/o della rete;
+- *confidenzialita*: cifrare il traffico dati;
+- *integrita*: impedire alterazioni non autorizzate dei frame.
+
+Gli schemi moderni piu rilevanti sono:
+- *WPA2* (basato su *AES-CCMP*);
+- *WPA3* (introduce miglioramenti di robustezza, incluso *SAE* in modalita personal).
+
+#informalmente[
+  A livello concettuale: prima si scopre la rete, poi si negozia "chi sei" e "come cifriamo", infine si trasmettono dati protetti con chiavi temporanee.
+]
+
+=== IEEE 802.11 WLAN security - Fasi delle operazioni
+Una vista ad alto livello delle fasi e:
+- *Discovery*: il client scopre le reti disponibili e i relativi parametri di sicurezza;
+- *Autenticazione/Associazione*: il client e l'*AP* concordano il metodo di accesso;
+- *Gestione chiavi*: derivazione e installazione delle chiavi di sessione;
+- *Data Protection*: traffico cifrato e protetto con controllo di integrita;
+- *Rekeying/Teardown*: rinnovo periodico chiavi o chiusura sessione.
+
+=== IEEE 802.11 WLAN security - Discovery
+Nella fase di *Discovery*, il client ottiene informazioni dai frame di management (beacon/probe response), tra cui:
+- *SSID*;
+- capacita radio;
+- suite di sicurezza supportate (*RSN information*).
+
+In base a questi elementi il terminale decide se puo procedere con quella rete (ad esempio rete personale con *PSK/SAE* o rete enterprise con *802.1X/EAP*).
+
+#esempio[
+  Se un client supporta solo *WPA2* e la rete e configurata in sola modalita *WPA3-Enterprise*, il processo si interrompe gia in discovery per incompatibilita delle suite.
+]
+
+=== IEEE 802.11 WLAN security - Autenticazione & gestione chiavi
+Dopo la discovery, il nodo entra nella fase di autenticazione e creazione del contesto crittografico.
+
+Caso *Personal* (WPA2-PSK / WPA3-SAE):
+- autenticazione basata su segreto condiviso o scambio *SAE*;
+- derivazione delle chiavi di sessione;
+- installazione chiavi per cifrare il traffico unicast e broadcast.
+
+Caso *Enterprise* (802.1X / EAP):
+- autenticazione verso un server *AAA* (tipicamente *RADIUS*), mediata dall'*AP*;
+- ottenimento di materiale crittografico condiviso;
+- distribuzione chiavi di sessione verso client e AP.
+
+In entrambi i casi, una fase cruciale e il *4-Way Handshake*, che consente di:
+- confermare che entrambe le parti possiedono il materiale chiave corretto;
+- derivare/installare la *PTK* (chiave per traffico unicast);
+- sincronizzare contatori e parametri di sicurezza;
+- avviare la protezione effettiva dei frame dati.
+
+#attenzione[
+  Le vulnerabilita piu comuni non derivano solo dall'algoritmo, ma da password deboli, configurazioni errate, certificati non validati o dispositivi non aggiornati.
+]
+
