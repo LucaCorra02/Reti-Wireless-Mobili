@@ -31,11 +31,23 @@ I quattro parametri che definiscono il comportamento di ciascuna *Access Categor
 
 / *CW_max (Contention Window Maximum)*: Valore massimo della finestra di contesa dopo collisioni multiple. Ad ogni collisione, la CW viene raddoppiata fino a raggiungere CW_max. 
 
-/ *AIFSN (Arbitration Inter-Frame Space Number)*: Numero di slot time da attendere dopo SIFS prima di poter accedere al canale. La formula è:
-  $ "AIFSN" = "SIFS" + "N" "SlotTime" $
+/ *AIFSN (Arbitration Inter-Frame Space Number)*: Numero di slot time da attendere dopo SIFS prima di poter accedere al canale. Definisce la *lunghezza del tempo di attesa*; il $+2$ è il minimo, equivalente a DIFS in totale (per definizione di DIFS):
+$
+  "AIFSN" = "SIFS" + N * "Slot time"\
+  "DIFS" = "SIFS" + 2 * "Slot time"
+$
+
   *Valori* più *alti* di AIFSN significano *priorità più bassa*.
 
 / *TXOP Limit (Transmission Opportunity)*: Tempo massimo (in microsecondi) per cui una stazione può mantenere il *controllo del canale* dopo averlo ottenuto. Un valore di 0 significa che si può trasmettere un solo frame.
+
+Dalla tabella si può osservare come per lo streaming video, e ancora di più per la voce, viene ridotta la contention window, così come il tempo di attesa massimo.
+
+#nota()[
+  Le contenction window delle varie categorie sono *mutualmente esclusive*, andando a creare un _ordine di priorità_: voce, video, poi il resto. 
+  
+  Si tratta di una definizione più granulare delle politiche di accesso al canale in contesa, permettendo di ridurre i tempi per le applicazioni che ne necessitano.
+]
 
 #esempio[
 *Traffico Voice (AC_VO)*: 
@@ -198,7 +210,7 @@ I servizi QoS vengono richiesti a *livello MAC* in base alla configurazione dell
   La configurazione EDCA deve essere coordinata tra Access Point e stazioni. L'AP comunica i parametri EDCA nei beacon frame. Configurazioni errate o aggressive (es. tutti i client che usano AC_VO) possono degradare le performance  complessive della rete.
 ]
 
-== Applicazioni Veicolari con 802.11p (Non in esame)
+== Applicazioni Veicolari con 802.11p //Non in esame
 
 *IEEE 802.11p* è progettato per comunicazioni veicolari *V2V* (Vehicle-to-Vehicle) e *V2I* (Vehicle-to-Infrastructure). Le caratteristiche operative principali sono:
 

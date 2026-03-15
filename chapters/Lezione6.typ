@@ -5,7 +5,7 @@
 Per capire il concetto alla base del problema, immaginiamo il seguente scenario:
 
 #figure(
-  image("/assets/terminale_nascosto.png", width: 40%),
+  image("/assets/terminale_nascosto.png", width: 60%),
   caption: [Schema del problema.],
 )
 
@@ -89,15 +89,19 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
   ]
 )
 
-La soluzione a questo problema risiede nell'invio di una *Request to Send (RTS)*, da parte di chi vuole trasmettere (il _sender_), verso *tutti* i terminali presenti nel proprio raggio di copertura. Questa richiesta contiene l'indirizzo della sorgente e della destinazione, la durata stimata dell'*RTS* stesso e un _ack_ finale. 
+La soluzione a questo problema risiede nell'invio di una *Request to Send (RTS)*, da parte di chi vuole trasmettere (il _sender_), verso *tutti* i terminali presenti nel proprio raggio di copertura. Questa richiesta contiene:
+  - l'indirizzo della sorgente 
+  - l'indirizzo della destinazione
+  - la durata stimata dell'*RTS* stesso e un _ack_ finale. 
 
 I terminali ai quali non è destinata la richiesta, scartano l'*RTS* e allocano un *Network Allocation Vector (NAV)*, che corrisponde a un tempo in cui sanno di non poter trasmettere (questo tempo viene stimato sulla base delle informazioni raccolte prima di scartare la *Request to Send*).
 
-Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send CTS*, che al suo interno contiene indirizzo di sorgente e destinazione e il tempo rimanente fino al termine della trasmissione. Questo tempo viene calcolato, partendo dalla stima contenuta nell'*RTS* e sottraendogli il tempo passato per "trovare" la destinazione.
+Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send CTS* a tutti i vicini nel suo raggio di copertura. Il CTS contiene:
+  - l'indirizzo di sorgente 
+  - l'indirizzo della destinazione
+  - il tempo rimanente fino al termine della trasmissione. Questo tempo viene calcolato partendo dalla stima contenuta nell'*RTS*, sottraendo il tempo passato per "trovare" la destinazione.
 
-Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve a far sapere a tutti che un altro nodo, all'esterno, vuole comunicare con il terminale destinatario.
-
-#pagebreak()
+Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve per avvisare tutti i terminali nel raggio del destinatatrio che un'altro nodo all'esterno vuole comunicare con il terminale destinatario.
 
 Lo schema appena descritto è il seguente:
 
@@ -202,14 +206,10 @@ Lo schema appena descritto è il seguente:
 )
 
 == 802.11 Frammentazione
-Il canale radio è molto sensibile alle interferenze e al rumore, di conseguenza è ragionevole ridurre la dimensione della _frame MAC_ (_frame LLC_ suddivisa in frammenti più piccoli, la cui dimensione cambia in base alle condizioni del canale).
+Il canale radio è molto sensibile alle interferenze e al rumore, di conseguenza è ragionevole *ridurre la dimensione* della _frame MAC_ (_frame LLC_ suddivisa in frammenti più piccoli, la cui dimensione cambia in base alle condizioni del canale).
 
-#nota[
-  Un altro motivo per cui si riduce la dimensione della _frame_, riguarda anche quanto sia grande quest'ultima: dallo standard *Ethernet*, infatti, è di 1522 byte.
-
-  #esempio[
-    Per capire informalmente questo concetto, supponiamo che la pioggia che cade a terra casualmente sia il rumore, mentre una persona che deve correre sotto la pioggia è il pacchetto che deve viaggiare lungo il canale radio. Avere un _frame_ piccolo, equivale a correre sotto la pioggia per 1 secondo, con meno probabilità di bagnarsi; al contrario, un _frame_ grande corrisponde a una corsa più duratura, con più gocce/rumore che colpiscono.
-  ]
+#esempio[
+  Supponiamo che la pioggia che cade a terra casualmente sia il rumore, mentre una persona che deve correre sotto la pioggia è il pacchetto che deve viaggiare lungo il canale radio. Avere un _frame_ piccolo, equivale a correre sotto la pioggia per 1 secondo, con meno probabilità di bagnarsi; al contrario, un _frame_ grande corrisponde a una corsa più duratura, con più gocce/rumore che colpiscono.
 ]
 
 Possiamo immaginare la frammentazione così:
@@ -220,7 +220,7 @@ Possiamo immaginare la frammentazione così:
 
 Chiaramente, per ogni frammento, è necessario aggiungere informazioni riguardo al *NAV*, per i dispotivi che non sono direttamente coinvolti nella comunicazione.
 
-Inoltre, la frammentazione e la correzione degli errori viene sempre effettuata a livello *MAC*, tra dispositivo e *Access Point*: lasciare la correzione dei dati a livelli superiori (come ad esempio il _TCP_), porterebbe inevitabilmente a ritardi e tempi di trasmissione allungati, poiché sarebbe il destinatario ad accorgersi dell'errore e a chiedere una nuova trasmissione.
+Inoltre, la *frammentazione* e la *correzione degli errori* viene sempre effettuata a livello *MAC*, tra dispositivo e *Access Point*: lasciare la correzione dei dati a livelli superiori (come ad esempio il _TCP_), porterebbe inevitabilmente a ritardi e tempi di trasmissione allungati, poiché sarebbe il destinatario ad accorgersi dell'errore e a chiedere una nuova trasmissione.
 
 == 802.11 con infrastruttura
 
@@ -234,8 +234,71 @@ Dallo schema di questa infrastruttura è possibile distinguere tra:
 
 Il *sistema distribuito* è collegato alla _LAN_ tramite un router/bridge e l'*Extended Service Set* viene visto esternamente come un unico *Basic Service Set* per il *Logical Link Layer* (livello 2 _data link_), per funzionalità di roaming fra *AP* diversi.
 
-=== 802.11 Point Coordination Function (PCF)
-La modalità *Point Coordination Function* permette ad un *AP* di essere il "_dittatore_" della rete per garantire qualità del servizio: tutti i frame passano per l'*AP* e questo garantisce un servizio *time-bounded* (particolarmente utile per i _delay_).
+=== Point Coordination Function (PCF)
+
+Il PCF opera attraverso un *Point Coordinator (PC)*, tipicamente implementato nell'*Access Point* (AP), che controlla l'accesso al canale wireless interrogando sequenzialmente le stazioni che hanno richiesto di operare in modalità PCF.
+
+#nota[
+  Il PCF è stato progettato per supportare applicazioni *time-sensitive* come VoIP o streaming video, garantendo accesso deterministico al mezzo.
+]
+
+Nella modalità PCF, l'AP controlla l'accesso al canale radio:
++ Tutto il traffico passa dall'AP
++ Le stazioni associate ad AP usano DCF con tempistiche SIFS e DIFS per accedere al canale
++ AP usa *PIFS* In questo modo AP riesce ad _impossessarsi_ del canale radio prima delle
+stazioni in attesa.
+
+=== Beacon Frame
+
+Per garantire il funzionamento corretto del *PCF*, l'*AP* necessita di prendere il controllo del canale radio prima delle stazioni in attesa. A questo proposito, l'*Access Point* invia periodicamente (ogni 10-100s) dei *beacon frame*, che contengono:
+- Parametri operativi *PHY*: _bit rate_ e _Modulation Coding Scheme_, ovvero tutte le capacità fisiche dell'*AP*;
+- Sincronizzazione: qualsiasi dispositivo voglia scambiare messaggi con l'*Access Point*, deve opportunamente sincronizzare il proprio clock;
+- Supporto a *PCF*: informazioni utili per garantire il funzionamento di questa modalità;
+- Invito per nuove stazioni non ancora associate.
+
+==== Divisione del tempo
+
+Ogni blocco temporale che compone un *superframe* è composto da 2 blocchi distinti:
+
+- Parte con accesso *senza contesa* (CFP): necessaria per servizi _time-bounded_ (es. servizi in streaming in cui i dati devono viaggiare sicuri e senza ritardi). Periodo *controllato dal Point Coordinator* dove non c'è competizione per l'accesso al mezzo. Il PC interroga le stazioni in modalità round-robin.
+
+- Parte con accesso *con contesa* (CP): necessaria per lo "smaltimento" del traffico normale (es. download di documenti e file multimediali, in cui un minimo ritardo o una collisione occasionale non è particolarmente grave). Periodo in cui le stazioni utilizzano il *DCF standard* (CSMA/CA) per accedere al canale.
+
+Sostanzialmente, questa divisione è fondamentale perché l'*AP* si preoccupa di interrogare chi ha urgenza e lascia poi liberi tutti gli altri per i propri servizi.
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 0.8cm, {
+      import cetz.draw: *
+
+      let w = 3.5
+      let h = 1.2
+      let gap = 0.3
+
+      // CFP blocks
+      rect((0, 0), (w, h), fill: rgb("#4472C4"), stroke: black)
+      content((w/2, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
+
+      rect((w + gap, 0), (2*w + gap, h), fill: rgb("#ED7D31"), stroke: black)
+      content((1.5*w + gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
+
+      rect((2*w + 2*gap, 0), (3*w + 2*gap, h), fill: rgb("#4472C4"), stroke: black)
+      content((2.5*w + 2*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
+
+      rect((3*w + 3*gap, 0), (4*w + 3*gap, h), fill: rgb("#ED7D31"), stroke: black)
+      content((3.5*w + 3*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
+
+      // Time arrow
+      line((0, -0.8), (4*w + 3*gap, -0.8), mark: (end: ">", fill: black))
+      content((2*w + 1.5*gap, -1.2), text(weight: "bold")[Tempo])
+
+      // Labels
+      content((w/2, h + 0.8), text(size: 0.8em)[Polling])
+      content((1.5*w + gap, h + 0.8), text(size: 0.8em)[CSMA/CA])
+    }),
+    caption: [Alternanza tra Contention-Free Period e Contention Period]
+  )
+]
 
 #nota[
   Nella modalità *CDF*, tutti i dispositivi sono uguali: se c'è silezio, aspettano un tempo casuale e provano a trasmettere. Il difetto di questo sistema è che è imprevedibile.
@@ -246,86 +309,26 @@ La modalità *Point Coordination Function* permette ad un *AP* di essere il "_di
   Far prendere all'*AP* il comando di tutto risolve il problema: i dispositivi non si occupano di quando "prendere" il canale, ma è l'*AP* stesso che assegna i turni.
 ]
 
-==== Beacon Frame
-Per garantire il funzionamento corretto del *PCF*, l'*AP* necessita di prendere il controllo del canale radio prima delle stazioni in attesa. A questo proposito, l'*Access Point* invia periodicamente (ogni 10-100s) dei *beacon frame*, che contengono:
-- Parametri operativi *PHY*: _bit rate_ e _Modulation Coding Scheme_, ovvero tutte le capacità fisiche dell'*AP*;
-- Sincronizzazione: qualsiasi dispositivo voglia scambiare messaggi con l'*Access Point*, deve opportunamente sincronizzare il proprio clock;
-- Supporto a *PCF*: informazioni utili per garantire il funzionamento di questa modalità;
-- Invito per nuove stazioni non ancora associate.
+=== Interframe Spacing in PCF
 
-==== Divisione del tempo
-Ogni blocco temporale che compone un *superframe* è composto da 2 blocchi distinti:
-- Parte con accesso *senza contesa*: necessaria per servizi _time-bounded_ (es. servizi in streaming in cui i dati devono viaggiare sicuri e senza ritardi);
-- Parte con accesso *con contesa*: necessaria per lo "smaltimento" del traffico normale (es. download di documenti e file multimediali, in cui un minimo ritardo o una collisione occasionale non è particolarmente grave).
+Il PCF utilizza un *PIFS (PCF Interframe Space)* più corto del DIFS utilizzato dal DCF. Questo permette al Point Coordinator di ottenere priorità nell'accesso al canale rispetto alle stazioni in modalità DCF.
 
-Sostanzialmente, questa divisione è fondamentale perché l'*AP* si preoccupa di interrogare chi ha urgenza e lascia poi liberi tutti gli altri per i propri servizi.
+La *gerarchia degli interframe spacing* è:
+$ "SIFS" < "PIFS" < "DIFS" $
+dove:
+- $"SIFS"$ (Short IFS): ~10 μs, usato per ACK e risposte immediate
+- $"PIFS"$ (PCF IFS): ~30 μs, usato dal Point Coordinator
+- $"DIFS"$ (DCF IFS): ~50 μs, usato dalle stazioni in DCF
 
-#pagebreak()
+=== Processo di Polling
 
-Lo schema di divione del tempo è rappresentabile così:
+Durante il Content free period, il Point Coordinator:
 
-#figure(
-  align(center)[
-    #box(width: 520pt, height: 240pt, {
-      let dark-red = rgb("#842A35")
-      let blue-c = rgb("#4A72B2")
-      let line-col = rgb("#333333")
-      let t-size = 8.5pt
-
-      let draw-dbl-arrow(x1, x2, y, label: none, label-dy: 0pt) = {
-        place(dx: x1, dy: y, line(start: (0pt, 0pt), end: (x2 - x1, 0pt), stroke: 1pt + blue-c))
-        place(dx: x1, dy: y, polygon(fill: blue-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
-        place(dx: x2, dy: y, polygon(fill: blue-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
-        if label != none {
-          let cx = (x1 + x2) / 2
-          let w = 220pt
-          place(dx: cx - w/2, dy: y + label-dy, block(width: w, align(center, text(size: t-size, fill: line-col)[#label])))
-        }
-      }
-
-      let draw-box(x, y, w, h, col, content) = {
-        place(dx: x, dy: y, rect(width: w, height: h, fill: col, stroke: 1.5pt + black))
-        place(dx: x, dy: y, block(width: w, height: h, align(center + horizon, text(fill: white, size: 8.5pt)[#content])))
-      }
-
-      let centered-text(cx, y, w, content) = {
-        place(dx: cx - w/2, dy: y, block(width: w, align(center, text(size: t-size, fill: line-col)[#content])))
-      }
-
-      place(dx: 10pt, dy: 120pt, line(start: (0pt, 0pt), end: (490pt, 0pt), stroke: 1pt + black))
-      place(dx: 500pt, dy: 120pt, polygon(fill: black, (0pt, 0pt), (-6pt, 3pt), (-6pt, -3pt)))
-
-      place(dx: 40pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
-      place(dx: 260pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
-      place(dx: 480pt, dy: 25pt, line(start: (0pt, 0pt), end: (0pt, 110pt), stroke: 0.5pt + black))
-      
-      place(dx: 300pt, dy: 50pt, line(start: (0pt, 0pt), end: (0pt, 140pt), stroke: 0.5pt + black))
-
-      place(dx: 270pt, dy: 135pt, line(start: (0pt, 0pt), end: (0pt, 50pt), stroke: 0.5pt + black))
-      place(dx: 400pt, dy: 135pt, line(start: (0pt, 0pt), end: (0pt, 50pt), stroke: 0.5pt + black))
-
-      draw-dbl-arrow(40pt, 260pt, 40pt, label: [Superframe (fixed nominal length)], label-dy: -14pt)
-      draw-dbl-arrow(260pt, 480pt, 40pt, label: [Superframe (fixed nominal length)], label-dy: -14pt)
-      draw-dbl-arrow(300pt, 480pt, 65pt, label: [Foreshortened actual superframe period], label-dy: -14pt)
-
-      draw-dbl-arrow(270pt, 300pt, 175pt)
-      draw-dbl-arrow(300pt, 400pt, 175pt)
-
-      draw-box(40pt, 105pt, 100pt, 30pt, dark-red, [PCF (optional)])
-      draw-box(210pt, 105pt, 60pt, 30pt, dark-red, [Busy medium])
-      draw-box(300pt, 105pt, 100pt, 30pt, dark-red, [PCF (optional)])
-
-      centered-text(90pt, 73pt, 120pt, [Contention-free\ period])
-      centered-text(90pt, 140pt, 140pt, [Variable length\ (per superframe)])
-      
-      centered-text(175pt, 82pt, 100pt, [Contention period])
-      centered-text(175pt, 106pt, 100pt, [DCF])
-
-      centered-text(285pt, 183pt, 80pt, [PCF\ defers])
-      centered-text(350pt, 183pt, 140pt, [CF-Burst;\ asynchronous\ traffic defers])
-    })
-  ]
-)
+1. Al termine della comunicazione precedente, tutti i dispositivi cominciano ad attendere un tempo DIFS, ma l'AP aspetta un tempo PIFS, quindi prende il lock sul canale prima degli altri, iniziando il periodo di contesa
+2. Trasmette un frame *CF-Poll* alla stazione successiva nella polling list
+3. La stazione riceve il poll e può trasmettere un frame dati entro un *tempo SIFS* (per non rischiare di perdere il lock sul canale).
+4. Se la stazione non ha dati da trasmettere, risponde con un *CF-Null*
+5. Il processo continua fino alla fine del CFP
 
 Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
 
@@ -473,6 +476,19 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
   ]
 )
 
+
+
+
+#attenzione[
+  Nonostante i vantaggi teorici, il PCF presenta diverse limitazioni che ne hanno limitato l'adozione pratica:
+  - La maggior parte dei dispositivi 802.11 non implementa il PCF (è *opzionale*)
+  - Difficoltà di coordinamento in presenza di *stazioni DCF e PCF miste*
+  - *Overhead significativo* dovuto ai frame CF-Poll
+  - Problemi con il "hidden node" che possono causare collisioni anche durante il CFP
+]
+
+
+
 == Formato frame MAC
 
 #figure(
@@ -618,8 +634,19 @@ Nello schema precedente, abbiamo citato i possibili 4 indirizzi che possono esse
   ]
 ]
 
-== Orthogonal Frequency-Division Multiple Access in Wi-Fi 6
-Wi-Fi 6 utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5): i router non gestiscono più il traffico tramite sistema "uno alla volta", ma grazie ad uno "tutti insieme".
+Le ultime 3 righe fanno riferimento alla casistica in cui sono presenti più celle e serve routing tra di queste. I casi sono:
+- $01$ From DS, verso un AP all'interno della cella, letto nell'indirizzo 2
+- $10$ Verso il DS, indico cella e indirizzo di destinazione
+- $11$ Da e Verso il DS, devo sapere da dove arriva e dove inviare, oltre che l'indirizzo originale e finale (routing tra celle)
+
+== Orthogonal Frequency Division Multiple Access (OFDMA)
+in Wi-Fi 6 viene utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5) chiamata *OFDMA ( Orthogonal Frequency Division Multiple Access OFDM)*: Tale tecnica permette di suddividere il canale in più sottoportanti, assegnando a ciascun utente una porzione specifica del canale, *consentendo connettività a più dispositivi contemporaneamente*. 
+
+Nelle versioni precedenti, tutte le sottoportanti erano usate per un dispositivo alla volta (OFDM, dove M sta per Multiplexing). Con OFDMA c'è la possibilità di fornire gruppi di canali diversi a dispositivi diversi.
+
+#informalmente()[
+  I router non gestiscono più il traffico tramite una politcia _uno alla volta_, ma grazie ad una politica _tutti insieme_.
+]
 
 Dal punto di vista grafico, possiamo visualizzare l'utilizzo di *OFDM (Orthogonal Frequency-Division Multiplexing)* con *TDMA (Time Division Multiple Access)* così:
 
@@ -686,13 +713,17 @@ Con *OFDMA*, la situazione sarebbe leggermente diversa:
 ]
 
 #nota[
-  Come si può notare dalle 2 figure, la seconda ha vari quadretti colorati mischiati; di fatti, nello stesso lasso di tempo, in *OFDMA* vediamo colori diversi, ovvero utenti/dispositivi diversi. Tutto questo incrementa drasticamente l'efficienza della trasmissione.
+  L'idea centrale di *OFDMA* e ridurre il tempo di attesa medio: invece di fare trasmissioni lunghe e seriali per tanti dispositivi, l'*Access Point* puo servire molti utenti insieme, anche con porzioni di banda diverse.
+
+  Facendo questo *si complica lo scheduling*: al posto di assegnare solo lo slot di tempo bisogna assegnare tempo e gruppo di frequenze ad ogni applicazione. 
 ]
 
 === Resource Unit (RU)
-In *Wi-Fi 6 (802.11ax)*, il canale non viene piu visto come un unico blocco assegnato a un solo utente per volta, ma viene suddiviso in porzioni piu piccole dette *Resource Unit (RU)*.
 
-Una *RU* e quindi un insieme di sottoportanti OFDM contiguous assegnato a uno specifico terminale per una singola trasmissione.
+Come visto in precedenza, in *Wi-Fi 6 (802.11ax)*, il canale non viene piu visto come un unico blocco assegnato a un solo utente per volta, ma viene suddiviso in porzioni piu piccole dette *Resource Unit (RU)*.
+
+Una *RU* e quindi un *insieme di sottoportanti OFDM contigue* assegnate a uno specifico terminale per una singola trasmissione. Si tratta dunque dell'unità base di suddivisione della banda.\
+La dimensione delle RU è variabile e dipende dalla banda disponibile e da come l'AP vuole allocare le risorse agli utenti. 
 
 Le ampiezze piu comuni delle *RU* (espresse in numero di sottoportanti) sono:
 - *26-tone RU*: tipicamente usata per traffico leggero (telemetria, IoT, piccoli pacchetti);
@@ -701,158 +732,180 @@ Le ampiezze piu comuni delle *RU* (espresse in numero di sottoportanti) sono:
 
 In modo intuitivo: piu grande e la *RU*, maggiore e la porzione di canale assegnata all'utente e quindi maggiore il bitrate potenziale.
 
-#nota[
-  L'idea centrale di *OFDMA* e ridurre il tempo di attesa medio: invece di fare trasmissioni lunghe e seriali per tanti dispositivi, l'*Access Point* puo servire molti utenti insieme, anche con porzioni di banda diverse.
+#nota()[
+  *Non* tutta la banda viene suddivisa in *RU*: una parte e riservata per il controllo e la gestione del canale, oltre che per garantire un *margine di guardia* tra le RU per evitare interferenze.
 ]
 
-=== OFDMA - Wi-Fi 6 (802.11ax)
-Con *OFDMA*, il coordinamento delle trasmissioni torna fortemente nelle mani dell'*AP*: e il livello *MAC* del punto di accesso a decidere chi trasmette, quando e con quale *RU*.
+Alcune sottoportanti vengono utilizzate come *pilots*: Trasmettono un'onda definita dallo standard, in modo da permettere al ricevitore di stimare la qualità del canale e correggere eventuali distorsioni o interferenze. Tale trasmissioni vengono ripetute periodicamente per mantenere una stima aggiornata del canale, soprattutto in ambienti dinamici.
 
-I vantaggi principali sono:
-- riduzione della contesa sul canale, soprattutto in ambienti ad alta densita;
-- minore latenza per traffico a piccoli pacchetti;
-- migliore efficienza spettrale rispetto al meccanismo "uno alla volta".
+=== Identificazione delle RU
 
-Dal punto di vista operativo, in 802.11ax convivono due modalita:
-- *DL-OFDMA (downlink)*: e l'*AP* che invia dati a piu stazioni nello stesso intervallo temporale;
-- *UL-OFDMA (uplink)*: e l'*AP* che sincronizza le trasmissioni di piu stazioni verso l'alto (tipicamente tramite *Trigger Frame*).
+L'AP utilizza un campo specifico all'interno del frame di controllo per indicare quali RU sono state assegnate a ciascun utente. Questo campo, chiamato *Resource Allocation (RA) field*, contiene informazioni sulla posizione e dimensione della RU assegnata.
 
-#informalmente[
-  In reti affollate, *OFDMA* evita che tanti dispositivi "facciano a spallate" per parlare. L'*AP* distribuisce turni e porzioni di spettro in modo ordinato, come un controllore del traffico.
+Ogni risorsa viene *identificata da un codice* (7 bit) che specifica la posizione della RU all'interno del canale, e da un campo che indica la dimensione della RU (ad esempio, 26-tone, 52-tone, ecc.). Ciascun codice rappresenta un' insieme di sottoportanti e il numero indica
+il range di sottoportanti usate da quella RU. 
+
+#esempio()[
+  Se un AP assegna a un utente la prima RU da $52$-tone in un canale da $20$ MHz (Uplink), significa che l'utente può utilizzare le sottoportanti fisiche con indice da $-121$ a $-70$ per la sua trasmissione.
+
+  All'interno del Trigger Frame, il campo RU Allocation a $7$-bit assegnerà questa risorsa usando un singolo indice tabellare predefinito dallo standard:
+  - Valore RU Allocation: $0100101$ (37 in decimale, che identifica univocamente la $"RU" 1 "da" 52-"tone"$.
 ]
 
-=== Assegnamento RU (MAC) - esempio
-Supponiamo che un *AP* debba servire quattro terminali con richieste diverse nello stesso intervallo:
-- *STA1*: pochi byte (sensore);
-- *STA2*: traffico web interattivo;
-- *STA3*: trasferimento file;
-- *STA4*: stream audio.
+Tali informazioni sono usate dai livelli PHY e MAC per instradare correttamente i dati al dispositivo destinatario e per garantire che solo il dispositivo assegnato alla RU possa accedere a quella porzione di canale durante la trasmissione. 
 
-Un possibile assegnamento *MAC* in un canale da 20 MHz puo essere:
+=== Downlink DL-OFDMA
+
+L'AP possiede dati da trasmettere e conosce la lista dei destinatari, ma deve anche comunicare l'assegnamento delle risorse.
 
 #align(center)[
-  #table(
-    columns: (1.1fr, 1fr, 1fr, 1.2fr),
-    align: center + horizon,
-    inset: 6pt,
-    stroke: 0.5pt + black,
-
-    [*Stazione*], [*Coda dati*], [*RU assegnata*], [*Obiettivo*],
-
-    [STA1], [Molto bassa], [26-tone], [Minimo overhead],
-    [STA2], [Media], [52-tone], [Bassa latenza],
-    [STA3], [Alta], [242-tone], [Massimo throughput],
-    [STA4], [Media], [106-tone], [Flusso regolare]
-  )
+  #image("../assets/Downlink.png", width: 65%)
 ]
 
-In questo esempio, il livello *MAC* non cerca di dare la stessa banda a tutti, ma assegna risorse in funzione del carico e del tipo di traffico.
+Viene usata una *Multi-User Request to Send (MU-RTS)*, un messaggio di controllo che ha il funzionamento di RTS (Request To Send) e assegnamento delle risorse. Permette alle stazioni designate all'interno del messaggio di trasmettere e allo stesso tempo, indica alle stazioni non interessate di allocare il NAV.
 
-#esempio[
-  Se *STA1* inviasse un solo pacchetto di controllo ogni secondo, assegnarle una *RU* grande sarebbe inefficiente: meglio una *26-tone* e lasciare risorse a *STA3*, che ha una coda lunga.
+In questo modo le stazioni possono essere a conoscenza delle risorse a loro dedicate. Esse risponderanno con un CTS, in contemporanea (le frequenze sono ortogonali, non collidono). Per la risposta, ogni stazione ascolta solo la porzione di canale a lei associata.
+
+Dopo il termine dei frame i dispositivi non mandano subito l'ack, ma l'AP aspetta tempo `SIFS` e invia un *Block Acknowledgement Request (BAR)*. I dispositivi rispondono in parallelo con un Block ACK.
+
+#attenzione()[
+  Se gli ACK fossero inviati immediatamente al termine della trasmissione, l'ACK di ogni dispositivo potrebbe andare perso se l'AP non è ancora in modalità di ricezione.
 ]
 
-=== OFDMA - Wi-Fi 6 (802.11ax) - DL-OFDMA
-Nel *DL-OFDMA* il flusso e centrato sull'*AP*:
-- l'*AP* costruisce una trasmissione multiutente;
-- divide il canale in piu *RU*;
-- mappa ogni *RU* su una stazione specifica;
-- tutte le stazioni destinatarie ricevono nello stesso istante, ciascuna sulla propria porzione di spettro.
+L'ordine è:
+$
+  "MU-RTS" -> "CTS" -> "Assegnamenti RU" -> "BAR" -> "ACK"
+$
 
-Questo approccio e molto efficace quando l'*AP* ha molte code downlink piccole o medie, perche evita di serializzare pacchetti corti su trasmissioni separate.
+Ognuno di questi *intervallato da tempo SIFS*.
 
-Una sequenza tipica e:
-- pianificazione delle code al *MAC* dell'*AP*;
-- trasmissione *PPDU HE* con piu utenti in parallelo;
-- conferma ricezione (a seconda del caso, immediata o aggregata) e nuova schedulazione.
+=== 4.4.2 Uplink UP-OFDMA
 
-#nota[
-  In pratica, il guadagno maggiore del *DL-OFDMA* non e solo il picco di velocita, ma la stabilita delle prestazioni quando molti dispositivi sono attivi contemporaneamente.
+L'uplink è _meno prevedibile_ e richiede di sincronizzare tutti i dispositivi che si vuole trasmettano contemporaneamente. La *trasmissione* deve avvenire in modo *sincronizzato*. L'AP comunica ad ognio stazione la risorsa su cui trasmettere.
+
+#align(center)[
+  #image("../assets/Uplink.png", width: 65%)
 ]
 
-== 802.11 - canali banda 2.4 GHz (80MHz)
-La banda *2.4 GHz* copre circa 80 MHz utili (in realta poco piu di 80 MHz), ma i canali standard Wi-Fi hanno larghezza tipica di 20 MHz e risultano fortemente sovrapposti.
+Ci sono più step:
+- *Buffer Status Report Poll (BSRP)*: l'AP chiede alle stazioni se hanno dati da trasmettere, in parallelo. Interroga un sottogruppo di stazioni per chiedere chi ha da dire qualcosa.
 
-Per questo motivo, nella pianificazione classica si usano canali non sovrapposti:
-- *Canale 1*;
-- *Canale 6*;
-- *Canale 11*.
+- I dispositivi rispondono con un *Buffer Status Report (BSR)*: le stazioni che hanno da trasmettere rispondono con una misura della quantità di dati (al fine di allocare le risorse).
 
-Con questa scelta si riducono interferenza co-canale e interferenza adiacente, migliorando la qualita media in ambienti domestici e aziendali.
+- L'AP assegna risorse in base alle risposte delle stazioni e invia il *MU-RTS*, indicando la suddivisione delle RU.
 
-#attenzione[
-  Nella banda 2.4 GHz il problema principale non e solo il Wi-Fi vicino, ma anche il rumore di altri apparati (Bluetooth, dispositivi industriali, forni a microonde, ecc.).
+- Le stazioni rispondono con un *CTS*.
+
+- è presente un trigger aggiuntivo da parte dell'AP, al fine di sincronizzare i dispositivi. Tutte le stazioni devono trasmettere nello stesso momento (ad esempio tenendo in considerazione che chi è più lontano comincia prima).
+
+- Ogni stazione trasmette in parallelo sulle risorse che gli sono state allocate; se la trasmissione di una stazione dura meno, questa fa padding.
+
+- Infine, se necessario, vengono inviati gli ack; *multi-station block acknowledgment (Multi-STA Block ack)* a tutte le stazioni che ne hanno fatto richiesta.
+
+In banda 2.4GHz sono presenti *14 canali*, ma allo stesso tempo *non sovrapposti* possono essercene solo *3* (Canale 1, 6, 11). In quanto i canali sono larghi $20"MHz"$, ma la banda totale è di $83.5"MHz"$, quindi si ha una sovrapposizione tra i canali.
+
+
+== 4.5 WLAN Security
+
+All'interno di $"802.11"$ sono definite delle feature per la sicurezza. Per definizione il canale radio è molto esposto, tutti possono ascoltare/inviare su un canale intrinsecamente broadcast. Di conseguenza si ha la necessità di cifrare il canale anche a livello di data link.
+
+*Wired Equivalent Privacy (WEP)*:
+Caratteristiche:
+- Algoritmo di cifratura RC4.
+- *Opzionale*, non è obbligatorio attivarlo.
+- Assenza di un sistema di gestione delle chiavi, tutto il traffico era cifrato allo stesso modo (la chiave non è la password wi-fi).
+- Tutto il traffico viene cifrato con la stessa chiave.
+
+*Robust Security Network (RSN)*: Per sopperire alle lacune di WEP è stato introdotto un emendamento allo standard $"802.11i"$. Viene definito l' RSN, con al suo interno diversi servizi:
+- *Access control*: impone l'utilizzo di protocolli di sicurezza e assiste lo scambio delle chiavi.
+- *Authentication*: definisce lo scambio tra utente e Authentication Server (AS) e genera le chiavi temporanee per la comunicazione sul canale radio.
+- *Privacy with message integrity*: il payload MAC (LLC PDU) viene cifrato e viene aggiunto al messaggio una porzione dedicata al controllo dell'integrità.
+
+#nota()[
+  L'header MAC *non viene cifrato*, in quanto è necessario per il corretto instradamento dei pacchetti. La cifratura avviene solo a livello di payload, con l'aggiunta di un campo dedicato al controllo dell'integrità del messaggio (Message Integrity Check).
 ]
 
-== 802.11 - canali banda 5 GHz (500MHz)
-La banda *5 GHz* offre una disponibilita spettrale molto piu ampia (ordine di centinaia di MHz, tipicamente circa 500 MHz o piu a seconda del dominio regolatorio), quindi permette:
-- piu canali non sovrapposti;
-- maggiore probabilita di trovare un canale libero;
-- uso piu flessibile di canali larghi (40/80/160 MHz).
-
-In generale, rispetto a 2.4 GHz:
-- prestazioni medie superiori in ambienti densi;
-- minore portata a parita di potenza (attenuazione maggiore);
-- migliore riuso frequenziale tra celle vicine.
-
-#nota[
-  In molte reti reali si preferisce tenere i client ad alto traffico su 5 GHz e lasciare 2.4 GHz ai dispositivi legacy o a basso bitrate.
+#align(center)[
+  #image("../assets/Schema-Sicurezza.png", width: 60%)
 ]
 
-== IEEE 802.11 WLAN security (alto livello)
-La sicurezza in *IEEE 802.11* si basa su tre obiettivi principali:
-- *autenticazione*: verificare l'identita del terminale e/o della rete;
-- *confidenzialita*: cifrare il traffico dati;
-- *integrita*: impedire alterazioni non autorizzate dei frame.
+L'autenticazione e la gestione delle chiavi avvengono in 4 fasi:
 
-Gli schemi moderni piu rilevanti sono:
-- *WPA2* (basato su *AES-CCMP*);
-- *WPA3* (introduce miglioramenti di robustezza, incluso *SAE* in modalita personal).
+- *Discovery*: Consiste nella negoziazione tra AP e STA per decidere se è possibile stabilire una connessione e, in caso affermativo, quali servizi di sicurezza utilizzare. I passaggi sono:
+  - L'AP manda il beacon, il quale fornisce anche i servizi RSN disponibili (la modalità di accesso alla cella).
+  - Il dispositivo (STA) tramite il beacon capisce quali sono i servizi RSN che può utilizzare (negoziano le capabilities di ognuno, si decide la policy da utilizzare). 
+  - Associazione AP e STA, arrivano a un accordo sulle funzionalità di sicurezza da utilizzare  (sia AP che STA possono decidere di negare la connessione).
 
-#informalmente[
-  A livello concettuale: prima si scopre la rete, poi si negozia "chi sei" e "come cifriamo", infine si trasmettono dati protetti con chiavi temporanee.
+- *Authentication*: Consiste nell'autenticazione della stazione (STA) da parte dell'AP, al fine di garantire che solo dispositivi autorizzati possano accedere alla rete. I passaggi sono:
+  - L'AP richiede al STA l'autenticazione tramite la comunicazione con un *Authentication Server (AS)*.
+  - Il server può essere remoto in caso di utilizzo di *Extensible Authentication Protocol (EAP)*.
+
+- *Key management*: generazione delle chiavi specifiche per il singolo dispositivo. 
+
+- *Protected data transfer*: una volta ottenuta la chiave, si comincia la comunicazione cifrata.
+- Chiusura della connessione.
+
+In particolare, la fase di *authentication* e *key management* è quella più complessa, in quanto è necessario garantire la sicurezza della chiave di sessione (KS) generata, evitando che un attaccante possa intercettarla o indovinarla:
+
+#align(center)[
+  #image("../assets/key-exchange.png", width: 70%)
 ]
 
-=== IEEE 802.11 WLAN security - Fasi delle operazioni
-Una vista ad alto livello delle fasi e:
-- *Discovery*: il client scopre le reti disponibili e i relativi parametri di sicurezza;
-- *Autenticazione/Associazione*: il client e l'*AP* concordano il metodo di accesso;
-- *Gestione chiavi*: derivazione e installazione delle chiavi di sessione;
-- *Data Protection*: traffico cifrato e protetto con controllo di integrita;
-- *Rekeying/Teardown*: rinnovo periodico chiavi o chiusura sessione.
 
-=== IEEE 802.11 WLAN security - Discovery
-Nella fase di *Discovery*, il client ottiene informazioni dai frame di management (beacon/probe response), tra cui:
-- *SSID*;
-- capacita radio;
-- suite di sicurezza supportate (*RSN information*).
++ Viene inviato un *nonce* (numero casuale) da AP a Client. Esso serve a garantire l'unicità della sessione e a prevenire attacchi di replay, in quanto ogni sessione avrà un nonce diverso.
 
-In base a questi elementi il terminale decide se puo procedere con quella rete (ad esempio rete personale con *PSK/SAE* o rete enterprise con *802.1X/EAP*).
++ La chiave di *sessione $"KS"$* viene calcolata dal client a partire dai MAC address, i nonce e la master key (generata a partire dalla password della rete). La master key è un segreto condiviso tra AP e Client, derivato dalla password della rete Wi-Fi.
 
-#esempio[
-  Se un client supporta solo *WPA2* e la rete e configurata in sola modalita *WPA3-Enterprise*, il processo si interrompe gia in discovery per incompatibilita delle suite.
+  #nota()[
+    Utilizzando i MAC address e i nonce, si garantisce che la chiave di sessione sia unica per ogni connessione, anche se la stessa password viene utilizzata da più dispositivi.
+  ]
+  
+  Una volta calcolata la chiave di sessione, il client invia al AP un messaggio di autenticazione, che include il nonce del client e un *Message Integrity Check (MICS)*, che è una sorta di codice di integrità del messaggio dipendente dalla sessione (quindi, in parte, dalla session key). Questo MICS serve a garantire che il messaggio non sia stato alterato durante la trasmissione.
+
++ *L'AP* una volta ricevuto il messaggio di autenticazione, può *calcolare la stessa chiave di sessione* ($"KS"$) del client utilizzando le stesse informazioni (MAC address, nonce e master key). Se l'AP riesce a calcolare la stessa $"KS"$, significa che il client è autenticato correttamente.
+
+  L'AP invia il MICS e la *chiave di gruppo $"KG"$* al client, cifrandola con la chiave di sessione $"KS"$. La chiave di gruppo è utilizzata per cifrare i dati trasmessi a tutti i dispositivi nella rete, mentre la chiave di sessione è specifica per la comunicazione tra AP e client.
+
+
++ Il Client verifica che l'AP ha calcolato la chiave di sessione $"KS"$ in modo corretto, confrontando il MICS ricevuto con quello che lui stesso ha calcolato. Se i due *MICS corrispondono*, significa che l'AP è autenticato correttamente e che la chiave di sessione è valida.
+
+  Il Client risponde con un messaggio di conferma (ack), cifrato con la chiave di sessione $"KS"$. Questo ack serve a confermare che il client ha ricevuto correttamente la chiave di gruppo e che è pronto per iniziare la comunicazione cifrata.
+
+
+#nota()[
+  Il segreto per la sicurezza sta nella *master key* (il resto sarebbe pubblicamente accessibile). Il presupposto è che l'attaccante non ne sia a conoscenza. Nelle varie versioni di EAP cambia il metodo con cui la chiave viene generata, per mantenere valido questo presupposto. 
+  
+  Attacchi di tipo MitM vengono evitati grazie ad integrity check e nonce.
 ]
 
-=== IEEE 802.11 WLAN security - Autenticazione & gestione chiavi
-Dopo la discovery, il nodo entra nella fase di autenticazione e creazione del contesto crittografico.
+=== Protezione dati
 
-Caso *Personal* (WPA2-PSK / WPA3-SAE):
-- autenticazione basata su segreto condiviso o scambio *SAE*;
-- derivazione delle chiavi di sessione;
-- installazione chiavi per cifrare il traffico unicast e broadcast.
+Lo standard $"802.11i"$ considera $2$ alternative:
 
-Caso *Enterprise* (802.1X / EAP):
-- autenticazione verso un server *AAA* (tipicamente *RADIUS*), mediata dall'*AP*;
-- ottenimento di materiale crittografico condiviso;
-- distribuzione chiavi di sessione verso client e AP.
+- *TKIP (WPA)*: aggiunge un codice di integrità a $64$ bit usando MAC di sorgente e destinazione; per la confidenzialità viene usato RC4; cambiamenti solo software rispetto a WEP.
 
-In entrambi i casi, una fase cruciale e il *4-Way Handshake*, che consente di:
-- confermare che entrambe le parti possiedono il materiale chiave corretto;
-- derivare/installare la *PTK* (chiave per traffico unicast);
-- sincronizzare contatori e parametri di sicurezza;
-- avviare la protezione effettiva dei frame dati.
+- *CCMP (WPA-2)*: integrità della cifratura tramite cipher-block chaining (CBC); integrità e confidenzialità tramite AES 128 bit.
 
-#attenzione[
-  Le vulnerabilita piu comuni non derivano solo dall'algoritmo, ma da password deboli, configurazioni errate, certificati non validati o dispositivi non aggiornati.
-]
+Tra i due cambia l'algoritmo di cifratura:
+- Per il primo non serve cambiare nulla a livello hardware
+- Per il secondo serve il supporto a CBC con AES.
 
+
+== WiFi Protected Setup (WPS)
+
+Viene usato per *evitare di utilizzare la password*, su alcuni dispositivi tale funzionalità può essere comoda. 
+
+All'interno del protocollo ci sono $3$ tipi di dispositivi:
+
++ *Registrer*: entità che autorizza o revoca una stazione (AP o esterno)
+
++ *AP*
+
++ *Enrollee*: la stazione che vuole accedere
+
+In questo protocollo non è necessario conoscere la password, ma è necessario che il dispositivo Enrollee sia autorizzato da un *Registrer* (che può essere l'AP o un dispositivo esterno).
+
+Le modalità di attivazione di un dispositivo sono due: 
+- *PIN*: può essere dell'AP da immettere sul dispositivo Enrollee, oppure dell'Enrollee da immettere sull'AP. In questo modo si autorizza il dispositivo a connettersi alla rete senza dover inserire la password.
+
+- *Push Button*: pressione di un bottone su AP ed Enrollee, la procedura rimane attiva per massimo $2$ minuti. Associazione FIFO (il primo che entra è autenticato).

@@ -114,14 +114,14 @@ Il livello LLC incapsula i pacchetti di livello superiore (es. IP) all'interno d
   )
 ]
 
-=== 802.11 Senza Infrastruttura
+== 802.11 Senza Infrastruttura
 
 Rispetto alle reti cablate, in wifi, il canale è molto inaffidabile e condiviso tra più stazioni. Per questo motivo, è necessario un meccanismo di coordinamento per evitare collisioni e garantire l'accesso equo al mezzo. Il sotto-livello MAC di 802.11 offre due servizi:
 - Servizio dati *asincrono*: non ci sono garanzie di dealy o QoS. Adatto a traffico best-effort come email, web, etc.
 
 - Servizio dati *sincrono* (time-sensitive): Offre garanzie di delay. Disponibile solo in presenza di un coordinatore centrale (AP) che gestisce l'accesso al mezzo tramite polling. Adatto a traffico real-time come VoIP, streaming video, etc.
 
-== Distributed Coordination Function (DCF)
+=== Distributed Coordination Function (DCF)
 
 Il DCF è il meccanismo di accesso al mezzo predefinito in 802.11, basato su *CSMA/CA* (Carrier Sense Multiple Access with Collision Avoidance). In questo modello, ogni stazione ascolta il canale prima di trasmettere e utilizza un algoritmo di backoff per evitare collisioni.
 
@@ -200,137 +200,3 @@ Supponiamo che il *canale sia occupato* da un'altra stazione:
 Se durante il *perido di contesa* il canale *diventa occupato* ci sono due opzioni: 
   + Il sender al prossimo ciclo riparte dalla contesa con un intervallo più ampio. Si trata di una soluzione *non equa* nei confronti delle stazioni che hanno _perso_ la contensa (rischio di starvation)
   + Il sender blocca il timer al valore in cui è stato rilevato il canale occupato. Al ciclo successivo riparte da quel valore, garantendo così una maggiore equità tra le stazioni in contesa (soluzione più comune)
-
-== Point Coordination Function (PCF)
-
-Il PCF opera attraverso un *Point Coordinator (PC)*, tipicamente implementato nell'*Access Point* (AP), che controlla l'accesso al canale wireless interrogando sequenzialmente le stazioni che hanno richiesto di operare in modalità PCF.
-
-#nota[
-  Il PCF è stato progettato per supportare applicazioni *time-sensitive* come VoIP o streaming video, garantendo accesso deterministico al mezzo.
-]
-
-Il funzionamento del PCF si basa su due fasi cicliche:
-- *Contention-Free Period (CFP)*: Periodo controllato dal Point Coordinator dove non c'è competizione per l'accesso al mezzo. Il PC interroga le stazioni in modalità round-robin.
-
-- *Contention Period (CP)*: Periodo in cui le stazioni utilizzano il DCF standard (CSMA/CA) per accedere al canale.
-
-#align(center)[
-  #figure(
-    cetz.canvas(length: 0.8cm, {
-      import cetz.draw: *
-
-      let w = 3.5
-      let h = 1.2
-      let gap = 0.3
-
-      // CFP blocks
-      rect((0, 0), (w, h), fill: rgb("#4472C4"), stroke: black)
-      content((w/2, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
-
-      rect((w + gap, 0), (2*w + gap, h), fill: rgb("#ED7D31"), stroke: black)
-      content((1.5*w + gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
-
-      rect((2*w + 2*gap, 0), (3*w + 2*gap, h), fill: rgb("#4472C4"), stroke: black)
-      content((2.5*w + 2*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
-
-      rect((3*w + 3*gap, 0), (4*w + 3*gap, h), fill: rgb("#ED7D31"), stroke: black)
-      content((3.5*w + 3*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
-
-      // Time arrow
-      line((0, -0.8), (4*w + 3*gap, -0.8), mark: (end: ">", fill: black))
-      content((2*w + 1.5*gap, -1.2), text(weight: "bold")[Tempo])
-
-      // Labels
-      content((w/2, h + 0.8), text(size: 0.8em)[Polling])
-      content((1.5*w + gap, h + 0.8), text(size: 0.8em)[CSMA/CA])
-    }),
-    caption: [Alternanza tra Contention-Free Period e Contention Period]
-  )
-]
-
-=== Interframe Spacing in PCF
-
-Il PCF utilizza un *PIFS (PCF Interframe Space)* più corto del DIFS utilizzato dal DCF. Questo permette al Point Coordinator di ottenere priorità nell'accesso al canale rispetto alle stazioni in modalità DCF.
-
-La *gerarchia degli interframe spacing* è:
-$ "SIFS" < "PIFS" < "DIFS" $
-dove:
-- $"SIFS"$ (Short IFS): ~10 μs, usato per ACK e risposte immediate
-- $"PIFS"$ (PCF IFS): ~30 μs, usato dal Point Coordinator
-- $"DIFS"$ (DCF IFS): ~50 μs, usato dalle stazioni in DCF
-
-=== Processo di Polling
-
-Durante il Content free period, il Point Coordinator:
-
-1. Attende un tempo PIFS dopo che il canale diventa libero (CCA)
-2. Trasmette un frame *CF-Poll* alla stazione successiva nella polling list
-3. La stazione riceve il poll e può trasmettere un frame dati entro un *tempo SIFS*
-4. Se la stazione non ha dati da trasmettere, risponde con un *CF-Null*
-5. Il processo continua fino alla fine del CFP
-
-#align(center)[
-  #figure(
-    cetz.canvas(length: 0.6cm, {
-      import cetz.draw: *
-
-      let y-pc = 3
-      let y-sta1 = 2
-      let y-sta2 = 1
-      let y-sta3 = 0
-
-      // Entities
-      content((0, y-pc), anchor: "east", text(weight: "bold")[PC (AP)])
-      content((0, y-sta1), anchor: "east", text(weight: "bold")[STA 1])
-      content((0, y-sta2), anchor: "east", text(weight: "bold")[STA 2])
-      content((0, y-sta3), anchor: "east", text(weight: "bold")[STA 3])
-
-      let x-start = 1
-      let x-end = 16
-
-      // Timeline lines
-      line((x-start, y-pc), (x-end, y-pc), stroke: (dash: "dashed"))
-      line((x-start, y-sta1), (x-end, y-sta1), stroke: (dash: "dashed"))
-      line((x-start, y-sta2), (x-end, y-sta2), stroke: (dash: "dashed"))
-      line((x-start, y-sta3), (x-end, y-sta3), stroke: (dash: "dashed"))
-
-      // CF-Poll to STA1
-      line((2, y-pc), (3, y-sta1), mark: (end: ">"), stroke: (paint: blue, thickness: 1.5pt))
-      content((2.7, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
-
-      // Data from STA1
-      line((4, y-sta1), (5, y-pc), mark: (end: ">"), stroke: (paint: green, thickness: 1.5pt))
-      content((4.7, (y-pc + y-sta1)/2), anchor: "west", text(size: 0.7em, fill: green)[Data])
-
-      // CF-Poll to STA2
-      line((6, y-pc), (7, y-sta2), mark: (end: ">"), stroke: (paint: blue, thickness: 1.5pt))
-      content((6.5, (y-pc + y-sta2)/2 + 0.4), anchor: "west", text(size: 0.7em, fill: blue)[CF-Poll])
-
-      // CF-Null from STA2
-      line((8, y-sta2), (9, y-pc), mark: (end: ">"), stroke: (paint: orange, thickness: 1.5pt))
-      content((8.5, (y-pc + y-sta2)/2), anchor: "west", text(size: 0.7em, fill: orange)[CF-Null])
-
-      // CF-Poll to STA3
-      line((10, y-pc), (11, y-sta3), mark: (end: ">"), stroke: (paint: blue, thickness: 1.5pt))
-      content((10.5, (y-pc + y-sta3)/2), anchor: "east", text(size: 0.7em, fill: blue)[CF-Poll])
-
-      // Data from STA3
-      line((12, y-sta3), (13, y-pc), mark: (end: ">"), stroke: (paint: green, thickness: 1.5pt))
-      content((12.5, (y-pc + y-sta3)/2), anchor: "west", text(size: 0.7em, fill: green)[Data])
-
-      // CF-End
-      line((14, y-pc), (14.5, y-pc - 3.5), mark: (end: ">"), stroke: (paint: red, thickness: 2pt))
-      content((15, y-pc - 1.5), anchor: "west", text(size: 0.8em, fill: red, weight: "bold")[CF-End])
-    }),
-    caption: [Sequenza di polling del Point Coordinator]
-  )
-]
-
-
-#attenzione[
-  Nonostante i vantaggi teorici, il PCF presenta diverse limitazioni che ne hanno limitato l'adozione pratica:
-  - La maggior parte dei dispositivi 802.11 non implementa il PCF (è *opzionale*)
-  - Difficoltà di coordinamento in presenza di *stazioni DCF e PCF miste*
-  - *Overhead significativo* dovuto ai frame CF-Poll
-  - Problemi con il "hidden node" che possono causare collisioni anche durante il CFP
-]
