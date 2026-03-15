@@ -14,11 +14,156 @@ Lo standard considerato come riferimento per le reti wireless è IEEE 802.11. I 
 
 Solitamente si ha una rete con uno o più *Access Point* (AP): essi fungono da bridge tra la rete wireless e la rete cablata. La coordinazione della rete è gestita dai *Point Coordinator Function* (PCF), che possono essere implementati nell'AP o in stazioni dedicate.
 
+La *Point Coordination Function (PCF)* è un meccanismo di *coordinamento centralizzato* opzionale definito nello standard IEEE 802.11 per gestire l'accesso al mezzo trasmissivo. A differenza del *Distributed Coordination Function* (DCF), che è basato su CSMA/CA e quindi distribuito, il PCF implementa un approccio centralizzato basato su polling.
+
+Un *Basic Service Set* (BSS) identifica una cella o una rete wifi, composta da un AP e dalle stazioni associate. Il PCF opera all'interno di un BSS per coordinare l'accesso al canale tra le stazioni. Se si ha una rete *ad hoc* (senza AP), il PCF non è applicabile. In questo caso si utilizzano le funzioni di coordinamento distribuito (*DCF*) diventando un *Independent Basic Service Set* (IBSS). 
+
+#align(center)[
+  #image("../assets/Struttura-wifi.png", width: 60%)
+]
+
+== Architettura dei protocolli 
+
+Possiamo suddividere l'architettura di Wifi in 4 moduli principali: 
+- *Livello fisico* (PHY): definisce le caratteristiche fisiche della trasmissione (modulazione, frequenza, potenza)
+- *Livello MAC*: gestisce l'accesso al mezzo, il formato dei frame, la sicurezza. Al suo interno troviamo sia il DCF che il PCF.
+
+- *Logical Link Control* (LLC): incapsula i pacchetti di livello superiore (es. IP) all'interno dei frame 802.11. Permette di avere servizi di comunicazione affidabili e indipendenti dal tipo di rete sottostante.
+
+=== Logical Link Control (LLC)
+
+Il LLC fornisce un'*interfaccia uniforme per i protocolli* di livello superiore (es. IP, ARP) indipendentemente dal tipo di rete sottostante (Ethernet, WiFi, etc.). In particolare, i servizi offerti sono: 
+
+- *Unacknowledged connectionless service*: il mittente invia un frame LLC senza aspettare conferma di ricezione. Questo è il servizio più semplice e veloce, ma non garantisce l'affidabilità.
+
+- *Connection-mode service*: il mittente stabilisce una connessione logica con il destinatario prima di inviare i dati (canale punto-punto). Il ricevente conferma la ricezione di ogni frame, garantendo affidabilità ma con maggiore overhead.
+
+- *Acknowledged connectionless service*: il mittente invia un frame LLC e aspetta un ACK dal destinatario, ma *non* stabilisce una *connessione* formale. Questo servizio è un compromesso tra i due precedenti, offrendo affidabilità senza la complessità di una connessione.
+
+=== Livelli dei pacchetti
+
+Il livello LLC incapsula i pacchetti di livello superiore (es. IP) all'interno dei frame 802.11.
+
+#align(center)[
+  #figure(
+    cetz.canvas(length: 1cm, {
+      import cetz.draw: *
+
+      let fill-ip   = rgb("#D9EAF7")
+      let fill-hdr  = rgb("#8DB8D8")
+      let fill-phy  = rgb("#2E75B6")
+      let h = 0.72
+
+      let y-ip  = 3 * (h + 0.22)
+      let y-llc = 2 * (h + 0.22)
+      let y-mac = 1 * (h + 0.22)
+      let y-phy = 0.0
+
+      // x boundaries
+      let x-phy0 = 0.0     // PHY header start
+      let x-mac0 = 0.55    // PHY header end / MAC header start
+      let x-llc0 = 1.25    // MAC header end / LLC header start
+      let x-ip0  = 1.85    // LLC header end / IP & payload start
+      let x-ip1  = 4.35    // IP / payload right edge & PHY middle right
+      let x-phy1 = 5.05    // PHY trailer right
+
+      let lx = 5.25        // arrow/line end
+      let tx = 5.4         // label text start
+
+      let arrow-stroke = black + 0.6pt
+      let box-stroke   = black + 0.8pt
+
+      // ── IP packet row ──────────────────────────────────────────────
+      rect((x-ip0, y-ip), (x-ip1, y-ip + h), fill: fill-ip, stroke: box-stroke)
+      content(((x-ip0 + x-ip1) / 2, y-ip + h / 2), text(size: 0.68em)[IP packet])
+      line((x-ip1, y-ip + h / 2), (lx, y-ip + h / 2), stroke: arrow-stroke,
+           mark: (end: ">", fill: black))
+      content((tx, y-ip + h / 2), anchor: "west", text(size: 0.67em)[Network layer packet])
+
+      // ── LLC sublayer frame ─────────────────────────────────────────
+      rect((x-llc0, y-llc), (x-ip0, y-llc + h), fill: fill-hdr, stroke: box-stroke)
+      content(((x-llc0 + x-ip0+0.1) / 2, y-llc + h / 2), text(size: 0.6em)[LLC\ header])
+      rect((x-ip0, y-llc), (x-ip1, y-llc + h), fill: fill-ip, stroke: box-stroke)
+      content(((x-ip0 + x-ip1) / 2, y-llc + h / 2), text(size: 0.68em)[Payload])
+      line((x-ip1, y-llc + h / 2), (lx, y-llc + h / 2), stroke: arrow-stroke,
+           mark: (end: ">", fill: black))
+      content((tx, y-llc + h / 2), anchor: "west", text(size: 0.67em)[LLC sublayer frame])
+
+      // ── MAC sublayer frame ─────────────────────────────────────────
+      rect((x-mac0, y-mac), (x-llc0, y-mac + h), fill: fill-hdr, stroke: box-stroke)
+      content(((x-mac0 + x-llc0) / 2, y-mac + h / 2), text(size: 0.6em)[MAC\ header])
+      rect((x-llc0, y-mac), (x-ip1, y-mac + h), fill: fill-ip, stroke: box-stroke)
+      content(((x-llc0 + x-ip1) / 2, y-mac + h / 2), text(size: 0.68em)[Payload])
+      line((x-ip1, y-mac + h / 2), (lx, y-mac + h / 2), stroke: arrow-stroke,
+           mark: (end: ">", fill: black))
+      content((tx, y-mac + h / 2), anchor: "west", text(size: 0.67em)[MAC sublayer frame])
+
+      // ── PHY layer frame ────────────────────────────────────────────
+      rect((x-phy0, y-phy), (x-mac0, y-phy + h), fill: fill-phy, stroke: box-stroke)
+      content(((x-phy0 + x-mac0+0.1) / 2, y-phy + h / 2),
+              text(size: 0.58em, fill: white)[PHY\ header])
+      rect((x-mac0, y-phy), (x-ip1, y-phy + h), fill: fill-ip, stroke: box-stroke)
+      rect((x-ip1, y-phy), (x-phy1, y-phy + h), fill: fill-phy, stroke: box-stroke)
+      content(((x-ip1 + x-phy1) / 2, y-phy + h / 2),
+              text(size: 0.58em, fill: white)[PHY\ trailer])
+      line((x-phy1, y-phy + h / 2), (lx+0.2, y-phy + h / 2), stroke: arrow-stroke,
+           mark: (end: ">", fill: black))
+      content((tx+0.2, y-phy + h / 2), anchor: "west", text(size: 0.67em)[PHY layer frame])
+    }),
+    caption: [Incapsulamento dei livelli: da IP (rete) a PHY (fisico).]
+  )
+]
+
+=== 802.11 Senza Infrastruttura
+
+Rispetto alle reti cablate, in wifi, il canale è molto inaffidabile e condiviso tra più stazioni. Per questo motivo, è necessario un meccanismo di coordinamento per evitare collisioni e garantire l'accesso equo al mezzo. Il sotto-livello MAC di 802.11 offre due servizi:
+- Servizio dati *asincrono*: non ci sono garanzie di dealy o QoS. Adatto a traffico best-effort come email, web, etc.
+
+- Servizio dati *sincrono* (time-sensitive): Offre garanzie di delay. Disponibile solo in presenza di un coordinatore centrale (AP) che gestisce l'accesso al mezzo tramite polling. Adatto a traffico real-time come VoIP, streaming video, etc.
+
+== Distributed Coordination Function (DCF)
+
+Il DCF è il meccanismo di accesso al mezzo predefinito in 802.11, basato su *CSMA/CA* (Carrier Sense Multiple Access with Collision Avoidance). In questo modello, ogni stazione ascolta il canale prima di trasmettere e utilizza un algoritmo di backoff per evitare collisioni.
+
+#attenzione()[
+  La procedura di accesso al mezzo è diversa da quella utilizzata in bluethooth anche se entrambi usano (CSMA/CA). Wi-Fi punta alle prestazioni e alla velocità, ZigBee punta al risparmio energetico estremo.
+]
+
+Vengono utilizzati diversi *Inter-frame Space* (IFS) per gestire le priorità di accesso al canale:
+
+- *Slot Time*: *Unità base* di tempo (interna al dispositivo), non si tratta di una suddivisione temporale rigida, ma è usata per calcolare i tempi di backoff e IFS. Tiene conto di vari fattori come il tempo di propagazione, il tempo di commutazione tra trasmissione e ricezione, etc.
+
+- *SIFS (Short Inter-frame Space)*: Intervallo di attesa piùà breve, usato per messaggi ad alta priorità come ACK. La durata dipende dalla tipologia di trasmettitore. 
+
+- *DIFS (Distributed Inter-frame Space)*: Intervallo di attesa più lungo, utilizzato per messaggi a bassa priorità best effort. La durata è data da:
+$
+  "DIFS" = "SIFS" + 2 * "Slot Time"
+$
+
+- *PCF Inter-frame Space (PIFS)*: Intervallo di attesa intermedio, usato per traffico di tipo time-bounded. Si calcola come:
+$
+  "PIFS" = "SIFS" + 1 * "Slot Time"
+$
+
+=== Accesso al canale con DCF
+
+Supponiamo che il *canale di trasmissione sia libero*:
++ Il sender inizia ad ascoltare il canale
+
++ Esegue un CCA (Clear Channel Assessment) per verificare che il canale sia effettivamente libero
+
++ Se il canale è libero lo ascolta per un *intervallo di tempo lungo  (DIFS)*. Se il canale rimane libero per tutta la durata del periodo, esegue un altro CCA
+
++ Se anche il secondo CCA conferma che il canale è libero, il sender può cominciare la trasmissione. Ci sono due possibili scenari per la conferma della trasmissione:
+  - Se *non è necessario l'ACK*, una volta terminata la trasmissione, il sender ha finito e può considerare il frame inviato con successo (es. per traffico broadcast o multicast).
+
+  - Se *è necessario l'ACK*, dopo aver trasmesso il frame, il sender attende un intervallo di *tempo SIFS*. Se riceve un ACK entro questo intervallo, considera la trasmissione avvenuta con successo. Se non riceve l'ACK, o se riceve un frame di controllo diverso, considera la trasmissione fallita e avvia la procedura di backoff.
+
+
+
+
+
 == Point Coordination Function (PCF)
-
-La *Point Coordination Function (PCF)* è un meccanismo di *coordinamento centralizzato* opzionale definito nello standard IEEE 802.11 per gestire l'accesso al mezzo trasmissivo. A differenza del *DCF* (Distributed Coordination Function), che è basato su CSMA/CA e quindi distribuito, il PCF implementa un approccio centralizzato basato su polling.
-
-=== Architettura e Funzionamento
 
 Il PCF opera attraverso un *Point Coordinator (PC)*, tipicamente implementato nell'*Access Point* (AP), che controlla l'accesso al canale wireless interrogando sequenzialmente le stazioni che hanno richiesto di operare in modalità PCF.
 
@@ -27,10 +172,9 @@ Il PCF è stato progettato per supportare applicazioni time-sensitive come VoIP 
 ]
 
 Il funzionamento del PCF si basa su due fasi cicliche:
+- *Contention-Free Period (CFP)*: Periodo controllato dal Point Coordinator dove non c'è competizione per l'accesso al mezzo. Il PC interroga le stazioni in modalità round-robin.
 
-/ *Contention-Free Period (CFP)*: Periodo controllato dal Point Coordinator dove non c'è competizione per l'accesso al mezzo. Il PC interroga le stazioni in modalità round-robin.
-
-/ *Contention Period (CP)*: Periodo in cui le stazioni utilizzano il DCF standard (CSMA/CA) per accedere al canale.
+- *Contention Period (CP)*: Periodo in cui le stazioni utilizzano il DCF standard (CSMA/CA) per accedere al canale.
 
 #align(center)[
   #figure(
@@ -171,186 +315,3 @@ Il Point Coordinator annuncia l'inizio del CFP con un frame *Beacon* che contien
 Il CFP può terminare prima della durata massima se il PC ha completato il polling di tutte le stazioni. In questo caso, il PC trasmette un frame *CF-End* per terminare anticipatamente il CFP e permettere alle stazioni DCF di competere per il canale.
 ]
 
-== Formato del Frame 802.11
-
-Lo standard IEEE 802.11 definisce un formato di frame complesso e flessibile per supportare diverse funzionalità della rete wireless. Il frame generico è composto da diverse componenti principali.
-
-=== Struttura Generale del Frame
-
-Il frame 802.11 è composto da:
-- *MAC Header*: contiene informazioni di controllo e indirizzamento
-- *Frame Body*: payload contenente i dati
-- *Frame Check Sequence (FCS)*: checksum CRC-32 per rilevamento errori
-
-#align(center)[
-  #figure(
-    {
-      set text(size: 0.75em)
-      table(
-        columns: (1.5fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 2fr, 1fr),
-        align: center + horizon,
-        fill: (col, row) => if row == 0 { rgb("#4472C4") } else { white },
-        text(fill: white, weight: "bold")[Frame\ Control],
-        text(fill: white, weight: "bold")[Duration/\ ID],
-        text(fill: white, weight: "bold")[Address\ 1],
-        text(fill: white, weight: "bold")[Address\ 2],
-        text(fill: white, weight: "bold")[Address\ 3],
-        text(fill: white, weight: "bold")[Sequence\ Control],
-        text(fill: white, weight: "bold")[Address\ 4],
-        text(fill: white, weight: "bold")[Frame\ Body],
-        text(fill: white, weight: "bold")[FCS],
-        [2 byte], [2 byte], [6 byte], [6 byte], [6 byte], [2 byte], [6 byte], [0-2312\ byte], [4 byte]
-      )
-    },
-    caption: [Formato generale del frame MAC 802.11]
-  )
-]
-
-=== Frame Control Field
-
-Il campo *Frame Control* (2 byte) contiene diverse sottocampi che specificano il tipo e le caratteristiche del frame:
-
-#align(center)[
-  #figure(
-    {
-      set text(size: 0.7em)
-      table(
-        columns: (0.8fr, 0.8fr, 0.8fr, 0.8fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
-        align: center + horizon,
-        fill: (col, row) => if row == 0 { rgb("#70AD47") } else { white },
-        text(fill: white, weight: "bold")[Proto\ Ver],
-        text(fill: white, weight: "bold")[Type],
-        text(fill: white, weight: "bold")[Sub\ type],
-        text(fill: white, weight: "bold")[To\ DS],
-        text(fill: white, weight: "bold")[From\ DS],
-        text(fill: white, weight: "bold")[More\ Frag],
-        text(fill: white, weight: "bold")[Retry],
-        text(fill: white, weight: "bold")[Pwr\ Mgmt],
-        text(fill: white, weight: "bold")[More\ Data],
-        text(fill: white, weight: "bold")[WEP],
-        text(fill: white, weight: "bold")[Rsvd],
-        text(fill: white, weight: "bold")[Order],
-        [2 bit], [2 bit], [4 bit], [1 bit], [1 bit], [1 bit], [1 bit], [1 bit], [1 bit], [1 bit], [1 bit], [1 bit]
-      )
-    },
-    caption: [Struttura del campo Frame Control]
-  )
-]
-
-I principali sottocampi sono:
-
-/ *Protocol Version*: Versione del protocollo 802.11 (attualmente 0)
-/ *Type e Subtype*: Identificano il tipo di frame (management, control, data)
-/ *To DS / From DS*: Indicano la direzione del frame rispetto al Distribution System
-/ *More Fragments*: Indica se seguono altri frammenti
-/ *Retry*: Indica una ritrasmissione
-/ *Power Management*: Indica lo stato di power saving della stazione
-/ *WEP/Protected Frame*: Indica se il frame è cifrato
-
-=== Tipi di Frame
-
-Lo standard 802.11 definisce tre categorie principali di frame:
-
-==== 1. Management Frames (Type = 00)
-
-I frame di management gestiscono le operazioni di rete:
-
-#esempio[
-Esempi di management frames:
-- *Beacon* (Subtype = 1000): trasmessi periodicamente dall'AP per annunciare la presenza della rete
-- *Association Request/Response* (Subtype = 0000/0001): per l'associazione di una stazione all'AP
-- *Probe Request/Response* (Subtype = 0100/0101): per la scoperta attiva delle reti
-- *Authentication* (Subtype = 1011): per l'autenticazione delle stazioni
-- *Deauthentication* (Subtype = 1100): per terminare l'autenticazione
-]
-
-==== 2. Control Frames (Type = 01)
-
-I frame di controllo facilitano lo scambio di frame dati:
-
-/ *RTS (Request to Send)*: Richiesta di prenotazione del canale (Subtype = 1011)
-/ *CTS (Clear to Send)*: Conferma di prenotazione del canale (Subtype = 1100)
-/ *ACK (Acknowledgment)*: Conferma ricezione corretta (Subtype = 1101)
-/ *CF-End*: Termina il Contention-Free Period (Subtype = 1110)
-
-==== 3. Data Frames (Type = 10)
-
-I frame dati trasportano il payload effettivo. Possono includere anche funzionalità di polling nel caso di PCF.
-
-=== Indirizzamento
-
-Una caratteristica peculiare di 802.11 è l'utilizzo di fino a *quattro indirizzi MAC* per gestire diversi scenari di comunicazione:
-
-#align(center)[
-  #figure(
-    {
-      set text(size: 0.75em)
-      table(
-        columns: (1.2fr, 1fr, 1.5fr, 1.5fr, 1.5fr),
-        align: center + horizon,
-        fill: (col, row) => if row == 0 { rgb("#E7E6E6") } else { white },
-        stroke: (x, y) => (
-          left: if x > 0 { 0.5pt } else { 1pt },
-          right: 1pt,
-          top: if y == 0 { 1pt } else { 0.5pt },
-          bottom: 1pt,
-        ),
-        text(weight: "bold")[To DS],
-        text(weight: "bold")[From DS],
-        text(weight: "bold")[Address 1],
-        text(weight: "bold")[Address 2],
-        text(weight: "bold")[Address 3],
-        [0], [0], [DA (Dest.)], [SA (Source)], [BSSID],
-        [0], [1], [DA], [BSSID], [SA],
-        [1], [0], [BSSID], [SA], [DA],
-        [1], [1], [RA (Receiver)], [TA (Transmit.)], [DA],
-      )
-    },
-    caption: [Significato degli indirizzi in base a To DS e From DS]
-  )
-]
-
-dove:
-- *DA*: Destination Address (indirizzo di destinazione finale)
-- *SA*: Source Address (indirizzo sorgente originale)
-- *BSSID*: Basic Service Set Identifier (MAC dell'AP)
-- *RA*: Receiver Address (ricevitore immediato, per WDS)
-- *TA*: Transmitter Address (trasmettitore immediato, per WDS)
-
-#nota[
-Il caso To DS = 1 e From DS = 1 è utilizzato nella modalità *Wireless Distribution System (WDS)*, dove i frame viaggiano tra due Access Point attraverso il mezzo wireless. In questo scenario è necessario un quarto indirizzo (Address 4) per mantenere traccia sia del trasmettitore che del ricevitore intermedio.
-]
-
-=== Duration/ID Field
-
-Il campo *Duration/ID* (2 byte) ha funzioni diverse in base al contesto:
-
-- Nei frame *PS-Poll* (Power Save Poll): contiene l'Association ID della stazione
-- Negli altri frame: specifica la durata in microsecondi per cui il mezzo sarà occupato, inclusi i tempi di:
-  - Trasmissione del frame corrente
-  - SIFS
-  - Eventuale frame di risposta (ACK/CTS)
-
-Questo meccanismo è utilizzato per il *NAV (Network Allocation Vector)*, che implementa il *virtual carrier sensing*: le stazioni che ricevono un frame aggiornano il loro NAV con la durata specificata e evitano di trasmettere per quel periodo.
-
-=== Sequence Control Field
-
-Il campo *Sequence Control* (2 byte) è diviso in:
-
-- *Fragment Number* (4 bit): numero del frammento (0-15)
-- *Sequence Number* (12 bit): numero di sequenza del frame (0-4095)
-
-Questi valori permettono:
-- Riassemblaggio dei frame frammentati
-- Rilevamento e scarto di frame duplicati (ritrasmissioni)
-- Riordino dei frame ricevuti fuori sequenza
-
-=== Frame Body e FCS
-
-/ *Frame Body*: Contiene il payload effettivo, con dimensione variabile da 0 a 2312 byte. Nel caso di frame dati, contiene tipicamente un pacchetto LLC/SNAP che incapsula il payload di livello superiore (es. IP).
-
-/ *FCS (Frame Check Sequence)*: Checksum CRC-32 calcolato sull'intero frame (header + body) per rilevare errori di trasmissione. Se il CRC non corrisponde, il frame viene scartato silenziosamente.
-
-#attenzione[
-A differenza di Ethernet, 802.11 *non* ritrasmette automaticamente frame con errori CRC a livello MAC; il mittente attende un ACK e, se non lo riceve entro il timeout, ritrasmette il frame originale. Questo perché in un ambiente wireless gli errori sono molto più frequenti.
-]
