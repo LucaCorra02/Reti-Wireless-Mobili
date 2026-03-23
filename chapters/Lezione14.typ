@@ -6,22 +6,22 @@ La gestione degli eNodeB viene cambiata rispetto a LTE. Se in LTE avevamo un eNo
 
 L'idea è che di inserire la parte di controllo (*BBU*) in un *data center centralizzato*, mentre la parte di data plane (RRH) rimane distribuita geograficamente. La gestione dei vari RRH è quindi _centralizzata_. Inoltre, la BBU viene virtualizzata e diventa una *Virtual Base Band Unit* (vBBU). Essa può essere istanziata dinamicamente in base al traffico e alle esigenze della rete.
 
-I vantaggi di questa operazione riguardano principalmente il lato economico, in particolare: 
+I vantaggi di questa operazione riguardano principalmente il lato economico, in particolare:
 
 - *Riduzione CAPEX* (Investimento di capitale): Si ha una *riduzione del numero di componenti hardware* necessari per costruire la rete (meno BBU dentro le stazioni radio). Questo si traduce in un risparmio sui costi di acquisto e installazione, serve meno capitale di investimento per costruire la rete
 
 
-- *Riduzione OPEX* (Investimento di esercizio: quanto costa far funzionare la rete): Grazie alla virtualizzazione è alla centralizzazione, si ha una *riduzione dei costi operativi* (manutenzione, consumi energetici, spazio occupato). Inoltre grazie alle virtual BBE l'allocazione delel risorse viene ottimizzata. 
+- *Riduzione OPEX* (Investimento di esercizio: quanto costa far funzionare la rete): Grazie alla virtualizzazione è alla centralizzazione, si ha una *riduzione dei costi operativi* (manutenzione, consumi energetici, spazio occupato). Inoltre grazie alle virtual BBE l'allocazione delel risorse viene ottimizzata.
 
 - *Incremento prestazionale*: Se il traffico in una certa cella aumenta, possono essere istanziate più vBBU per gestire più utenti. Inoltre, la *densificazione è più sostenibile*: vengono installati più siti radiomobili (macro, pico, Femto) di dimensioni diverse. Si sfrutta la scalabilità orizzontale per la loro gestione tramite vBBU.
 
 
 == Cloud Computing
 
-Il Cloud computing è un paradigma che permette di accedere a risorse computazionali in modo flessibile e scalabile attraverso internet. 
+Il Cloud computing è un paradigma che permette di accedere a risorse computazionali in modo flessibile e scalabile attraverso internet.
 
-Caratteristiche principali: 
-- *Varietà dei serivizi*: Offre diversi tipi di servizi. 
+Caratteristiche principali:
+- *Varietà dei serivizi*: Offre diversi tipi di servizi.
 
 - *Scalabilità dinamica* orizzontale in base al traffico (traffico più alto aumento le istanze di un servizio).
 
@@ -32,9 +32,9 @@ Caratteristiche principali:
 - *Alti livelli di virtualizzazione e utilizzo del hardware*: L'utilizzo del hardware è efficiente, in quanto i core delle varie macchine possono essere utilizzati per più istanze.
 
 Da un punto di vista architetturale, il cloud viene posizionato dietro il livello _internet_. Davanti al layer _internet_, andiamo a posizionare la rete mobile (rete ISP), a sua volta divisa in :
-  - *Rete Mobile Core*: si occupa di gestire la parte di controllo e data plane della rete mobile. 
+- *Rete Mobile Core*: si occupa di gestire la parte di controllo e data plane della rete mobile.
 
-  - *Mobile edge*: è la parte di rete che si trova più vicina all'utente, in cui vengono posizionate le stazioni radio (eNodeB) e i mini-datacenter (MEC host).
+- *Mobile edge*: è la parte di rete che si trova più vicina all'utente, in cui vengono posizionate le stazioni radio (eNodeB) e i mini-datacenter (MEC host).
 
 #nota[
   Il percorso che i dati di un UE devono fare è il seguente:
@@ -55,7 +55,7 @@ Utenti in prossimità utilizzando cloud e non in modalità peer.
 
 === MEC (ETSI)
 
-Per evitare le problematiche relative al cloud si è pensato di *avvicinare la computazione all'utente finale*, posizionando i servizi più vicini possibile all'utente, in modo da ridurre latenza e jitter. 
+Per evitare le problematiche relative al cloud si è pensato di *avvicinare la computazione all'utente finale*, posizionando i servizi più vicini possibile all'utente, in modo da ridurre latenza e jitter.
 
 Tale concetto prende il nome di *MEC* (Mobile edge computing) oppure *MEC* (Multi-access edge computing):
 
@@ -65,7 +65,7 @@ Data una rete geograficamente distribuita e eterogenea (nodi con diversi tipi di
   Più vicini siamo all'utente finale minore è la latenza, ma minore è la capacità computazionale.
 ]
 
-Si crea quindi un *problema di assegnazione*: dove posizione i *nodi di computazione (moduli)* in una rete geograficamente distribuita, in modo da soddisfare i requisiti dei servizi e sfruttare al meglio le risorse della rete. Tipicamente bisogna tenere in considerazione: 
+Si crea quindi un *problema di assegnazione*: dove posizione i *nodi di computazione (moduli)* in una rete geograficamente distribuita, in modo da soddisfare i requisiti dei servizi e sfruttare al meglio le risorse della rete. Tipicamente bisogna tenere in considerazione:
 - *Requisiti del modulo*: requisiti di risorse (CPU, memoria, ecc.) per eseguire un modulo in un certo nodo della rete.
 
 - *Requisiti dei link*: requisiti di latenza per mandare un dato da un modulo all'altro.
@@ -88,7 +88,7 @@ L'ESTI ha proposto uno standard per l'architettura MEC
       let color-nfvi = rgb("#F0F0F0")
       let color-network = rgb("#FFE6E6")
 
-     
+
       // Freccia verticale "Management and Orchestration"
       content((0.9, 14.25), text(size: 10pt, "Management and Orchestration"), anchor: "center")
 
@@ -103,12 +103,11 @@ L'ESTI ha proposto uno standard per l'architettura MEC
       rect((4.5, 2.5), (11.5, 12.3), stroke: black + 1.5pt, fill: white, radius: 0.1)
       content((8, 11.85), text(size: 8pt, weight: "bold", "MEC host"))
 
-    
 
       // Box MEC applications (in alto dentro MEC host)
       rect((4.8, 9.3), (11.2, 11.5), stroke: black + 1pt, fill: color-platform, radius: 0.1)
       content((8, 11.1), text(size: 7.5pt, weight: "bold", "MEC applications"))
-      
+
       // Quattro box MEC app
       let app-y = 10.1
       for i in range(4) {
@@ -130,7 +129,7 @@ L'ESTI ha proposto uno standard per l'architettura MEC
       rect((4.8, 4.5), (11.2, 6.5), stroke: black + 1pt, fill: color-nfvi, radius: 0.1)
       content((8, 6.15), text(size: 7.5pt, weight: "bold", "Virtualisation infrastructure"))
       content((8, 5.85), text(size: 6.5pt, "(e.g. NFVI)"))
-      
+
       // Sotto-elementi NFVI
       content((8, 5.3), text(size: 6pt, "Virtual compute"))
       content((8, 5.0), text(size: 6pt, "Virtual storage"))
@@ -146,7 +145,7 @@ L'ESTI ha proposto uno standard per l'architettura MEC
       content((13.25, 11.4), text(size: 7pt, weight: "bold", "MEC host"), anchor: "center")
       content((13.25, 11.0), text(size: 7pt, weight: "bold", "level"), anchor: "center")
       content((13.25, 10.6), text(size: 7pt, weight: "bold", "management"), anchor: "center")
-      
+
       // Punti nel box management
       for i in range(5) {
         content((13.25, 9.5 - i * 1.2), text(size: 6pt, "..."))
@@ -175,7 +174,7 @@ L'ESTI ha proposto uno standard per l'architettura MEC
       // Connessioni tra i livelli
       // Da MEC platform a NFVI
       line((8, 6.8), (8, 6.5), stroke: (paint: gray, dash: "dotted", thickness: 0.6pt))
-      
+
       // Da NFVI a Data plane
       line((8, 4.5), (8, 4.2), stroke: (paint: gray, dash: "dotted", thickness: 0.6pt))
 
@@ -188,7 +187,7 @@ L'ESTI ha proposto uno standard per l'architettura MEC
 
 - *MEC*: Ha una visione su tutti i dataset distribuiti geograficamente.
 
-- *MEC HOST*: Un'istanza per ogni mini-datacenter. Esso si trova vicino alla stazione radio (eNodeB) e ospita le applicazioni MEC. Il layer è composto da tre livelli principali: 
+- *MEC HOST*: Un'istanza per ogni mini-datacenter. Esso si trova vicino alla stazione radio (eNodeB) e ospita le applicazioni MEC. Il layer è composto da tre livelli principali:
   - *MEC applications*: applicazioni che vengono eseguite all'interno del MEC host. Possono essere applicazioni di terze parti o applicazioni gestite dall'operatore di rete.
   - *MEC platform*: fornisce servizi e funzionalità di supporto per le applicazioni MEC, come ad esempio gestione delle risorse, orchestrazione, sicurezza, ecc.
   - *Virtualisation infrastructure* (es. NFVI): virtualizza le risorse del mini-datacenter, permettendo di eseguire più istanze di applicazioni MEC in modo efficiente e flessibile.
@@ -205,7 +204,7 @@ Se in LTE la differenzazzione del traffico in base ai QoS avveniva tramite i bea
 
 *Network slicing*: Si tratta di un concetto che trasforma la rete da un paradigma statico ad un *paradigma dinamico* dove le reti logiche vengono create on demand con risorse e topologie ottimizzate per servire uno scopo specifico/una categoria di servizi o singoli utenti.
 
-Nel 4G, per garantire una certa qualità del servizio (QoS), si utilizzavano i bearer senza modificare l'architettura della rete. L'infrastruttura, i nodi attraversati dai dati e la topologia della rete rimangono identici per tutti gli utenti. 
+Nel 4G, per garantire una certa qualità del servizio (QoS), si utilizzavano i bearer senza modificare l'architettura della rete. L'infrastruttura, i nodi attraversati dai dati e la topologia della rete rimangono identici per tutti gli utenti.
 
 #nota()[
   I bearer sono solo dei tunnel logici.
@@ -254,11 +253,11 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
       content((1, 2.5), text(size: 10pt, weight: "bold", "User Plane"), anchor: "west")
 
       // === CONTROL PLANE ===
-      
+
       // Bus di comunicazione (Service-based Architecture Bus)
       rect((2.5, 5.8), (14.8, 6.2), stroke: color-bus + 1.5pt, fill: color-bus.lighten(70%), radius: 0.1)
       content((8.65, 6), text(size: 7pt, weight: "bold", "Service-based Architecture (SBA) Bus"), anchor: "center")
-      
+
       // Prima riga Control Plane
       rect((3, 6.5), (4.5, 7.5), stroke: black + 1pt, fill: color-control, radius: 0.1)
       content((3.75, 7), text(size: 8pt, weight: "bold", "NSSF"))
@@ -309,7 +308,7 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
       line((2, 4), (15, 4), stroke: (paint: black, thickness: 1.5pt, dash: "dashed"))
 
       // === USER PLANE ===
-      
+
       // UE
       rect((3, 1.5), (4.5, 2.5), stroke: black + 1pt, fill: color-user, radius: 0.1)
       content((3.75, 2), text(size: 8pt, weight: "bold", "UE"))
@@ -327,18 +326,24 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
       content((12.75, 2), text(size: 8pt, weight: "bold", "DN"))
 
       // === CONNESSIONI ===
-      
+
       // Collegamento dati: UE -> (R)AN (data - continua rossa)
       line((4.5, 2), (6, 2), stroke: (paint: color-data, thickness: 1.5pt))
-      
+
       // N1: UE -> AMF (segnalazione - tratteggiata)
-      line((3.75, 2.5), (3.75, 3.2), (7.75, 3.2), (7.75, 4.5), 
-           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      line((3.75, 2.5), (3.75, 3.2), (7.75, 3.2), (7.75, 4.5), stroke: (
+        paint: color-signaling,
+        thickness: 1pt,
+        dash: "dashed",
+      ))
       content((5, 3.5), text(size: 7pt, "N1"), anchor: "center")
 
       // N2: (R)AN -> AMF (segnalazione - tratteggiata)
-      line((6.75, 2.5), (6.75, 3.5), (7.75, 3.5), (7.75, 4.5),
-           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      line((6.75, 2.5), (6.75, 3.5), (7.75, 3.5), (7.75, 4.5), stroke: (
+        paint: color-signaling,
+        thickness: 1pt,
+        dash: "dashed",
+      ))
       content((7, 3.8), text(size: 7pt, "N2"), anchor: "center")
 
       // N3: (R)AN -> UPF (data - continua rossa)
@@ -346,8 +351,7 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
       content((8.25, 2.3), text(size: 7pt, fill: color-data, "N3"), anchor: "center")
 
       // N4: SMF -> UPF (controllo - tratteggiata)
-      line((9.75, 4.5), (9.75, 2.5), 
-           stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
+      line((9.75, 4.5), (9.75, 2.5), stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
       content((10.2, 3.5), text(size: 7pt, "N4"), anchor: "center")
 
       // N6: UPF -> DN (data - continua rossa)
@@ -357,16 +361,15 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
       // N9: Self-loop su UPF (interconnessione tra UPF)
       line((9.0, 1.0), (10.5, 1.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))
       line((8.9, 1.0), (8.9, 2.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))
-      line((10.6, 1.0), (10.6, 2.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))  
+      line((10.6, 1.0), (10.6, 2.0), stroke: (paint: color-signaling, thickness: 1.5pt, dash: "dashed"))
       content((9.6, 1.2), text(size: 9pt, fill: black, "N9"), anchor: "west")
 
       // Legenda
       content((14, 3), text(size: 7pt, "Signaling"), anchor: "west")
       line((15.5, 3), (16.5, 3), stroke: (paint: color-signaling, thickness: 1pt, dash: "dashed"))
-      
+
       content((14, 2.5), text(size: 7pt, "Data"), anchor: "west")
       line((15.5, 2.5), (16.5, 2.5), stroke: (paint: color-data, thickness: 1.5pt))
-
     })
   ],
   caption: [Architettura 5G: Control Plane e User Plane con interfacce di rete],
@@ -374,24 +377,32 @@ Si crea quindi una *netta separazione* tra le operazioni di data plane (instrada
 
 === Dataplane
 
-In 5G vengono introdotti dei moduli che prendono il nome di *User Plane Function* (UPF). Essi possono essere configurati in modi diversi, aderendo a compiti specifici. 
+In 5G vengono introdotti dei moduli che prendono il nome di *User Plane Function* (UPF). Essi possono essere configurati in modi diversi, aderendo a compiti specifici.
 
 Un modulo molto importante è L' *UPF ULCL* (Uplink Classifier). Esso decide dove *instradare il traffico in uplink*, distinzione tra traffico cloud e traffico verso un edge. Questa distinzione è fondamentale per sfruttare al meglio i vantaggi del MEC, evitando di mandare tutto il traffico verso il cloud e sfruttando invece le risorse più vicine all'utente finale.
 
-#nota[  
+#nota[
   Il traffico in downlink non ha bisogno di un classifier, in quanto sappiamo già da dove arriva (il cloud o l'edge).
 ]
 
+*Protocol Data Unit (PDU)*: I pacchetti utente viaggiano all’interno di una connessione end-to-end sullo user plane chiamata PDU session. La sessione va da un UE a un data network (DN) e può essere composta da più flussi di traffico (es. video, gaming, ecc.). Il traffico di ogni flusso viene identificato da un *PDU session anchor* (UPF) che si occupa di instradare i pacchetti verso la destinazione corretta (cloud o edge).
+
+#nota[
+  Un certo UE può quindi avere *più sessioni PDU attive contemporaneamente*, ognuna con un anchor UPF diverso, a seconda del tipo di traffico e della destinazione (cloud o edge).
+]
+
+L'*interfaccia N9*: Permette di connettere tra loro più UPF e fare routing verso altre data network. Tutti gli UPF devono essere connessi all'UPF ULCL, che si occupa di instradare il traffico verso l'UPF corretto (cloud o edge). Se un UPF non è connesso all'ULCL, non può essere utilizzato per instradare il traffico.
+
 === Control Plane
 
-Nella rete 5G, ognuna delle componenti della parte di controllo è una *VNF* (Virtual Network Function). 
+Nella rete 5G, ognuna delle componenti della parte di controllo è una *VNF* (Virtual Network Function).
 
-Ogni VNF implementa un *micro-servizio* che espone delle API rest. La comunicazione tra i vari moduli avviene tramite un *bus di comunicazione*, secondo un modello *Publish-Subscribe*. Quando avviene un evento viene notificato, il modulo che lo deve gestire risponde. 
+Ogni VNF implementa un *micro-servizio* che espone delle API rest. La comunicazione tra i vari moduli avviene tramite un *bus di comunicazione*, secondo un modello *Publish-Subscribe*. Quando avviene un evento viene notificato, il modulo che lo deve gestire risponde.
 
 In realtà la comunicazione avviene in modo misto, in quanto alcuni moduli comunicano attraverso delle interfaccie punto a punto.\
 $"N9"$: Interfaccia che permette di realizzare interconnessioni tra UPF.
 
-*NRF (Network Repository Function)*: Questa network function permette di registrare servizi e renderli individuabili dalle altre network function.  
+*NRF (Network Repository Function)*: Questa network function permette di registrare servizi e renderli individuabili dalle altre network function.
 
 *AMF (Access & Mobility Management Function)*: Gestisce la maggior parte del traffico di segnalazione per autenticazioe, registrazione e mobilità. Svolge alcune funzioni del vecchio MME, comunica con il data plane.
 
@@ -428,4 +439,4 @@ Esistono due _tipi_ di 5G: *5G standalone* e *5G non standalone*.
 
 - *Standalone*: L'architettura è invece quella dell'immagine sopra.
 
-Per ottenere i vantaggi offerti da 5G serve 5G standalone. La separazione permette scalabilità orizzontale sui singoli moduli. 
+Per ottenere i vantaggi offerti da 5G serve 5G standalone. La separazione permette scalabilità orizzontale sui singoli moduli.
