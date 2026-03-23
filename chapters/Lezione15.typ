@@ -1,85 +1,100 @@
 #import "../template.typ": *
 
-== 5g network slide
+== 5G network slice
 
-Con le slice possiamo configurare la toplogia di networl function come vogliamo, possiamo mettere o meno delle funzionalità.
+Grazie alla network slicing, è possibile creare più reti virtuali indipendenti sulla stessa infrastruttura fisica. Ogni slice può essere configurata per soddisfare i requisiti specifici di un servizio o di un'applicazione, come ad esempio bassa latenza per i servizi di gaming o alta affidabilità per i servizi di emergenza.
 
-Ad esempio se per la parte IOT possiamo avere l'upf dietro la base station in modo da uscire direttamente su internet, meno latenza.
+#esempio()[
+  Ad esempio, per una rete IOT possiamo piazzare l'UPF dietro la base station, in modo da uscire direttamente su internet, meno latenza.
+]
 
-La NSFF permette di selezionare e configurare le varie slice, avremo una sorta di template per ogni slice.
+L'idea è quella di andare a configurare la rete in modo dinamico, sia a livello di parametri (caratteristiche del servizio) che a livello di NF (Network Function) che compongono il servizio.
 
 Possiamo quindi andare a personalizzare le componenti in termini di moduli del control plane e data plane.
 
-Slice template viene mappato su 32 bit:
-- Primi 8 bit, rappresentato la macro tipologia della slice:
+=== Identificativo della slice
+
+Per l'identificazione della slice, viene utilizzato uno slice identifier a $32$ bit, chiamato *Single Network Slice Selection Assistance Information* (S-NSSAI):
+- I primi $8$ bit, rappresentato la *macro tipologia* della slice:
   - eMBB, URLLC, ecc
   - Reserveed per permettere allo standard di crescere
   - Operator specific, l'operatore può personalizzare le macro-classi di slice
 
-- Slice differentation, identifica l'istanza specifica della slice.
+- I restanti $24$ servono come *slice differentation*.Identificano l'istanza specifica della slice.
 
-I vari codici vengono forniti all'ue al momento della registrazioni. I componenti che dialogano a livello core sono: UE , AMF, NSFF, UDM.
+I vari codici vengono forniti all'UE al momento della registrazione. I componenti che dialogano a livello core sono: UE , AMF, NSFF, UDM.\
+In questo modo il dispositivo è a conoscenza della slice a cui è assegnato e inserirà l’identificativo della slice all’interno dei pacchetti.
 
-I bearer con gli ip rimangono. Le slice sono un ulteriore livello di astrazione da mettere _sopra_ ai bearer.
-
-Le slice tra di loro sono indipendenti, possono condividere componenti a discrezione dell'orchestratore, ma non è obbligatorio.
+#nota()[
+  I bearer utilizzati in 4G rimangono. Le slice sono un' ulteriore livello di astrazione da mettere _sopra_ ai bearer.
+]
 
 == 5G e MEC
 
 L'integrazione di 5G con i servizi di edge computing (MEC) è una delle caratteristiche distintive.
 
-A livello di architettura è importante il data plane che può essere VNF/PNF. Nell'architettura 5G corrisponde a UPF.
+L'*integrazione di MEC viene realizzata attravero il modulo UPF* (User Plane Function) che si occupa di instradare il traffico verso la destinazione corretta (cloud o edge). L'UPF può essere configurato dinamicamente per instradare il traffico verso un MEC server.
 
-Suppnoamo di avere un UE che accede a una slice che collega con un UPF PSA (ancora che gestisce la sessione) che poi si collega con un data neetwork.
+#esempio()[
+  Supponniamo di avere un UE che accede a una slice. La slice collega un UPF a un Data Network (DN) che può essere il cloud o un MEC server.
 
-L'applicazione richiede accesso a un servizio di edge computing. L'orchestrare capisce che deve istanziare un nuovo servizio, in particolare:
-- Deve soddisfare i reqquisiti della richiesta, trovando l'edge giusto (vicino all'utente, con le risorse necessarie, ecc)
+  L'applicazione richiede accesso a un servizio di edge computing. L'orchestratore capisce che deve istanziare un nuovo servizio, in particolare:
+  - Deve soddisfare i requisiti della richiesta, trovando l'edge giusto (vicino all'utente, con le risorse necessarie, ecc)
 
-- La MEC applicazion configura il servizio richiesto.
+  - La MEC application configura il servizio richiesto.
 
-Lato rete bisogna configurare il data plane, in modo che l'UE possa raggiungere la MEC configuration  configurata:
-- Viene aggiungo un UPF class link classifier appositamente configurato. Può essere nuovo o già esistente o riconfigurato. Ovviamente il tutto avviene in modo trasparente per l'utente, che non si accorge di nulla.
+  A livello di rete, invece, bisogna configurare il data plane, in modo che l'UE possa raggiungere la MEC application richiesta. A tale scopo, viene aggiunto un UPF class link classifier appositamente configurato (nuovo o già esistente o riconfigurato). Ovviamente il tutto avviene in modo trasparente per l'utente, che non si accorge di nulla.
 
-- Uno andrà al vecchio UPF e l'altro andrà verso la MEC application.
+  il traffico dell'UE viene instradato verso l'UPF class link classifier, che lo instrada verso la MEC application. Se invece l'applicazione è sul cloud, il traffico viene instradato verso il cloud.
 
-#attenzione()[
-  Senza la network function virtualization, questa flessibilità non sarebbe stata possibile.
 ]
 
-=== Edge Resource provisioning
+#attenzione()[
+  Senza la network function virtualization (NFV), questa flessibilità *non* sarebbe stata possibile.
+]
 
-Opazione 1 mettere il MEC server in un data center vicino all'utente, ad esempio in una base station. In questo modo si riducono le latenze, ma è più costoso e complesso da gestire.
+=== Edge Resource Placement
 
-L'altra opzione è ad anello con un data center più grande, con più risorse, ma con latenze maggiori. In questo caso si può usare una slice dedicata per il traffico verso il MEC server, in modo da garantire le prestazioni necessarie.
+Vogliamo capire dove posizionare i MEC server all'interno della rete. Ci sono diverse opzioni, ognuna con i suoi vantaggi e svantaggi:
 
-L'opzione 3 è metterlo nella backhaul e non nella rete core.
++ Mettere il MEC server in un data center vicino all'utente, ad esempio in una base station. In questo modo si riducono le latenze, ma è più costoso e complesso da gestire
 
-L'opzione 4 è metterlo nella rete core, in questo caso si può usare una slice dedicata per il traffico verso il MEC server, in modo da garantire le prestazioni necessarie. Tipicamente si tratta di una soluzione da CDN. Tante risorse ma pago in latenza. Soluzione quasi come il cloud
++ Invece di mettere un server sotto ogni antenna, se ne mette uno più grande in un nodo che raccoglie il traffico di $20-50$ antenne (ad esempio, a livello di quartiere o di città). In questo modo si riducono i costi e si semplifica la gestione, ma le latenze sono maggiori
 
-Possono essere presenti tutte le scelte, non c'è uan limitazione nella rete operatore. L'operatore può noleggiare risorse dagli edge provider. L'edge porvider possono essere eterogeni a livello di servizi e geolocalizzazione.
++ Posizionare il MEC server nella backhaul (es. a livello regionale o nazionale), ad esempio in un nodo di aggregazione. In questo modo si riducono i costi e si semplifica la gestione, ma le latenze sono maggiori
 
-Non c'è un singolo operatore. L'operatore di rete può essere sia fruitore che offrire servizi rete di edge.
++ Metterlo nella rete core. In questo caso si può usare una slice dedicata per il traffico verso il MEC server, in modo da garantire le prestazioni necessarie. Latenze simili a quelle del cloud
 
-== 5g RAN - 5g NR
+#nota()[
+  Le scelte non sono mutualmente esclusive, ma possono essere combinate in base alle esigenze specifiche del servizio e alla topologia della rete. Ad esempio, si potrebbe avere un MEC server vicino all'utente per i servizi che richiedono bassa latenza, e un altro più centralizzato per i servizi che possono tollerare latenze maggiori.
+]
 
-In 4G avevamo un frame che durava 10 ms, con 10 subframe da 1 ms ciascuno In 4g impiegava come unità base 1ms per la trasmissione, per questo motivo non è possibile stare sotto la latenza d 1ms già in partenza.
+== 5g RAN - 5G NR
 
-L'idea in 5g è che non vogliamo trasmettere meno (sempre 14 simboli OFDMA) ma vogliamo trasmettere più velocemente.
+In 4G avevamo un frame di simboli OFDMA che durava $10 "ms"$, con $10$ subframe da $1 "ms"$ ciascuno.
 
-La durata del simbolo è durata alla sub carrier spacing, più dura il simbolo più dobbiamo separare i subcarrier.
+L'idea in 5G è quella di *ridurre la latenza* (portarla sotto 1ms), *senza ridurre il numero di simboli trasmessi* (sempre 14 simboli OFDMA).
 
-In 5G la soluzione è ridurre la durata del simbolo. Stesso numero di simboli trasmetti ma in mento tempo. Dobbiamo andare ad aumentare la distanza tra le sotto-portanti, altrimenti violeremmo l'ortogonalità.
+La soluzione è quella di *ridurre la durata del simbolo*, aumentando di conseguenza la velocità di trasmissione.
 
-Abbiamo due intervalli di frequenze:
+#nota()[
+  La diminuzione della durata del simbolo comporta un *aumento della distanza tra le sotto-portanti*, altrimenti si violerebbe l'ortogonalità tra di esse.
+]
+
+Lo standard 5G NR definisce $5$ diverse durate, indicate come *numerology*. Definisce anche due possibili intervalli di frequenze:
 - FR1: $410-7125 "Mhz"$
 - FR2: $24250-52600 "Mhz"$
 
-Avere bande larghe è più difficle nel primo caso. A standard queste due bande vengono utilizzate nel seguente modo:
-- Viene introdotto un $mu$
-- $Delta f = 2^u dot 15 "Khz"$
-- Con $mu = 0$ le sotto-portani sono distanziate come in 4G.
+Per una numerology $mu$, si ha una distanza tra le sotto-portanti $delta f$ pari a: 
+$
+  delta f = 2^mu dot 15 "Khz"
+$
+Con $mu = 0$ le sotto-portani sono distanziate come in 4G, mentre con $mu = 4$ un singolo resource block occupa molta più banda per mantenere lo stesso numero di sotto-portanti. 
 
-Con $mu = 4$ un singolo resource block occupa molta più banda per mantenere lo stesso numero di sotto-portanti. Ovviamente viene ridotta anche la durata del simbolo. Ma riusciamo a garnitre la latenza di 1ms.
+
+
+
+
 
 //aggiugnre immagine
 
@@ -102,26 +117,9 @@ Ad oggi vengono istallate secondo la seguente configurazione:
 
 Lo standard, tuttavia, prevede diverse configurazioni. Possiamo gestire in modo ibrido la rete 4G e 5G.
 
-== Open-RAN (O-RAN) // non in esame
+#part("Comunicazione satellitare")
 
-La prima immagine è la rete legacy
-
-La C-RAN abbiamo un front all che porta tutto sulal rete core e poi sull abase band unit
-
-Infine abbiamo open rand dove abbiamo un'architettura più spezzata. Ciasunco degli elementi è virtual network function.
-
-Open RAN ha un architettura che prevede dei controlli programmabili aggiuntivi:
-- RIC (RAN Intelligent Controller): è un componente che consente di programmare e ottimizzare le operazioni della rete RAN in tempo reale. Può essere utilizzato per migliorare le prestazioni, la gestione delle risorse e l'efficienza energetica della rete. Possiamo trovare dei componenti di inteligente artificiale che analizzano i dati in tempo reale e prendono decisioni per ottimizzare la rete. L'inferenza deve durare massimo $10"ms"$
-
-#nota()[
-  Permette di aggiungere inferenza sulla parte RAN
-]
-
-Il modulo Non-real time l'inferenza può durare anche qualche secondo. Ciasucna delle parti del nodeB è stata virtualizzata.
-
-= Comunicazioni Satellitare
-
-== Piano orbitale
+= Piano orbitale
 
 Sui piani orbitali girano i satelliti. Le cotellazioni sono un insieme di satelliti che orbitano intorno alla terra per coprire una certa orbita.
 
@@ -152,7 +150,7 @@ Più ci spostiamo sull'orbita geostazionaria (ruota alla stessa velocità della 
 
 //Recuperare slide
 
-== Comunicazione satellitare //saltare topologia
+= Comunicazione satellitare //saltare topologia
 
 La copertura da dei vantaggi e svantaggi. A secnda delle tipologia di servizio scgliamo robita e costellazione
 
@@ -179,6 +177,6 @@ In questo caso L'originator che è il nodo $A$ con SEQ = 200 chiede la destinazi
 
 Esercizio questo o tracciare l'esecuzione
 
-es 2) 
+es 2)
 
 es 3) CSMA/CA
