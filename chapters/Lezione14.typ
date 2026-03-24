@@ -440,3 +440,4 @@ Esistono due _tipi_ di 5G: *5G standalone* e *5G non standalone*.
 - *Standalone*: L'architettura è invece quella dell'immagine sopra.
 
 Per ottenere i vantaggi offerti da 5G serve 5G standalone. La separazione permette scalabilità orizzontale sui singoli moduli.
+
