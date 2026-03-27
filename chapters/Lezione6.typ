@@ -90,15 +90,15 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
 )
 
 La soluzione a questo problema risiede nell'invio di una *Request to Send (RTS)*, da parte di chi vuole trasmettere (il _sender_), verso *tutti* i terminali presenti nel proprio raggio di copertura. Questa richiesta contiene:
-  - l'indirizzo della sorgente 
-  - l'indirizzo della destinazione
+  - l'indirizzo *MAC* della sorgente 
+  - l'indirizzo *MAC* della destinazione
   - la durata stimata dell'*RTS* stesso e un _ack_ finale. 
 
 I terminali ai quali non è destinata la richiesta, scartano l'*RTS* e allocano un *Network Allocation Vector (NAV)*, che corrisponde a un tempo in cui sanno di non poter trasmettere (questo tempo viene stimato sulla base delle informazioni raccolte prima di scartare la *Request to Send*).
 
 Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send CTS* a tutti i vicini nel suo raggio di copertura. Il CTS contiene:
-  - l'indirizzo di sorgente 
-  - l'indirizzo della destinazione
+  - l'indirizzo *MAC* di sorgente 
+  - l'indirizzo *MAC *della destinazione
   - il tempo rimanente fino al termine della trasmissione. Questo tempo viene calcolato partendo dalla stima contenuta nell'*RTS*, sottraendo il tempo passato per "trovare" la destinazione.
 
 Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve per avvisare tutti i terminali nel raggio del destinatatrio che un'altro nodo all'esterno vuole comunicare con il terminale destinatario.
