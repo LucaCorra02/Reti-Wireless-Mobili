@@ -19,7 +19,7 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
       let frame-blue = rgb("#00BFFF")
       let check-green = rgb("#008800")
       let expl-red = rgb("#FF0000")
-      
+
       let draw-check(x, y) = {
         place(dx: x, dy: y, path(stroke: 2pt + check-green, (0pt, 0pt), (4pt, 4pt), (12pt, -8pt)))
       }
@@ -27,7 +27,7 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
       let y-a = 40pt
       let y-b = 90pt
       let y-d = 140pt
-      
+
       let h-bar = 18pt
       let w-difs = 80pt
       let w-frame = 80pt
@@ -42,10 +42,14 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
 
       place(dx: x-start-a, dy: y-a, rect(width: w-difs, height: h-bar, fill: light-blue, stroke: none))
       place(dx: x-start-a, dy: y-a - 5pt, line(start: (0pt, 0pt), end: (0pt, h-bar + 5pt), stroke: 1.5pt + frame-blue))
-      place(dx: x-start-a + w-difs, dy: y-a - 5pt, line(start: (0pt, 0pt), end: (0pt, h-bar + 5pt), stroke: 1.5pt + frame-blue))
+      place(dx: x-start-a + w-difs, dy: y-a - 5pt, line(
+        start: (0pt, 0pt),
+        end: (0pt, h-bar + 5pt),
+        stroke: 1.5pt + frame-blue,
+      ))
       place(dx: x-start-a, dy: y-a - 12pt, block(width: w-difs, align(center, text(size: 8pt)[DIFS])))
       place(dx: x-start-a, dy: y-a + 4pt, block(width: w-difs, align(center, text(size: 6pt)[Carrier Sense])))
-      
+
       place(dx: x-frame-a, dy: y-a, rect(width: w-frame, height: h-bar, fill: frame-green, stroke: none))
       place(dx: x-frame-a, dy: y-a + 4pt, block(width: w-frame, align(center, text(size: 8pt)[Frame A$->$B])))
 
@@ -64,11 +68,24 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
       let ex-x = x-frame-d + 15pt
       let ex-y = y-b + 8pt
       place(dx: ex-x, dy: ex-y, polygon(
-        fill: expl-red, stroke: 0.5pt + black,
-        (0pt, -10pt), (5pt, -5pt), (12pt, -12pt), (8pt, -2pt), 
-        (18pt, 0pt), (8pt, 5pt), (15pt, 12pt), (3pt, 8pt), 
-        (0pt, 18pt), (-3pt, 8pt), (-12pt, 15pt), (-6pt, 3pt),
-        (-18pt, 0pt), (-8pt, -3pt), (-15pt, -10pt), (-4pt, -6pt)
+        fill: expl-red,
+        stroke: 0.5pt + black,
+        (0pt, -10pt),
+        (5pt, -5pt),
+        (12pt, -12pt),
+        (8pt, -2pt),
+        (18pt, 0pt),
+        (8pt, 5pt),
+        (15pt, 12pt),
+        (3pt, 8pt),
+        (0pt, 18pt),
+        (-3pt, 8pt),
+        (-12pt, 15pt),
+        (-6pt, 3pt),
+        (-18pt, 0pt),
+        (-8pt, -3pt),
+        (-15pt, -10pt),
+        (-4pt, -6pt),
       ))
 
       place(dx: 5pt, dy: y-d, text(weight: "bold", size: 12pt)[D])
@@ -76,7 +93,11 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
 
       place(dx: x-start-d, dy: y-d, rect(width: w-difs, height: h-bar, fill: light-blue, stroke: none))
       place(dx: x-start-d, dy: y-d - 5pt, line(start: (0pt, 0pt), end: (0pt, h-bar + 5pt), stroke: 1.5pt + frame-blue))
-      place(dx: x-start-d + w-difs, dy: y-d - 5pt, line(start: (0pt, 0pt), end: (0pt, h-bar + 5pt), stroke: 1.5pt + frame-blue))
+      place(dx: x-start-d + w-difs, dy: y-d - 5pt, line(
+        start: (0pt, 0pt),
+        end: (0pt, h-bar + 5pt),
+        stroke: 1.5pt + frame-blue,
+      ))
       place(dx: x-start-d, dy: y-d - 12pt, block(width: w-difs, align(center, text(size: 8pt)[DIFS])))
       place(dx: x-start-d, dy: y-d + 4pt, block(width: w-difs, align(center, text(size: 6pt)[Carrier Sense])))
 
@@ -86,20 +107,26 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
       draw-check(x-start-d - 5pt, y-d + h-bar + 2pt)
       draw-check(x-frame-d - 5pt, y-d + h-bar + 2pt)
     })
-  ]
+  ],
 )
 
 La soluzione a questo problema risiede nell'invio di una *Request to Send (RTS)*, da parte di chi vuole trasmettere (il _sender_), verso *tutti* i terminali presenti nel proprio raggio di copertura. Questa richiesta contiene:
-  - l'indirizzo *MAC* della sorgente 
-  - l'indirizzo *MAC* della destinazione
-  - la durata stimata dell'*RTS* stesso e un _ack_ finale. 
+- l'indirizzo *MAC* della sorgente
+- l'indirizzo *MAC* della destinazione
+- la durata stimata dell'*RTS* (intesa come durata totale della trasmissione, comprensiva di eventuali ritrasmissioni in caso di collisione). Tale stima comprende SIFS + CTS + SIFS + Frame + SIFS + ACK, ovvero tutto il processo di comunicazione, compresi i tempi di attesa tra un messaggio e l'altro.
 
 I terminali ai quali non è destinata la richiesta, scartano l'*RTS* e allocano un *Network Allocation Vector (NAV)*, che corrisponde a un tempo in cui sanno di non poter trasmettere (questo tempo viene stimato sulla base delle informazioni raccolte prima di scartare la *Request to Send*).
 
 Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send CTS* a tutti i vicini nel suo raggio di copertura. Il CTS contiene:
-  - l'indirizzo *MAC* di sorgente 
-  - l'indirizzo *MAC *della destinazione
-  - il tempo rimanente fino al termine della trasmissione. Questo tempo viene calcolato partendo dalla stima contenuta nell'*RTS*, sottraendo il tempo passato per "trovare" la destinazione.
+- l'indirizzo *MAC* di sorgente
+- l'indirizzo *MAC *della destinazione
+- il tempo rimanente fino al termine della trasmissione. Questo tempo viene calcolato partendo dalla stima contenuta nell'*RTS*, sottraendo il tempo passato per "trovare" la destinazione.
+
+#nota()[
+  I pacchetti RTS e CTS *non sono pacchetti broadcast*. Sono pacchetti unicast, ovvero indirizzati esplicitamente a una sola specifica stazione.
+
+  Tuttavia, vengono ricevuti/sentiti da tutte le stazioni nel raggio di copertura del mittente (RTS) o del destinatario (CTS).
+]
 
 Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve per avvisare tutti i terminali nel raggio del destinatatrio che un'altro nodo all'esterno vuole comunicare con il terminale destinatario.
 
@@ -116,7 +143,7 @@ Lo schema appena descritto è il seguente:
       let c-check = rgb("#008800")
       let bar-h = 20pt
       let arrow-end = 460pt
-      
+
       let draw-check(x, y) = {
         place(dx: x, dy: y, path(stroke: 2pt + c-check, (0pt, 0pt), (4pt, 4pt), (12pt, -8pt)))
       }
@@ -133,12 +160,16 @@ Lo schema appena descritto è il seguente:
       let y-d = 170pt
 
       draw-timeline(y-a, "A")
-      
+
       let x-difs = 50pt
       let w-difs = 80pt
       place(dx: x-difs, dy: y-a - 10pt, rect(width: w-difs, height: bar-h, fill: c-sense, stroke: none))
       place(dx: x-difs, dy: y-a - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
-      place(dx: x-difs + w-difs, dy: y-a - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
+      place(dx: x-difs + w-difs, dy: y-a - 15pt, line(
+        start: (0pt, 0pt),
+        end: (0pt, bar-h + 5pt),
+        stroke: 2pt + c-frame,
+      ))
       place(dx: x-difs, dy: y-a - 22pt, block(width: w-difs, align(center, text(size: 10pt)[DIFS])))
       place(dx: x-difs, dy: y-a - 6pt, block(width: w-difs, align(center, text(size: 7pt)[Carrier Sense])))
       draw-check(x-difs - 5pt, y-a + 12pt)
@@ -151,13 +182,17 @@ Lo schema appena descritto è il seguente:
 
       let x-sifs1 = x-rts + 15pt
       let w-sifs1 = 40pt
-      place(dx: x-sifs1, dy: y-a - 22pt, block(width: w-sifs1, align(center, text(size: 10pt)[SIFS]))) 
+      place(dx: x-sifs1, dy: y-a - 22pt, block(width: w-sifs1, align(center, text(size: 10pt)[SIFS])))
 
-      let x-sense2 = x-sifs1 + w-sifs1 + 85pt 
+      let x-sense2 = x-sifs1 + w-sifs1 + 85pt
       let w-sense2 = 40pt
       place(dx: x-sense2, dy: y-a - 10pt, rect(width: w-sense2, height: bar-h, fill: c-sense, stroke: none))
       place(dx: x-sense2, dy: y-a - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
-      place(dx: x-sense2 + w-sense2, dy: y-a - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
+      place(dx: x-sense2 + w-sense2, dy: y-a - 15pt, line(
+        start: (0pt, 0pt),
+        end: (0pt, bar-h + 5pt),
+        stroke: 2pt + c-frame,
+      ))
       place(dx: x-sense2, dy: y-a - 22pt, block(width: w-sense2, align(center, text(size: 10pt)[SIFS])))
       place(dx: x-sense2, dy: y-a - 6pt, block(width: w-sense2, align(center, text(size: 6pt)[Carrier Sense])))
 
@@ -173,7 +208,11 @@ Lo schema appena descritto è il seguente:
       let w-sense-b = 40pt
       place(dx: x-sense-b, dy: y-b - 10pt, rect(width: w-sense-b, height: bar-h, fill: c-sense, stroke: none))
       place(dx: x-sense-b, dy: y-b - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
-      place(dx: x-sense-b + w-sense-b, dy: y-b - 15pt, line(start: (0pt, 0pt), end: (0pt, bar-h + 5pt), stroke: 2pt + c-frame))
+      place(dx: x-sense-b + w-sense-b, dy: y-b - 15pt, line(
+        start: (0pt, 0pt),
+        end: (0pt, bar-h + 5pt),
+        stroke: 2pt + c-frame,
+      ))
       place(dx: x-sense-b, dy: y-b - 22pt, block(width: w-sense-b, align(center, text(size: 10pt)[SIFS])))
       place(dx: x-sense-b, dy: y-b - 6pt, block(width: w-sense-b, align(center, text(size: 6pt)[Carrier Sense])))
       draw-check(x-sense-b - 5pt, y-b + 12pt)
@@ -200,9 +239,8 @@ Lo schema appena descritto è il seguente:
       let w-nav-cts = x-ack + w-ack - x-nav-cts
       place(dx: x-nav-cts, dy: y-d - 10pt, rect(width: w-nav-cts, height: bar-h, fill: c-nav, stroke: 0.5pt + black))
       place(dx: x-nav-cts, dy: y-d - 5pt, block(width: w-nav-cts, align(center, text(size: 10pt)[NAV- CTS])))
-
     })
-  ]
+  ],
 )
 
 == 802.11 Frammentazione
@@ -215,7 +253,7 @@ Il canale radio è molto sensibile alle interferenze e al rumore, di conseguenza
 Possiamo immaginare la frammentazione così:
 
 #figure(
-  image("../assets/frammentazione.png")
+  image("../assets/frammentazione.png"),
 )
 
 Chiaramente, per ogni frammento, è necessario aggiungere informazioni riguardo al *NAV*, per i dispotivi che non sono direttamente coinvolti nella comunicazione.
@@ -225,7 +263,7 @@ Inoltre, la *frammentazione* e la *correzione degli errori* viene sempre effettu
 == 802.11 con infrastruttura
 
 #figure(
-  image("../assets/802.11_infrastruttura.png", width: 70%)
+  image("../assets/802.11_infrastruttura.png", width: 70%),
 )
 
 Dallo schema di questa infrastruttura è possibile distinguere tra:
@@ -277,26 +315,26 @@ Sostanzialmente, questa divisione è fondamentale perché l'*AP* si preoccupa di
 
       // CFP blocks
       rect((0, 0), (w, h), fill: rgb("#4472C4"), stroke: black)
-      content((w/2, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
+      content((w / 2, h / 2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
 
-      rect((w + gap, 0), (2*w + gap, h), fill: rgb("#ED7D31"), stroke: black)
-      content((1.5*w + gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
+      rect((w + gap, 0), (2 * w + gap, h), fill: rgb("#ED7D31"), stroke: black)
+      content((1.5 * w + gap, h / 2), text(fill: white, weight: "bold", size: 0.9em)[CP])
 
-      rect((2*w + 2*gap, 0), (3*w + 2*gap, h), fill: rgb("#4472C4"), stroke: black)
-      content((2.5*w + 2*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
+      rect((2 * w + 2 * gap, 0), (3 * w + 2 * gap, h), fill: rgb("#4472C4"), stroke: black)
+      content((2.5 * w + 2 * gap, h / 2), text(fill: white, weight: "bold", size: 0.9em)[CFP])
 
-      rect((3*w + 3*gap, 0), (4*w + 3*gap, h), fill: rgb("#ED7D31"), stroke: black)
-      content((3.5*w + 3*gap, h/2), text(fill: white, weight: "bold", size: 0.9em)[CP])
+      rect((3 * w + 3 * gap, 0), (4 * w + 3 * gap, h), fill: rgb("#ED7D31"), stroke: black)
+      content((3.5 * w + 3 * gap, h / 2), text(fill: white, weight: "bold", size: 0.9em)[CP])
 
       // Time arrow
-      line((0, -0.8), (4*w + 3*gap, -0.8), mark: (end: ">", fill: black))
-      content((2*w + 1.5*gap, -1.2), text(weight: "bold")[Tempo])
+      line((0, -0.8), (4 * w + 3 * gap, -0.8), mark: (end: ">", fill: black))
+      content((2 * w + 1.5 * gap, -1.2), text(weight: "bold")[Tempo])
 
       // Labels
-      content((w/2, h + 0.8), text(size: 0.8em)[Polling])
-      content((1.5*w + gap, h + 0.8), text(size: 0.8em)[CSMA/CA])
+      content((w / 2, h + 0.8), text(size: 0.8em)[Polling])
+      content((1.5 * w + gap, h + 0.8), text(size: 0.8em)[CSMA/CA])
     }),
-    caption: [Alternanza tra Contention-Free Period e Contention Period]
+    caption: [Alternanza tra Contention-Free Period e Contention Period],
   )
 ]
 
@@ -346,20 +384,26 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
 
         let draw-box(x, y, w, content) = {
           let h = 20pt
-          place(dx: x, dy: y - h/2, rect(width: w, height: h, fill: white, stroke: 1.2pt + cyan-c))
-          place(dx: x, dy: y - h/2, block(width: w, height: h, align(center + horizon, text(size: t-size, fill: cyan-c)[#content])))
+          place(dx: x, dy: y - h / 2, rect(width: w, height: h, fill: white, stroke: 1.2pt + cyan-c))
+          place(dx: x, dy: y - h / 2, block(width: w, height: h, align(center + horizon, text(
+            size: t-size,
+            fill: cyan-c,
+          )[#content])))
         }
 
         let delay-arrow(x1, x2, y, label, label-dy: -8pt) = {
           place(dx: x1, dy: y, line(start: (0pt, 0pt), end: (x2 - x1, 0pt), stroke: 0.7pt + line-c))
           place(dx: x2, dy: y, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
-          place(dx: x1 + (x2 - x1)/2 - 12pt, dy: y + label-dy, block(width: 24pt, align(center, text(size: 7.5pt, fill: line-c)[#label])))
+          place(dx: x1 + (x2 - x1) / 2 - 12pt, dy: y + label-dy, block(width: 24pt, align(center, text(
+            size: 7.5pt,
+            fill: line-c,
+          )[#label])))
         }
 
         let draw-break(x, y, h: 20pt) = {
-          place(dx: x - 4pt, dy: y - h/2, rect(width: 8pt, height: h, fill: white, stroke: none))
-          place(dx: x - 2pt, dy: y - h/2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
-          place(dx: x + 2pt, dy: y - h/2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
+          place(dx: x - 4pt, dy: y - h / 2, rect(width: 8pt, height: h, fill: white, stroke: none))
+          place(dx: x - 2pt, dy: y - h / 2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
+          place(dx: x + 2pt, dy: y - h / 2 + 2pt, line(start: (0pt, h - 4pt), end: (4pt, 0pt), stroke: 0.7pt + line-c))
         }
 
         let y-pc = 70pt
@@ -394,23 +438,46 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         place(dx: x0, dy: y-top, line(start: (0pt, 0pt), end: (x-sf-end - x0, 0pt), stroke: 0.5pt + line-c))
         place(dx: x0, dy: y-top, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
         place(dx: x-sf-end, dy: y-top, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
-        place(dx: x0 + (x-sf-end - x0)/2 - 30pt, dy: y-top - 6pt, rect(fill: white, stroke: none)[#text(size: t-size)[Superframe]])
+        place(dx: x0 + (x-sf-end - x0) / 2 - 30pt, dy: y-top - 6pt, rect(fill: white, stroke: none)[#text(
+          size: t-size,
+        )[Superframe]])
         draw-break(x-break, y-top, h: 12pt)
 
-        place(dx: x-cfp-end, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-bot - (y-pc - 15pt) + 5pt), stroke: 0.5pt + line-c))
+        place(dx: x-cfp-end, dy: y-pc - 15pt, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-bot - (y-pc - 15pt) + 5pt),
+          stroke: 0.5pt + line-c,
+        ))
 
         place(dx: x0, dy: y-bot, line(start: (0pt, 0pt), end: (x-cfp-end - x0, 0pt), stroke: 0.5pt + line-c))
         place(dx: x0, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
         place(dx: x-cfp-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
-        place(dx: x0 + (x-cfp-end - x0)/2 - 50pt, dy: y-bot - 6pt, rect(fill: white, stroke: none)[#text(size: t-size)[Contention-free period]])
+        place(dx: x0 + (x-cfp-end - x0) / 2 - 50pt, dy: y-bot - 6pt, rect(fill: white, stroke: none)[#text(
+          size: t-size,
+        )[Contention-free period]])
         draw-break(x-break, y-bot, h: 12pt)
 
-        place(dx: x-cfp-end, dy: y-bot, line(start: (0pt, 0pt), end: (x-sf-end - x-cfp-end, 0pt), stroke: 0.5pt + line-c))
+        place(dx: x-cfp-end, dy: y-bot, line(
+          start: (0pt, 0pt),
+          end: (x-sf-end - x-cfp-end, 0pt),
+          stroke: 0.5pt + line-c,
+        ))
         place(dx: x-cfp-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (4pt, 2.5pt), (4pt, -2.5pt)))
         place(dx: x-sf-end, dy: y-bot, polygon(fill: line-c, (0pt, 0pt), (-4pt, 2.5pt), (-4pt, -2.5pt)))
-        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2 - 25pt, dy: y-bot + 12pt, block(align(center, text(size: 7.5pt)[Contention\ period])))
-        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2, dy: y-bot + 10pt, line(start: (0pt, 0pt), end: (0pt, -5pt), stroke: 0.5pt + line-c))
-        place(dx: x-cfp-end + (x-sf-end - x-cfp-end)/2, dy: y-bot + 5pt, polygon(fill: line-c, (0pt, 0pt), (-2.5pt, 4pt), (2.5pt, 4pt)))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end) / 2 - 25pt, dy: y-bot + 12pt, block(align(center, text(
+          size: 7.5pt,
+        )[Contention\ period])))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end) / 2, dy: y-bot + 10pt, line(
+          start: (0pt, 0pt),
+          end: (0pt, -5pt),
+          stroke: 0.5pt + line-c,
+        ))
+        place(dx: x-cfp-end + (x-sf-end - x-cfp-end) / 2, dy: y-bot + 5pt, polygon(
+          fill: line-c,
+          (0pt, 0pt),
+          (-2.5pt, 4pt),
+          (2.5pt, 4pt),
+        ))
 
         for y in (y-pc, y-st, y-os) {
           place(dx: x0 - 10pt, dy: y, line(start: (0pt, 0pt), end: (x-sf-end - x0 + 35pt, 0pt), stroke: 0.5pt + line-c))
@@ -421,8 +488,16 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
 
         let x-nav-end = x-cfend + w-cfend
         place(dx: x0, dy: y-os - 12pt, rect(width: x-nav-end - x0, height: 24pt, fill: nav-pat, stroke: 1.2pt + cyan-c))
-        place(dx: x0 + (x-nav-end - x0)/2 - 15pt, dy: y-os - 6pt, rect(width: 30pt, height: 12pt, fill: white, stroke: none))
-        place(dx: x0 + (x-nav-end - x0)/2 - 15pt, dy: y-os - 6pt, block(width: 30pt, height: 12pt, align(center + horizon, text(size: t-size, fill: cyan-c)[NAV])))
+        place(dx: x0 + (x-nav-end - x0) / 2 - 15pt, dy: y-os - 6pt, rect(
+          width: 30pt,
+          height: 12pt,
+          fill: white,
+          stroke: none,
+        ))
+        place(dx: x0 + (x-nav-end - x0) / 2 - 15pt, dy: y-os - 6pt, block(width: 30pt, height: 12pt, align(
+          center + horizon,
+          text(size: t-size, fill: cyan-c)[NAV],
+        )))
         draw-break(x-break, y-os, h: 26pt)
 
         place(dx: 10pt, dy: y-pc - 4pt, text(size: t-size)[Point coordinator])
@@ -437,19 +512,35 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         delay-arrow(x0, x-dd1, y-pc - 10pt, "PIFS")
         draw-box(x-dd1, y-pc, w-box, "DD1")
 
-        place(dx: x-dd1 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        place(dx: x-dd1 + w-box, dy: y-pc, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc - 10pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-dd1 + w-box, x-ud1, y-st - 10pt, "SIFS")
         draw-box(x-ud1, y-st, w-box, "UD1")
 
-        place(dx: x-ud1 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        place(dx: x-ud1 + w-box, dy: y-pc - 15pt, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc + 15pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-ud1 + w-box, x-dd2, y-pc - 10pt, "SIFS")
         draw-box(x-dd2, y-pc, w-box, "DD2")
 
-        place(dx: x-dd2 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        place(dx: x-dd2 + w-box, dy: y-pc, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc - 10pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-dd2 + w-box, x-ud2, y-st - 10pt, "SIFS")
         draw-box(x-ud2, y-st, w-box, "UD2")
 
-        place(dx: x-ud2 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        place(dx: x-ud2 + w-box, dy: y-pc - 15pt, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc + 15pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-ud2 + w-box, x-tick, y-pc - 10pt, "SIFS")
 
         place(dx: x-tick, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, 15pt), stroke: 0.5pt + line-c))
@@ -460,11 +551,19 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         delay-arrow(x-dd3 + w-box, x-dd4, y-pc - 10pt, "PIFS")
         draw-box(x-dd4, y-pc, w-box, "DD4")
 
-        place(dx: x-dd4 + w-box, dy: y-pc, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc - 10pt), stroke: 0.5pt + line-c))
+        place(dx: x-dd4 + w-box, dy: y-pc, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc - 10pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-dd4 + w-box, x-ud4, y-st - 10pt, "SIFS")
         draw-box(x-ud4, y-st, w-box, "UD4")
 
-        place(dx: x-ud4 + w-box, dy: y-pc - 15pt, line(start: (0pt, 0pt), end: (0pt, y-st - y-pc + 15pt), stroke: 0.5pt + line-c))
+        place(dx: x-ud4 + w-box, dy: y-pc - 15pt, line(
+          start: (0pt, 0pt),
+          end: (0pt, y-st - y-pc + 15pt),
+          stroke: 0.5pt + line-c,
+        ))
         delay-arrow(x-ud4 + w-box, x-cfend, y-pc - 10pt, "SIFS")
         draw-box(x-cfend, y-pc, w-cfend, [CF\ end])
 
@@ -473,7 +572,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         place(dx: 275pt, dy: 265pt, text(size: t-size)[CFend = Contention-free (period) end])
       })
     ]
-  ]
+  ],
 )
 
 
@@ -499,10 +598,18 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         let d-blue = rgb("#2A5092")
         let l-blue = rgb("#A9CDE3")
         let txt-col = black
-        
-        let c-col(w, lbl, bg, txt, f-size: 7.5pt) = stack(dir: ttb,
+
+        let c-col(w, lbl, bg, txt, f-size: 7.5pt) = stack(
+          dir: ttb,
           box(width: w, height: 14pt, align(center + bottom, pad(bottom: 3pt, text(size: 8pt)[#lbl]))),
-          box(width: w, height: 26pt, rect(width: 100%, height: 100%, fill: bg, stroke: 0.8pt + black, inset: 0pt, align(center + horizon, text(size: f-size, fill: if bg == l-blue { black } else { white })[#txt])))
+          box(width: w, height: 26pt, rect(
+            width: 100%,
+            height: 100%,
+            fill: bg,
+            stroke: 0.8pt + black,
+            inset: 0pt,
+            align(center + horizon, text(size: f-size, fill: if bg == l-blue { black } else { white })[#txt]),
+          )),
         )
 
         let s-arr(w, lbl) = box(width: w, height: 15pt, {
@@ -512,11 +619,12 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
           place(center + horizon, rect(fill: white, stroke: none, inset: 2pt, text(size: 8pt)[#lbl]))
         })
 
-        place(dx: 0pt, dy: 0pt, stack(dir: ltr,
-          stack(dir: ttb, 
-            box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bytes#h(4pt)])),
-            box(width: 32pt, height: 26pt)
-          ),
+        place(dx: 0pt, dy: 0pt, stack(
+          dir: ltr,
+          stack(dir: ttb, box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bytes#h(4pt)])), box(
+            width: 32pt,
+            height: 26pt,
+          )),
           c-col(18pt, "2", d-red, "FC"),
           c-col(18pt, "2", d-red, "D/I"),
           c-col(54pt, "6", d-red, "Address"),
@@ -527,7 +635,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
           c-col(18pt, "2", d-blue, "QoS"),
           c-col(36pt, "4", d-blue, "HT"),
           c-col(108pt, "0 to 11,426", l-blue, "Data"),
-          c-col(36pt, "4", d-red, "FCS")
+          c-col(36pt, "4", d-red, "FCS"),
         ))
 
         place(dx: 32pt, dy: 45pt, s-arr(324pt, "Header"))
@@ -537,24 +645,31 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         place(dx: 32pt, dy: 75pt, grid(
           columns: (130pt, 140pt, 200pt),
           row-gutter: 8pt,
-          text(size: 8pt)[FC = frame control], 
+          text(size: 8pt)[FC = frame control],
           text(size: 8pt)[SC = sequence control],
-          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-red, stroke: none), h(6pt), text(size: 8pt)[Always present]),
-          text(size: 8pt)[D/I = duration/connection ID], 
+          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-red, stroke: none), h(6pt), text(
+            size: 8pt,
+          )[Always present]),
+
+          text(size: 8pt)[D/I = duration/connection ID],
           text(size: 8pt)[FCS = frame check sequence],
-          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-blue, stroke: none), h(6pt), text(size: 8pt)[Present only in certain frame types\ and sub-types]),
-          text(size: 8pt)[QoS = QoS control], 
-          text(size: 8pt)[HT = high throughput control], 
-          []
+          stack(dir: ltr, rect(width: 10pt, height: 10pt, fill: d-blue, stroke: none), h(6pt), text(
+            size: 8pt,
+          )[Present only in certain frame types\ and sub-types]),
+
+          text(size: 8pt)[QoS = QoS control], text(size: 8pt)[HT = high throughput control], [],
         ))
 
-        place(dx: 202pt, dy: 125pt, text(size: 8pt)[*High Throughput Control:* specifico per 802.11n, 802.11ac,\ and 802.11ad.])
+        place(dx: 202pt, dy: 125pt, text(
+          size: 8pt,
+        )[*High Throughput Control:* specifico per 802.11n, 802.11ac,\ and 802.11ad.])
 
-        place(dx: 0pt, dy: 165pt, stack(dir: ltr,
-          stack(dir: ttb, 
-            box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bits#h(4pt)])),
-            box(width: 32pt, height: 26pt)
-          ),
+        place(dx: 0pt, dy: 165pt, stack(
+          dir: ltr,
+          stack(dir: ttb, box(width: 32pt, height: 14pt, align(right + bottom, text(size: 8pt)[bits#h(4pt)])), box(
+            width: 32pt,
+            height: 26pt,
+          )),
           c-col(42pt, "2", d-red, [Protocol\ version], f-size: 6.5pt),
           c-col(42pt, "2", d-red, "Type"),
           c-col(84pt, "4", d-red, "Subtype"),
@@ -565,7 +680,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
           c-col(21pt, "1", d-red, "PM"),
           c-col(21pt, "1", d-red, "MD"),
           c-col(21pt, "1", d-red, "W"),
-          c-col(21pt, "1", d-red, "O")
+          c-col(21pt, "1", d-red, "O"),
         ))
 
         place(dx: 195pt, dy: 215pt, text(size: 9pt, weight: "bold")[Frame Control])
@@ -574,7 +689,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
         place(dx: 32pt, dy: 192pt, polygon(fill: black, (0pt, 0pt), (-6pt, 3.5pt), (-6pt, -3.5pt)))
       })
     ]
-  ]
+  ],
 )
 
 I campi di colore #text(fill: red)[rosso] sono quelli sempre presenti in qualsiasi frame 802.11, mentre i rimanenti sono presenti solo se necessari.
@@ -603,33 +718,37 @@ Nello schema precedente, abbiamo citato i possibili 4 indirizzi che possono esse
 
       [*To*\ *DS*], [*From*\ *DS*], [*Address 1*], [*Address 2*], [*Address 3*], [*Address 4*], [*Caso di*\ *utilizzo*],
 
-      [0], [0], 
-      [*DA*\ Indirizzo MAC\ destinazione], 
-      [*SA*\ Indirizzo MAC\ sorgente], 
-      [*BSSID*\ della cella/\ random se ad\ hoc], 
-      [-], 
+      [0],
+      [0],
+      [*DA*\ Indirizzo MAC\ destinazione],
+      [*SA*\ Indirizzo MAC\ sorgente],
+      [*BSSID*\ della cella/\ random se ad\ hoc],
+      [-],
       [Rete ad hoc\ Rete con\ infrastruttura\ singola cella],
 
-      [0], [1], 
-      [*DA*\ Indirizzo MAC\ destinazione\ all'interno di\ BSSID], 
-      [*BSSID*\ della cella a\ cui la frame è\ destinata], 
-      [*SA*\ Indirizzo MAC\ sorgente], 
-      [-], 
+      [0],
+      [1],
+      [*DA*\ Indirizzo MAC\ destinazione\ all'interno di\ BSSID],
+      [*BSSID*\ della cella a\ cui la frame è\ destinata],
+      [*SA*\ Indirizzo MAC\ sorgente],
+      [-],
       [Frame inviata\ attraverso DS\ ad un AP\ all'interno\ della cella che\ possiede\ BSSID\ dell'address 2],
 
-      [1], [0], 
-      [*BSSID*\ della cella\ destinazione], 
-      [*SA*\ Indirizzo MAC\ sorgente], 
-      [*DA*\ Indirizzo MAC\ stazione che\ sta ricevendo], 
-      [-], 
+      [1],
+      [0],
+      [*BSSID*\ della cella\ destinazione],
+      [*SA*\ Indirizzo MAC\ sorgente],
+      [*DA*\ Indirizzo MAC\ stazione che\ sta ricevendo],
+      [-],
       [Frame inviata\ attraverso DS\ ad un AP di\ una cella\ diversa BSSID\ dell'address 1],
 
-      [1], [1], 
-      [*RA*\ Indirizzo AP\ destinazione\ all'interno di\ DS], 
-      [*TA*\ Indirizzo AP\ sorgente\ all'interno di\ DS], 
-      [*DA*\ Indirizzo della\ stazione che\ sta ricevendo], 
-      [*SA*\ indirizzo della\ stazione che\ sta inviando], 
-      [Frame tra AP\ di celle\ differenti\ usando DS]
+      [1],
+      [1],
+      [*RA*\ Indirizzo AP\ destinazione\ all'interno di\ DS],
+      [*TA*\ Indirizzo AP\ sorgente\ all'interno di\ DS],
+      [*DA*\ Indirizzo della\ stazione che\ sta ricevendo],
+      [*SA*\ indirizzo della\ stazione che\ sta inviando],
+      [Frame tra AP\ di celle\ differenti\ usando DS],
     )
   ]
 ]
@@ -640,7 +759,7 @@ Le ultime 3 righe fanno riferimento alla casistica in cui sono presenti più cel
 - $11$ Da e Verso il DS, devo sapere da dove arriva e dove inviare, oltre che l'indirizzo originale e finale (routing tra celle)
 
 == Orthogonal Frequency Division Multiple Access (OFDMA)
-in Wi-Fi 6 viene utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5) chiamata *OFDMA ( Orthogonal Frequency Division Multiple Access OFDM)*: Tale tecnica permette di suddividere il canale in più sottoportanti, assegnando a ciascun utente una porzione specifica del canale, *consentendo connettività a più dispositivi contemporaneamente*. 
+in Wi-Fi 6 viene utilizza una tecnica rivoluzionaria rispetto al passato (Wi-Fi 4 e 5) chiamata *OFDMA ( Orthogonal Frequency Division Multiple Access OFDM)*: Tale tecnica permette di suddividere il canale in più sottoportanti, assegnando a ciascun utente una porzione specifica del canale, *consentendo connettività a più dispositivi contemporaneamente*.
 
 Nelle versioni precedenti, tutte le sottoportanti erano usate per un dispositivo alla volta (OFDM, dove M sta per Multiplexing). Con OFDMA c'è la possibilità di fornire gruppi di canali diversi a dispositivi diversi.
 
@@ -661,23 +780,37 @@ Dal punto di vista grafico, possiamo visualizzare l'utilizzo di *OFDM (Orthogona
     #let r-dark = rgb("#CC0000")
     #let p-dark = rgb("#9966CC")
     #let p-light = rgb("#E2D1F0")
-    
+
     #table(
       columns: (auto, 70pt, 70pt, 70pt, 70pt, 70pt),
       align: center + horizon,
       stroke: 0.5pt + black,
-      
+
       [], [T1], [T2], [T3], [T4], [T5],
-      
-      [F1], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(fill: y-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[],
-      
-      [F2], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(rowspan: 4, fill: y-light)[Non necessario], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[],
-      
-      [F3], table.cell(rowspan: 3, fill: b-light)[Non necessario], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(rowspan: 3, fill: p-light)[Non necessario],
-      
+
+      [F1],
+      table.cell(fill: b-dark)[],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: y-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: p-dark)[],
+
+      [F2],
+      table.cell(fill: b-dark)[],
+      table.cell(fill: g-dark)[],
+      table.cell(rowspan: 4, fill: y-light)[Non necessario],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: p-dark)[],
+
+      [F3],
+      table.cell(rowspan: 3, fill: b-light)[Non necessario],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(rowspan: 3, fill: p-light)[Non necessario],
+
       [F4], table.cell(rowspan: 2, fill: g-light)[Non necessario], table.cell(fill: r-dark)[],
-      
-      [F5], table.cell(fill: r-dark)[]
+
+      [F5], table.cell(fill: r-dark)[],
     )
   ]
 ]
@@ -691,23 +824,48 @@ Con *OFDMA*, la situazione sarebbe leggermente diversa:
     #let y-dark = rgb("#FFBF00")
     #let r-dark = rgb("#CC0000")
     #let p-dark = rgb("#9966CC")
-    
+
     #table(
       columns: (auto, 70pt, 70pt, 70pt, 70pt, 70pt),
       align: center + horizon,
       stroke: 0.5pt + black,
-      
+
       [], [T1], [T2], [T3], [T4], [T5],
-      
-      [F1], table.cell(fill: b-dark)[], table.cell(fill: r-dark)[], table.cell(fill: y-dark)[], [], table.cell(fill: r-dark)[],
-      
-      [F2], table.cell(fill: b-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
-      
-      [F3], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: p-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
-      
-      [F4], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: b-dark)[], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[],
-      
-      [F5], table.cell(fill: g-dark)[], table.cell(fill: r-dark)[], table.cell(fill: b-dark)[], [], table.cell(fill: r-dark)[]
+
+      [F1],
+      table.cell(fill: b-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: y-dark)[],
+      [],
+      table.cell(fill: r-dark)[],
+
+      [F2],
+      table.cell(fill: b-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: p-dark)[],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+
+      [F3],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: p-dark)[],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+
+      [F4],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: b-dark)[],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+
+      [F5],
+      table.cell(fill: g-dark)[],
+      table.cell(fill: r-dark)[],
+      table.cell(fill: b-dark)[],
+      [],
+      table.cell(fill: r-dark)[],
     )
   ]
 ]
@@ -715,7 +873,7 @@ Con *OFDMA*, la situazione sarebbe leggermente diversa:
 #nota[
   L'idea centrale di *OFDMA* e ridurre il tempo di attesa medio: invece di fare trasmissioni lunghe e seriali per tanti dispositivi, l'*Access Point* puo servire molti utenti insieme, anche con porzioni di banda diverse.
 
-  Facendo questo *si complica lo scheduling*: al posto di assegnare solo lo slot di tempo bisogna assegnare tempo e gruppo di frequenze ad ogni applicazione. 
+  Facendo questo *si complica lo scheduling*: al posto di assegnare solo lo slot di tempo bisogna assegnare tempo e gruppo di frequenze ad ogni applicazione.
 ]
 
 === Resource Unit (RU)
@@ -723,7 +881,7 @@ Con *OFDMA*, la situazione sarebbe leggermente diversa:
 Come visto in precedenza, in *Wi-Fi 6 (802.11ax)*, il canale non viene piu visto come un unico blocco assegnato a un solo utente per volta, ma viene suddiviso in porzioni piu piccole dette *Resource Unit (RU)*.
 
 Una *RU* e quindi un *insieme di sottoportanti OFDM contigue* assegnate a uno specifico terminale per una singola trasmissione. Si tratta dunque dell'unità base di suddivisione della banda.\
-La dimensione delle RU è variabile e dipende dalla banda disponibile e da come l'AP vuole allocare le risorse agli utenti. 
+La dimensione delle RU è variabile e dipende dalla banda disponibile e da come l'AP vuole allocare le risorse agli utenti.
 
 Le ampiezze piu comuni delle *RU* (espresse in numero di sottoportanti) sono:
 - *26-tone RU*: tipicamente usata per traffico leggero (telemetria, IoT, piccoli pacchetti);
@@ -743,7 +901,7 @@ Alcune sottoportanti vengono utilizzate come *pilots*: Trasmettono un'onda defin
 L'AP utilizza un campo specifico all'interno del frame di controllo per indicare quali RU sono state assegnate a ciascun utente. Questo campo, chiamato *Resource Allocation (RA) field*, contiene informazioni sulla posizione e dimensione della RU assegnata.
 
 Ogni risorsa viene *identificata da un codice* (7 bit) che specifica la posizione della RU all'interno del canale, e da un campo che indica la dimensione della RU (ad esempio, 26-tone, 52-tone, ecc.). Ciascun codice rappresenta un' insieme di sottoportanti e il numero indica
-il range di sottoportanti usate da quella RU. 
+il range di sottoportanti usate da quella RU.
 
 #esempio()[
   Se un AP assegna a un utente la prima RU da $52$-tone in un canale da $20$ MHz (Uplink), significa che l'utente può utilizzare le sottoportanti fisiche con indice da $-121$ a $-70$ per la sua trasmissione.
@@ -752,7 +910,7 @@ il range di sottoportanti usate da quella RU.
   - Valore RU Allocation: $0100101$ (37 in decimale, che identifica univocamente la $"RU" 1 "da" 52-"tone"$.
 ]
 
-Tali informazioni sono usate dai livelli PHY e MAC per instradare correttamente i dati al dispositivo destinatario e per garantire che solo il dispositivo assegnato alla RU possa accedere a quella porzione di canale durante la trasmissione. 
+Tali informazioni sono usate dai livelli PHY e MAC per instradare correttamente i dati al dispositivo destinatario e per garantire che solo il dispositivo assegnato alla RU possa accedere a quella porzione di canale durante la trasmissione.
 
 === Downlink DL-OFDMA
 
@@ -833,14 +991,14 @@ L'autenticazione e la gestione delle chiavi avvengono in 4 fasi:
 
 - *Discovery*: Consiste nella negoziazione tra AP e STA per decidere se è possibile stabilire una connessione e, in caso affermativo, quali servizi di sicurezza utilizzare. I passaggi sono:
   - L'AP manda il beacon, il quale fornisce anche i servizi RSN disponibili (la modalità di accesso alla cella).
-  - Il dispositivo (STA) tramite il beacon capisce quali sono i servizi RSN che può utilizzare (negoziano le capabilities di ognuno, si decide la policy da utilizzare). 
+  - Il dispositivo (STA) tramite il beacon capisce quali sono i servizi RSN che può utilizzare (negoziano le capabilities di ognuno, si decide la policy da utilizzare).
   - Associazione AP e STA, arrivano a un accordo sulle funzionalità di sicurezza da utilizzare  (sia AP che STA possono decidere di negare la connessione).
 
 - *Authentication*: Consiste nell'autenticazione della stazione (STA) da parte dell'AP, al fine di garantire che solo dispositivi autorizzati possano accedere alla rete. I passaggi sono:
   - L'AP richiede al STA l'autenticazione tramite la comunicazione con un *Authentication Server (AS)*.
   - Il server può essere remoto in caso di utilizzo di *Extensible Authentication Protocol (EAP)*.
 
-- *Key management*: generazione delle chiavi specifiche per il singolo dispositivo. 
+- *Key management*: generazione delle chiavi specifiche per il singolo dispositivo.
 
 - *Protected data transfer*: una volta ottenuta la chiave, si comincia la comunicazione cifrata.
 - Chiusura della connessione.
@@ -859,7 +1017,7 @@ In particolare, la fase di *authentication* e *key management* è quella più co
   #nota()[
     Utilizzando i MAC address e i nonce, si garantisce che la chiave di sessione sia unica per ogni connessione, anche se la stessa password viene utilizzata da più dispositivi.
   ]
-  
+
   Una volta calcolata la chiave di sessione, il client invia al AP un messaggio di autenticazione, che include il nonce del client e un *Message Integrity Check (MICS)*, che è una sorta di codice di integrità del messaggio dipendente dalla sessione (quindi, in parte, dalla session key). Questo MICS serve a garantire che il messaggio non sia stato alterato durante la trasmissione.
 
 + *L'AP* una volta ricevuto il messaggio di autenticazione, può *calcolare la stessa chiave di sessione* ($"KS"$) del client utilizzando le stesse informazioni (MAC address, nonce e master key). Se l'AP riesce a calcolare la stessa $"KS"$, significa che il client è autenticato correttamente.
@@ -873,8 +1031,8 @@ In particolare, la fase di *authentication* e *key management* è quella più co
 
 
 #nota()[
-  Il segreto per la sicurezza sta nella *master key* (il resto sarebbe pubblicamente accessibile). Il presupposto è che l'attaccante non ne sia a conoscenza. Nelle varie versioni di EAP cambia il metodo con cui la chiave viene generata, per mantenere valido questo presupposto. 
-  
+  Il segreto per la sicurezza sta nella *master key* (il resto sarebbe pubblicamente accessibile). Il presupposto è che l'attaccante non ne sia a conoscenza. Nelle varie versioni di EAP cambia il metodo con cui la chiave viene generata, per mantenere valido questo presupposto.
+
   Attacchi di tipo MitM vengono evitati grazie ad integrity check e nonce.
 ]
 
@@ -893,7 +1051,7 @@ Tra i due cambia l'algoritmo di cifratura:
 
 == WiFi Protected Setup (WPS)
 
-Viene usato per *evitare di utilizzare la password*, su alcuni dispositivi tale funzionalità può essere comoda. 
+Viene usato per *evitare di utilizzare la password*, su alcuni dispositivi tale funzionalità può essere comoda.
 
 All'interno del protocollo ci sono $3$ tipi di dispositivi:
 
@@ -905,7 +1063,7 @@ All'interno del protocollo ci sono $3$ tipi di dispositivi:
 
 In questo protocollo non è necessario conoscere la password, ma è necessario che il dispositivo Enrollee sia autorizzato da un *Registrer* (che può essere l'AP o un dispositivo esterno).
 
-Le modalità di attivazione di un dispositivo sono due: 
+Le modalità di attivazione di un dispositivo sono due:
 - *PIN*: può essere dell'AP da immettere sul dispositivo Enrollee, oppure dell'Enrollee da immettere sull'AP. In questo modo si autorizza il dispositivo a connettersi alla rete senza dover inserire la password.
 
 - *Push Button*: pressione di un bottone su AP ed Enrollee, la procedura rimane attiva per massimo $2$ minuti. Associazione FIFO (il primo che entra è autenticato).
