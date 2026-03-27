@@ -655,7 +655,7 @@ La comunicazione avviene in modo rigido tra master e slave. Negli slot temporali
         draw-received(legend-x, legend-y - 0.5, 0.7, "")
         content((legend-x + 1.5, legend-y - 0.5), text(size: 8pt, "= received packet"), anchor: "west")
 
-        content((8.5, 5.5), text(size: 10pt, "Tutto su "+$F_6$ ))
+        content((8.5, 5.5), text(size: 10pt, "Tutto su " + $F_6$))
       })
     ]]
 
@@ -1107,16 +1107,21 @@ Il processo di scoperta funziona nel seguente modo:
 === Fase di Paging (Connessione)
 
 Una volta che il master ha scoperto la presenza di uno slave, inizia la fase di *paging* per stabilire la connessione:
-+ Il master invia *page packet* allo slave utilizzando il suo indirizzo hardware (DAC) su 16 dei 32 canali di wake-up.
++ Una volta ricevuto l'indirizzo fisico, il Master passa allo stato di PAGE, e lo stesso fa lo Slave.
 
-+ Lo slave risponde e inizia la negoziazione dei parametri di connessione
++ Il Master avvia immediatamente la connessione dedicata inviando un pacchetto contenente `<DAC, FH, AMA>` su un *set ridotto* di 16/32 canali wake-up. Questo pacchetto contiene:
+  - *`DAC`* (Device Access Code): l'indirizzo hardware dello slave, serve per indicare che un certo messaggio è destinato a quel dispositivo specifico.
+  - *`FH`* (Frequency Hopping): i parametri della sequenza di salti in frequenza del Master.
+  - *`AMA`* (Active Member Address): l'indirizzo logico (virtuale) assegnato allo slave all'interno della piconet.
 
-+ Il master comunica allo slave:
-  - *Indirizzo logico AMA* (Active Member Address) nella piconet
-  - *Sequenza di frequency hopping* da utilizzare
-  - *Clock offset* per la sincronizzazione temporale
++ Lo Slave riceve i parametri e risponde con un pacchetto di conferma `<DAC, ACK>`.
 
 + La connessione viene stabilita e lo slave entra in modalità *attiva* (active slave)
+
+
+#align(center)[
+  #image("../assets/SchemaInquiry.png", width: 70%)
+]
 
 #nota()[
   Durante le fasi di inquiry e paging viene utilizzato sempre un *insieme ridotto di canali standard* (inquiry/paging channels), proprio perché lo slave non è ancora a conoscenza della sequenza di frequency hopping specifica della piconet.
