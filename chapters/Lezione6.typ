@@ -125,7 +125,7 @@ Il destinatario risponderà, nel caso in cui fosse libero, con un *Clear to Send
 #nota()[
   I pacchetti RTS e CTS *non sono pacchetti broadcast*. Sono pacchetti unicast, ovvero indirizzati esplicitamente a una sola specifica stazione.
 
-  Tuttavia, vengono ricevuti/sentiti da tutte le stazioni nel raggio di copertura del mittente (RTS) o del destinatario (CTS).
+  Tuttavia, vengono ricevuti/sentiti da tutte le stazioni nel raggio di copertura del mittente (RTS) o del destinatario (CTS) a causa del broadcast intrinseco del mezzo radio.
 ]
 
 Dopo che il *CTS* viene ricevuto da tutti i terminali nel raggio del destinatario, questi ultimi riallocheranno un *NAV* per il tempo indicato nel *CTS*. Questo serve per avvisare tutti i terminali nel raggio del destinatatrio che un'altro nodo all'esterno vuole comunicare con il terminale destinatario.
