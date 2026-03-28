@@ -652,6 +652,14 @@ I beacon servono per tre funzioni fondamentali:
 L’organizzazione che il coordinatore ha in mente (solo logica) per la gestione del tempo di comunicazione è definita *superframe* (sostanzialmente tutto
 ciò che passa tra un beacon e l’altro).
 
+#attenzione()[
+  Il *superframe* è solamente la *struttura logica temporale* che ha in mente il PAN coordinator. Si tratta di tutto ciò che passa tra un beacon e l’altro.
+
+  Il beacon è invece il messaggio che fisicamente viene trasmesso per sincronizzare la rete.
+]
+
+
+
 #figure[
   #align(center)[
     #cetz.canvas(length: 1cm, {
@@ -781,6 +789,14 @@ Il super-frame è diviso in due parti principali:
   - *Contention Free Period (CFP)*: contiene *GTS* (Guaranteed Time Slot), slot già allocati dal coordinatore a specifici dispositivi per comunicazioni con garanzie di latenza
 
   #nota()[
+    La parte attiva del superframe (chiamata *Superframe Duration* o SD) è divisa sempre in esattamente $16$ slot temporali di uguale durata.
+
+    Questi $16$ slot sono così ripartiti:
+    - Slot $0$: Dedicato al pacchetto di Beacon.
+    - Slot successivi: Formano il CAP (Contention Access Period), dove si usa il CSMA/CA.
+    - Ultimi slot (da $0 "a" 7$): Formano il CFP, composto dai GTS assegnati dal coordinatore.
+
+
     Il *CAP* è diviso di default in 16 slot temporali di uguale durata. La grandezza di ogni slot dipende da:
     $
       "numero totale di simboli nella parte attiva" / 16
@@ -815,7 +831,7 @@ In particolare la durata del duty cycle è decisa da due parametri:
   - $"BO" = 0$ → beacon molto frequenti
   - $"BO" = 14$ → beacon molto distanziati
 
-/ *_Super-frame Order_* ($"SO"$): Determina la durata della parte attiva
+/ *_Super-frame Duration_* ($"SD"$): Determina la durata della parte attiva. La durata di un singolo slot non è un valore fisso in secondi, ma dipende da SO (Superframe Order), tale parametro serve a _scalare_ (ingrandire o rimpicciolire) la durata dell'intera parte attiva del superframe (SD):
   $
     "SD" = "Super-frame Duration" = "aBSD" times 2^("SO") "symbols"
   $

@@ -21,7 +21,7 @@ Quando si vogliono trasmettere informazioni binarie tramite mezzo analoigico, lo
     let x1 = 0
     let x2 = x1 + w + gap
     let x3 = x2 + w + gap
-    
+
     rect((x1, 0), (x1 + w, h), ..blue-box, name: "tx")
     content("tx", text(fill: white, size: 0.8em)[Transmitter])
 
@@ -31,7 +31,7 @@ Quando si vogliono trasmettere informazioni binarie tramite mezzo analoigico, lo
     rect((x3, 0), (x3 + w, h), ..blue-box, name: "rx")
     content("rx", text(fill: white, size: 0.8em)[Receiver])
 
-    line((x1 - 2.5, h/2), (rel: (-sep, 0), to: "tx.west"), ..arrow-style, name: "l1")
+    line((x1 - 2.5, h / 2), (rel: (-sep, 0), to: "tx.west"), ..arrow-style, name: "l1")
     content("l1.mid", anchor: "south", padding: 0.2)[$d(t)$]
 
     line((rel: (sep, 0), to: "tx.east"), (rel: (-sep, 0), to: "ch.west"), ..arrow-style, name: "l2")
@@ -40,16 +40,16 @@ Quando si vogliono trasmettere informazioni binarie tramite mezzo analoigico, lo
     line((rel: (sep, 0), to: "ch.east"), (rel: (-sep, 0), to: "rx.west"), ..arrow-style, name: "l3")
     content("l3.mid", anchor: "south", padding: 0.2, text(fill: red, weight: "bold")[$s'(t)$])
 
-    line((rel: (sep, 0), to: "rx.east"), (x3 + w + 2.5, h/2), ..arrow-style, name: "l4")
+    line((rel: (sep, 0), to: "rx.east"), (x3 + w + 2.5, h / 2), ..arrow-style, name: "l4")
     content("l4.mid", anchor: "south", padding: 0.2)[$d(t)$]
-    
-    content((x2 + w/2, h + 2.2), anchor: "south")[
+
+    content((x2 + w / 2, h + 2.2), anchor: "south")[
       Rumore\
       Attenuazione\
       Interferenze
     ]
 
-    line((x2 + w/2, h + 2.0), (rel: (0, sep), to: "ch.north"), ..arrow-style)
+    line((x2 + w / 2, h + 2.0), (rel: (0, sep), to: "ch.north"), ..arrow-style)
   })
 ]
 
@@ -69,7 +69,7 @@ Possiamo dividere le tipologie di segnali in 2 categorie:
 
     let x-max = 14
     let y-max = 6
-    
+
     line((0, 0), (x-max, 0), mark: (end: ">", fill: black), name: "x")
     line((0, 0), (0, y-max), mark: (end: ">", fill: black), name: "y")
 
@@ -78,18 +78,27 @@ Possiamo dividere le tipologie di segnali in 2 categorie:
 
     catmull(
       (0.5, 1.0),
-      (1.5, 2.0), (2.0, 1.2),
-      (3.0, 1.3), (3.8, 2.8), (4.5, 2.2), (5.0, 1.2),
-      (5.5, 4.0), (6.0, 2.5),
-      (7.0, 3.5), (8.0, 2.0),
-      (9.0, 1.8), (10.0, 2.2), (10.5, 1.5),
-      (11.0, 3.8), (11.5, 2.0),
+      (1.5, 2.0),
+      (2.0, 1.2),
+      (3.0, 1.3),
+      (3.8, 2.8),
+      (4.5, 2.2),
+      (5.0, 1.2),
+      (5.5, 4.0),
+      (6.0, 2.5),
+      (7.0, 3.5),
+      (8.0, 2.0),
+      (9.0, 1.8),
+      (10.0, 2.2),
+      (10.5, 1.5),
+      (11.0, 3.8),
+      (11.5, 2.0),
       (12.5, 1.8),
       tension: 0.4,
-      stroke: (paint: red, thickness: 2pt)
+      stroke: (paint: red, thickness: 2pt),
     )
-    
-    content((x-max/2, -1), text(weight: "bold")[(a) Analog])
+
+    content((x-max / 2, -1), text(weight: "bold")[(a) Analog])
   })
 ]
 
@@ -115,25 +124,35 @@ Un esempio pratico di _segnale analogico_ è la voce umana, che varia in modo co
     content("x.end", anchor: "west", padding: 0.2)[*Time*]
 
     line(
-      (0, 0), (1, 0), 
-      (1, h), (2.2, h), (2.2, 0),
-      (3.5, 0), 
-      (3.5, h), (7.0, h), (7.0, 0),
-      (8.5, 0), 
-      (8.5, h), (9.8, h), (9.8, 0),
-      (10.5, 0), 
-      (10.5, h), (11.8, h), (11.8, 0),
-      (13.2, 0), 
-      (13.2, h), (14.5, h),
-      stroke: (paint: red, thickness: 2pt)
+      (0, 0),
+      (1, 0),
+      (1, h),
+      (2.2, h),
+      (2.2, 0),
+      (3.5, 0),
+      (3.5, h),
+      (7.0, h),
+      (7.0, 0),
+      (8.5, 0),
+      (8.5, h),
+      (9.8, h),
+      (9.8, 0),
+      (10.5, 0),
+      (10.5, h),
+      (11.8, h),
+      (11.8, 0),
+      (13.2, 0),
+      (13.2, h),
+      (14.5, h),
+      stroke: (paint: red, thickness: 2pt),
     )
 
-    content((x-max/2, -1), text(weight: "bold")[(b) Digital])
+    content((x-max / 2, -1), text(weight: "bold")[(b) Digital])
   })
 ]
 
 #nota[
-Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche modo semplificare il tutto.
+  Essendo un segnale digitale una vera e propria "traduzione" di quello analogico, ovvero di un fenomeno fisico reale, è normale che si creino punti di discontinuità. Un segnale analogico, come la voce, ha infatti infinite sfumature (tra il valore 10 e il valore 11 vi sono infiniti valori) e un computer, avendo memoria finita, deve in qualche modo semplificare il tutto.
 ]
 
 Ciò che fanno *trasmettitore* e *ricevitore* è passare da una forma d'onda all'altra. Questa conversione è indispensabile per 2 motivi pratici fondamentali:
@@ -159,53 +178,53 @@ Dove:
   Grafico $sin(t)$:
 
   #align(center)[
-  #cetz.canvas(length: 0.8cm, {
-    import cetz.draw: *
+    #cetz.canvas(length: 0.8cm, {
+      import cetz.draw: *
 
-    let x-scale = 6
-    let y-scale = 2.5
-    
-    let points = ()
-    let steps = 100
-    for i in range(0, steps + 1) {
-      let t = i / steps * 1.5
-      let val = calc.sin(2 * calc.pi * t)
-      points.push((t * x-scale, val * y-scale))
-    }
+      let x-scale = 6
+      let y-scale = 2.5
 
-    set-style(stroke: (thickness: 0.5pt, paint: gray))
-    for i in (0, 0.5, 1.0, 1.5) {
+      let points = ()
+      let steps = 100
+      for i in range(0, steps + 1) {
+        let t = i / steps * 1.5
+        let val = calc.sin(2 * calc.pi * t)
+        points.push((t * x-scale, val * y-scale))
+      }
+
+      set-style(stroke: (thickness: 0.5pt, paint: gray))
+      for i in (0, 0.5, 1.0, 1.5) {
         line((i * x-scale, -1 * y-scale), (i * x-scale, 1 * y-scale))
-    }
-    for i in (-1, -0.5, 0, 0.5, 1) {
+      }
+      for i in (-1, -0.5, 0, 0.5, 1) {
         line((0, i * y-scale), (1.5 * x-scale, i * y-scale))
-    }
+      }
 
-    set-style(stroke: (thickness: 1.5pt, paint: black))
-    line((0, -1 * y-scale), (0, 1 * y-scale))
-    line((0, -1 * y-scale), (1.5 * x-scale, -1 * y-scale))
-    line((0, 0), (1.5 * x-scale, 0))
+      set-style(stroke: (thickness: 1.5pt, paint: black))
+      line((0, -1 * y-scale), (0, 1 * y-scale))
+      line((0, -1 * y-scale), (1.5 * x-scale, -1 * y-scale))
+      line((0, 0), (1.5 * x-scale, 0))
 
-    content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
-    content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
-    content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
-    content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
-    content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
+      content((rel: (-0.2, 0), to: (0, 1 * y-scale)), anchor: "east")[1.0]
+      content((rel: (-0.2, 0), to: (0, 0.5 * y-scale)), anchor: "east")[0.5]
+      content((rel: (-0.2, 0), to: (0, 0)), anchor: "east")[0.0]
+      content((rel: (-0.2, 0), to: (0, -0.5 * y-scale)), anchor: "east")[$-0.5$]
+      content((rel: (-0.2, 0), to: (0, -1 * y-scale)), anchor: "east")[$-1.0$]
 
-    content((0, -1 * y-scale - 0.3), anchor: "north")[0.0]
-    content((0.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[0.5]
-    content((1.0 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.0]
-    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.5]
-    content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))[$s$]
+      content((0, -1 * y-scale - 0.3), anchor: "north")[0.0]
+      content((0.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[0.5]
+      content((1.0 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.0]
+      content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north")[1.5]
+      content((1.5 * x-scale, -1 * y-scale - 0.3), anchor: "north", padding: (left: 1em))[$s$]
 
-    content((0, 1 * y-scale + 0.3), anchor: "south")[$s(t)$]
-    content((1.5 * x-scale + 0.3, -1 * y-scale), anchor: "west")[$t$]
+      content((0, 1 * y-scale + 0.3), anchor: "south")[$s(t)$]
+      content((1.5 * x-scale + 0.3, -1 * y-scale), anchor: "west")[$t$]
 
-    line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
-  })
-  #v(0.5em)
-  #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
-]
+      line(..points, stroke: (paint: rgb("d00000"), thickness: 2pt))
+    })
+    #v(0.5em)
+    #text(weight: "bold")[(a) $A=1, f=1, Phi=0$]
+  ]
 ]
 
 La variazione dei primi 3 parametri di cui sopra (ampizza, frequenza e fase) permette di rappresentare diversi tipi di segnali.
@@ -213,12 +232,12 @@ La variazione dei primi 3 parametri di cui sopra (ampizza, frequenza e fase) per
 === Trasformata di Fourier e utilità
 Un'onda elettromagnetica può anche essere osservata considerando un dominio diverso dal tempo: quello delle frequenze. In questo modo, ogni segnale può essere scomposto da una serie di segnali periodici (sinusoidi e/o cosinusoidi) con ampiezza, frequenza e fase diverse. Questa scomposizione è possibile grazie alla Trasformata di Fourier:
 
-$ s(t) = 1/2 c + sum_(n=1)^oo a_n sin(2 pi n f t) + sum_(n=1)^oo b_n cos(2 pi n f t) $
+$ s(t) = 1/2 c + sum_(n=1)^oo a_n sin(2 pi f_n t) + sum_(n=1)^oo b_n cos(2 pi f_n t) $
 
 Dove:
 - $c ->$ è la costante che rappresenta il valore medio del segnale;
 - $a_n, b_n ->$ sono i coefficienti che rappresentano l'ampiezza delle componenti (ovvero le armoniche);
-- $f_n ->$ frequenze multiple della frequenza fondamentale.
+- $f_n = f dot n ->$ frequenze multiple della frequenza fondamentale. Si tratta infatti delle armoniche del segnale, ovvero di frequenze che sono multipli interi della frequenza fondamentale $f$.
 
 #nota[
   L'idea alla base della _Trasformata di Fourier_ è che ogni segnale, anche complesso, può essere scomposto nella somma di onde sinusoidali e cosinusoidali più semplici, passando da un dominio all'altro.
@@ -238,7 +257,7 @@ Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale
 
       let x-scale = 6
       let y-scale = 2.5
-      
+
       let points = ()
       let steps = 100
       for i in range(0, steps + 1) {
@@ -249,10 +268,10 @@ Il *Teorema di Nyquist-Shannon* ci dice inoltre la frequenza minima con la quale
 
       set-style(stroke: (thickness: 0.5pt, paint: gray))
       for i in (0, 0.5, 1.0, 1.5) {
-          line((i * x-scale, -1 * y-scale), (i * x-scale, 1 * y-scale))
+        line((i * x-scale, -1 * y-scale), (i * x-scale, 1 * y-scale))
       }
       for i in (-1, -0.5, 0, 0.5, 1) {
-          line((0, i * y-scale), (1.5 * x-scale, i * y-scale))
+        line((0, i * y-scale), (1.5 * x-scale, i * y-scale))
       }
 
       set-style(stroke: (thickness: 1.5pt, paint: black))
@@ -308,7 +327,7 @@ Per passare da un dominio all'altro si utilizzano 2 operazioni matematiche:
 
 #esempio[
   Un'antenna che riceve un segnale, dapprima converte da analogico a digitale (grazie al _campionamento_) e, in secondo luogo, utilizza la "lista" di numeri generata per applicare la *FFT* e capire quali bit sono stati trasmessi.
-  
+
   Informalmente, possiamo affermare che il ricevitore si chieda quali sinusoidi e cosinusoidi, sommate assieme, potrebbero passare esattamente per i punti campionati. Viene quindi restituita l'ampiezza di ogni frequenza trovata ("Ho trovato tanto segnale a 50 `Hz`, poco a 100 `Hz` e niente a 200 `Hz`").
 
   Al termine della procedura, il ricevitore sa esattamente quali frequenze sono state trasmesse e con quale ampiezza, potendo così ricostruire i bit originari: se vede un picco sulla frequenza che il trasmettitore usa per il bit `1`, allora sa che quel bit è stato trasmesso come `1`, altrimenti come `0`.
@@ -336,9 +355,7 @@ Per facilitare la "traduzione" di una forma d'onda, a partire dalla sua trasform
       align: (col, row) => (if col == 1 { center } else { left } + horizon),
       stroke: 0.5pt + luma(200),
       fill: (_, row) => if row == 0 { luma(240) } else { white },
-      table.header(
-        [*Impronta (Valore della Trasformata/FFT)*], [*Significato (Bit)*],
-      ),
+      table.header([*Impronta (Valore della Trasformata/FFT)*], [*Significato (Bit)*]),
       [Picco di energia a *100 Hz*], [*00*],
       [Picco di energia a *200 Hz*], [*01*],
       [Picco di energia a *300 Hz*], [*10*],
@@ -423,7 +440,7 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
 
 #esempio[
   Supponiamo di avere un'onda quadrata:
-  
+
   #align(center)[
     #cetz.canvas({
       import cetz.draw: *
@@ -442,11 +459,18 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
       content((-0.2, -A), anchor: "east")[$-A$]
 
       line(
-        (0, A), (w, A), (w, -A),
-        (2*w, -A), (2*w, A), (3*w, A),
-        (3*w, -A), (4*w, -A), (4*w, A),
-        (5*w, A), (5*w, 0),
-        stroke: (paint: rgb("E00000"), thickness: 2pt)
+        (0, A),
+        (w, A),
+        (w, -A),
+        (2 * w, -A),
+        (2 * w, A),
+        (3 * w, A),
+        (3 * w, -A),
+        (4 * w, -A),
+        (4 * w, A),
+        (5 * w, A),
+        (5 * w, 0),
+        stroke: (paint: rgb("E00000"), thickness: 2pt),
       )
 
       content((0.5 * w, A + 0.5))[1]
@@ -456,8 +480,8 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
       content((4.5 * w, A + 0.5))[1]
 
       line((0, -A - 0.2), (0, -A - 1.2))
-      line((2*w, -A - 0.2), (2*w, -A - 1.2))
-      line((0, -A - 0.8), (2*w, -A - 0.8), mark: (start: ">", end: ">", fill: black))
+      line((2 * w, -A - 0.2), (2 * w, -A - 1.2))
+      line((0, -A - 0.8), (2 * w, -A - 0.8), mark: (start: ">", end: ">", fill: black))
       content((w, -A - 0.8), anchor: "north", padding: 0.2)[period = $T = 1/f$]
     })
   ]
@@ -465,7 +489,7 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
   Per ogni periodo, vengono trasmessi 2 bit (1 e 0): questo corrisponde al *Data Rate*. Per inviare questa onda quadra perfetta, sono necessarie infinite frequenze (tutte le armoniche dispari della frequenza fondamentale), il che implica una *Bandwidth* infinita:
   $ s(t) = A dot 4/pi dot sum_(k=1)^oo sin(2 k f t)/k $
 
-  Come è facile intuire, non si ha mai a disposizione una banda infinita, ma è comunque possibile ridurre lo *spettro* per ottenere una buona approssimazione. 
+  Come è facile intuire, non si ha mai a disposizione una banda infinita, ma è comunque possibile ridurre lo *spettro* per ottenere una buona approssimazione.
 
   #align(center)[
     #cetz.canvas({
@@ -473,22 +497,22 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
 
       let x-scale = 3.5
       let y-scale = 1.8
-      
+
       let points = ()
       let steps = 200
       for i in range(0, steps + 1) {
         let t = i / steps * 2.0
         let angle = 2 * calc.pi * t
-        let val = (4 / calc.pi) * (calc.sin(angle) + (1/3) * calc.sin(3 * angle) + (1/5) * calc.sin(5 * angle))
+        let val = (4 / calc.pi) * (calc.sin(angle) + (1 / 3) * calc.sin(3 * angle) + (1 / 5) * calc.sin(5 * angle))
         points.push((t * x-scale, val * y-scale))
       }
 
       set-style(stroke: (thickness: 0.5pt, paint: gray))
       for i in (0.5, 1.0, 1.5, 2.0) {
-          line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
+        line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
       }
       for i in (-1, -0.5, 0.5, 1) {
-          line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
+        line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
       }
 
       set-style(stroke: (thickness: 1pt, paint: black))
@@ -523,22 +547,30 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
 
       let x-scale = 3.5
       let y-scale = 1.8
-      
+
       let points = ()
       let steps = 300
       for i in range(0, steps + 1) {
         let t = i / steps * 2.0
         let angle = 2 * calc.pi * t
-        let val = (4 / calc.pi) * (calc.sin(angle) + (1/3) * calc.sin(3 * angle) + (1/5) * calc.sin(5 * angle) + (1/7) * calc.sin(7 * angle))
+        let val = (
+          (4 / calc.pi)
+            * (
+              calc.sin(angle)
+                + (1 / 3) * calc.sin(3 * angle)
+                + (1 / 5) * calc.sin(5 * angle)
+                + (1 / 7) * calc.sin(7 * angle)
+            )
+        )
         points.push((t * x-scale, val * y-scale))
       }
 
       set-style(stroke: (thickness: 0.5pt, paint: gray))
       for i in (0.5, 1.0, 1.5, 2.0) {
-          line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
+        line((i * x-scale, -1.2 * y-scale), (i * x-scale, 1.2 * y-scale))
       }
       for i in (-1, -0.5, 0.5, 1) {
-          line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
+        line((0, i * y-scale), (2.0 * x-scale, i * y-scale))
       }
 
       set-style(stroke: (thickness: 1pt, paint: black))
@@ -573,18 +605,18 @@ La relazione fondamentale che sussiste tra *Bandwidth* e *Data Rate* è la segue
       align: (col, row) => (if col == 0 { left } else { center } + horizon),
       stroke: 0.5pt + luma(200),
       fill: (_, row) => if row == 0 { luma(240) } else { white },
-      
+
       [*Frequenza fondamentale ($f$)*], [*1 MHz*], [*2 MHz*],
-      
+
       [Spettro], [1 MHz -- 5 MHz], [2 MHz -- 10 MHz],
-      
+
       [Periodo ($T$)], [1 $mu$s], [0.5 $mu$s],
-      
+
       [Durata di 1 bit], [0.5 $mu$s], [0.25 $mu$s],
-      
+
       [Bandwidth ($B$)], [4 MHz ($5f - f$)], [8 MHz ($2 dot (5f - f)$)],
-      
-      [Data rate (bps)], [2 Mbps (2 bit ogni $mu$s)], [4 Mbps (4 bit ogni $mu$s)]
+
+      [Data rate (bps)], [2 Mbps (2 bit ogni $mu$s)], [4 Mbps (4 bit ogni $mu$s)],
     )
   ]
 
@@ -609,14 +641,14 @@ Dove $M$ è il numero di livelli di voltaggio e $log_2(M)$ indica quanti bit cor
   Aumentre i livelli di voltaggio è essenziale per incrementare il *Data Rate* senza dover aumentare la *Bandwidth*, che spesso è limitata dalle caratteristiche fisiche del canale di comunicazione.
   #esempio[
     Supponiamo di avere una larghezza di banda di 1000 `Hz`:
-    - Avendo un numero di livello di voltaggio $M = 2$, la capacità del canale è \ 
+    - Avendo un numero di livello di voltaggio $M = 2$, la capacità del canale è \
       $C = 2 dot 1000 dot log_2(2) = 2000$ `bps`;
     - Avendo un numero di livello di voltaggio $M = 8$, la capacità del canale diventa \
       $C = 2 dot 1000 dot log_2(8) = 6000$ `bps`.
   ]
 ]
 
-== Il rumore 
+== Il rumore
 Come già detto precedentemente, il *rumore* (chiamato spesso anche _noise_), è un segnale non voluto che si combina al segnale trasmesso, distorcendolo. Questo può portare a errori nella ricezione dei dati, poiché il ricevitore potrebbe interpretare erroneamente i bit trasmessi.
 
 Possiamo inoltre categorizzare il *rumore*:
@@ -655,11 +687,11 @@ Dove $P$ è la potenza misurata.
 ]
 
 ==== Rapporto Segnale-Rumore (SNR)
-Misura quanto il segnale utile è più forte rispetto al rumore. 
+Misura quanto il segnale utile è più forte rispetto al rumore.
 
 Può essere espresso sia in scala logaritmica (decibel)
 $ S N R_(d b) = 10 dot log_10(P_s/P_r) $
-che lineare 
+che lineare
 $ S N R = P_s/P_r $
 $ S N R = 10^((S N R_(d b))/10) $
 
@@ -670,7 +702,7 @@ Tanto più è alto, maggiore sarà la distinzione del segnale rispetto al rumore
 === Shannon Capacity Formula
 $ C = B dot log_2(1 + S N R) $
 
-Questa formula fornisce il valore relativo al massimo numero di bit al secondo ($C$) che possono essere trasmessi attraverso un canale con larghezza di banda $B$ e rapporto segnale-rumore $S N R$. 
+Questa formula fornisce il valore relativo al massimo numero di bit al secondo ($C$) che possono essere trasmessi attraverso un canale con larghezza di banda $B$ e rapporto segnale-rumore $S N R$.
 
 È una grandezza teorica intuita da Shannon, che, a differenza di ciò che formalizzò Nyquist, ci dice che è possibile avere una *massima teorica* di trasmissione (senza errori), considerando anche il rumore e sapendo che la capacità dipende dalla *larghezza di banda* e dal *rapporto segnale-rumore* ($S N R$).
 
@@ -680,12 +712,12 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
 
 #esempio[
   *Possibile esercizio d'esame*
-  
+
   Dati:
   - Uno spettro che va da $3"Mhz"$ a $4"Mhz" => "Bandwidth"$ = $4"Mhz"-3"Mhz"$ = $1"Mhz"$
   - Un rapporto segnale rumore $"SNR"_("dB") = 24"db"$
 
-  Vogliamo: 
+  Vogliamo:
   - Trovare la capacità del canale $C$;
   - Calcolare il numero di livelli di segnale che devo avere per avere quella capacità del canale.
 
@@ -694,30 +726,30 @@ Da questa formula è inoltre possibile intuire che, in una determinata condizion
     C = B dot log_2(1+"SNR")
   $
 
-  *NB:* Si usa $"SNR"$ (*rapporto lineare*) e non $"SNR"_("dB")$ (*rapporto in Decibel*) nella formula. 
+  *NB:* Si usa $"SNR"$ (*rapporto lineare*) e non $"SNR"_("dB")$ (*rapporto in Decibel*) nella formula.
 
   Per il _ Teorema di Nyquist sulla banda_, la capacità del canale in assenza di rumore è data dal prodotto fra due volte la _Bandwidth_ e logaritmo in base 2 del numero di livelli di segnale $M$:
   $
     C = 2B dot log_2(M)
   $
   Trovando $C$, utilizzando la formula di Shannon, prima richiesta del problema, è possibile sfruttare il _Teorema di Nyquist sulla banda_ per isolare $M$ e soddisfare anche la seconda richiesta.\
-  
+
   - $C$:
-    
+
   Per prima cosa dobbiamo passare da $"SNR"_"dB"$ a SNR "_puro_" o _lineare_. Per farlo, l'equazione è la seguente:
-    $ "SNR" = 10^((S N R_(d b))/10) = 10^((24)/10) = 251 $
-    Significa che il segnale è circa 251 volte più potente del rumore.
+  $ "SNR" = 10^((S N R_(d b))/10) = 10^((24)/10) = 251 $
+  Significa che il segnale è circa 251 volte più potente del rumore.
 
   Applichiamo la *formula di Shannon*:
-    $ C = B dot log_2(1 + S N R) = 1 M H z dot log_2(1 + 251) = 1 M H z dot 8.0 = 8.0 M b p s $
+  $ C = B dot log_2(1 + S N R) = 1 M H z dot log_2(1 + 251) = 1 M H z dot 8.0 = 8.0 M b p s $
 
   - $M$:
 
   Ora è possibile applicare anche la *formula di Nyquist* per sapere quanti livelli di voltaggio sono necessari per raggiungere questa capacità ($M$ è l'incognita):
-    $ C = 2 B log_2(M)  => $
-    $ => 8.0 M b p s = 2 dot 1 M H z dot log_2(M) => $
-    $ => log_2(M) = 4.0 => $
-    $ => M = 2^4 = 16 $
+  $ C = 2 B log_2(M) => $
+  $ => 8.0 M b p s = 2 dot 1 M H z dot log_2(M) => $
+  $ => log_2(M) = 4.0 => $
+  $ => M = 2^4 = 16 $
 
   *CONCLUSIONE:* Il nostro livello fisico deve almeno usare $16$ livelli di segnale, $4$ bit.
 ]
