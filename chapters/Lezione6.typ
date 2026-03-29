@@ -950,11 +950,11 @@ Ci sono più step:
 
 - I dispositivi rispondono con un *Buffer Status Report (BSR)*: le stazioni che hanno da trasmettere rispondono con una misura della quantità di dati (al fine di allocare le risorse).
 
-- L'AP assegna risorse in base alle risposte delle stazioni e invia il *MU-RTS*, indicando la suddivisione delle RU.
+- L'AP assegna risorse in base alle risposte delle stazioni e invia il *MU-RTS*, indicando la suddivisione delle RU che devono utilizzare per rispondere con le CTS (sincronizzazione della risposta).
 
 - Le stazioni rispondono con un *CTS*.
 
-- è presente un trigger aggiuntivo da parte dell'AP, al fine di sincronizzare i dispositivi. Tutte le stazioni devono trasmettere nello stesso momento (ad esempio tenendo in considerazione che chi è più lontano comincia prima).
+- è presente un trigger aggiuntivo da parte dell'AP, al fine di sincronizzare i dispositivi. Tutte le stazioni devono trasmettere nello stesso momento (ad esempio tenendo in considerazione che chi è più lontano comincia prima). Inoltre, in questo istante avviene l'*assegnazione definitiva delle RU* per la trasmissione dei dati veri e propri (UL-PPDU), tramite il Basic Trigger Frame. Esso viene inviato dall'AP subito dopo aver ricevuto i CTS.
 
 - Ogni stazione trasmette in parallelo sulle risorse che gli sono state allocate; se la trasmissione di una stazione dura meno, questa fa padding.
 
