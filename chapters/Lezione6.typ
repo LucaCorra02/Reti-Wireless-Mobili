@@ -21,7 +21,7 @@ Prendiamo come esempi il teminale *A* e *D*: in base al raggio di copertura, non
       let expl-red = rgb("#FF0000")
 
       let draw-check(x, y) = {
-        place(dx: x, dy: y, path(stroke: 2pt + check-green, (0pt, 0pt), (4pt, 4pt), (12pt, -8pt)))
+        place(dx: x, dy: y, path((0pt, 0pt), (4pt, 4pt), (12pt, -8pt), stroke: 2pt + check-green))
       }
 
       let y-a = 40pt
@@ -145,7 +145,7 @@ Lo schema appena descritto è il seguente:
       let arrow-end = 460pt
 
       let draw-check(x, y) = {
-        place(dx: x, dy: y, path(stroke: 2pt + c-check, (0pt, 0pt), (4pt, 4pt), (12pt, -8pt)))
+        place(dx: x, dy: y, path((0pt, 0pt), (4pt, 4pt), (12pt, -8pt), stroke: 2pt + c-check))
       }
 
       let draw-timeline(y, lab) = {
@@ -685,7 +685,7 @@ Lo schema del *Point Coordination Function (PCF)* è quindi il seguente:
 
         place(dx: 195pt, dy: 215pt, text(size: 9pt, weight: "bold")[Frame Control])
 
-        place(path(stroke: 1.5pt + black, (32pt, 27pt), (10pt, 27pt), (10pt, 192pt), (32pt, 192pt)))
+        place(path((32pt, 27pt), (10pt, 27pt), (10pt, 192pt), (32pt, 192pt), stroke: 1.5pt + black))
         place(dx: 32pt, dy: 192pt, polygon(fill: black, (0pt, 0pt), (-6pt, 3.5pt), (-6pt, -3.5pt)))
       })
     ]
