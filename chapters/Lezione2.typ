@@ -914,12 +914,12 @@ La trasmissione di un simbolo corrisponde all'invio di un certo impulso per un d
       // Curva indicativa
       place(dx: 125pt, dy: 100pt, {
         path(
-          stroke: 1pt + blue,
           (0pt, 0pt),
           (8pt, -3pt),
           (18pt, -6pt),
           (30pt, -3pt),
-          (40pt, 0pt)
+          (40pt, 0pt),
+          stroke: 1pt + blue,
         )
       })
       
