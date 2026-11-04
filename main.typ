@@ -34,4 +34,16 @@
 #include "chapters/Lezione3.typ"
 #part("Wireless Personal Area Network (WPAN)")
 #include "chapters/Lezione4.typ"
+#include "chapters/Lezione5.typ"
+// TODO RINOMINARE 7 e 6
+#include "chapters/Lezione7.typ"
+#include "chapters/Lezione6.typ"
+#include "chapters/Lezione8.typ" // e 9
+#part("Reti Mobili")
+#include "chapters/Lezione10.typ"
+#part("Da 2G a 4G")
+#include "chapters/Lezione11.typ"
+#include "chapters/Lezione12.typ"
+#include "chapters/lezione13.typ"
+#include "chapters/Lezione14.typ"
 #include "chapters/Lezione15.typ"
